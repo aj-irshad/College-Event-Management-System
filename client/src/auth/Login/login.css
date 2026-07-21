@@ -1,0 +1,153 @@
+.LoginMain {
+  background: #ffffff;
+  border-radius: 12px;
+  width: clamp(320px, 90vw, 850px);
+  display: flex;
+  flex-direction: row;
+  box-shadow: 0 10px 25px rgba(101, 101, 250, 0.15);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.welcome {
+  flex: 1;
+  background: linear-gradient(
+    135deg,
+    rgb(123, 123, 229),
+    rgb(101, 101, 246),
+    rgb(101, 101, 250)
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: white;
+}
+
+.graduationCap {
+  width: clamp(80px, 12vw, 120px);
+  height: auto;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+.loginForm {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(30px, 5vw, 50px);
+  background: #ffffff;
+}
+
+.heading {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.heading h1 {
+  color: rgb(101, 101, 250);
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.heading p {
+  color: #6c757d;
+  font-size: clamp(14px, 2.5vw, 16px);
+}
+
+.formGrp {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+}
+
+.formGrp label {
+  color: #495057;
+  font-weight: 600;
+  font-size: clamp(14px, 3vw, 16px);
+  margin-bottom: 0.5rem;
+}
+
+.formGrp input {
+  font-size: clamp(14px, 3vw, 16px);
+  height: 3rem;
+  border-radius: 8px;
+  padding: 0 15px;
+  border: 2px solid #e2e8f0;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.formGrp input:focus {
+  border-color: rgb(101, 101, 246);
+  box-shadow: 0 0 0 3px rgba(101, 101, 246, 0.15);
+}
+
+.formGrp input::placeholder {
+  color: #a0aec0;
+  font-size: 0.95em;
+}
+
+.loginBtn {
+  font-size: clamp(16px, 3vw, 18px);
+  padding: 14px 0;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(
+    to right,
+    rgb(123, 123, 229),
+    rgb(101, 101, 246),
+    rgb(101, 101, 250)
+  );
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(101, 101, 250, 0.3);
+  transition:
+    transform 0.1s ease,
+    opacity 0.2s ease;
+}
+
+.loginBtn:hover {
+  opacity: 0.95;
+}
+
+.loginBtn:active {
+  transform: scale(0.98);
+}
+
+.loginForm .linktoSignup {
+  text-align: center;
+  font-size: clamp(13px, 2.5vw, 15px);
+  color: #718096;
+}
+
+.loginForm .linktoSignup a {
+  color: rgb(101, 101, 246);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.loginForm .linktoSignup a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .LoginMain {
+    flex-direction: column;
+    width: 100%;
+    max-width: 450px;
+  }
+
+  .welcome {
+    padding: 30px 20px;
+  }
+
+  .loginForm {
+    padding: 30px 20px;
+  }
+}

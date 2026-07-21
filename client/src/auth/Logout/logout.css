@@ -1,0 +1,101 @@
+.logoutMain {
+  background: #ffffff;
+  border-radius: 12px;
+  width: clamp(320px, 90vw, 850px);
+  display: flex;
+  flex-direction: row;
+  box-shadow: 0 10px 25px rgba(101, 101, 250, 0.15);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.logoutBanner {
+  flex: 1;
+  background: linear-gradient(
+    135deg,
+    rgb(123, 123, 229),
+    rgb(101, 101, 246),
+    rgb(101, 101, 250)
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: white;
+  text-align: center;
+}
+
+.logoutBanner .logoutIcon {
+  width: clamp(80px, 12vw, 100px);
+  height: auto;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+.logoutBanner h1 {
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.logoutBanner p {
+  font-size: clamp(14px, 2vw, 16px);
+  opacity: 0.9;
+}
+
+.logoutStatus {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(25px, 4vw, 45px);
+  background: #ffffff;
+  text-align: center;
+}
+
+.logoutStatus h2 {
+  color: rgb(101, 101, 250);
+  font-size: clamp(22px, 3.5vw, 28px);
+  font-weight: 700;
+  margin-bottom: 6px;
+  margin-top: 20px;
+}
+
+.logoutStatus p {
+  color: #6c757d;
+  font-size: clamp(13px, 2vw, 15px);
+  font-weight: 500;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e2e8f0;
+  border-top-color: rgb(101, 101, 246);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .logoutMain {
+    flex-direction: column;
+    width: 100%;
+    max-width: 450px;
+  }
+
+  .logoutBanner {
+    padding: 30px 20px;
+  }
+
+  .logoutStatus {
+    padding: 40px 20px;
+  }
+}

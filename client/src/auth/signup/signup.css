@@ -1,0 +1,169 @@
+.Signup {
+  background: #ffffff;
+  border-radius: 12px;
+  width: clamp(320px, 90vw, 850px);
+  display: flex;
+  flex-direction: row;
+  box-shadow: 0 10px 25px rgba(101, 101, 250, 0.15);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.creaeAccount {
+  flex: 1;
+  background: linear-gradient(
+    135deg,
+    rgb(123, 123, 229),
+    rgb(101, 101, 246),
+    rgb(101, 101, 250)
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: white;
+  text-align: center;
+}
+.creaeAccount .signupUserIcon {
+  width: clamp(80px, 12vw, 120px);
+  height: auto;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+.creaeAccount h1 {
+  font-size: clamp(26px, 4vw, 36px);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.creaeAccount p {
+  font-size: clamp(14px, 2.5vw, 18px);
+  opacity: 0.9;
+}
+
+.signup-form {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(25px, 4vw, 45px);
+  background: #ffffff;
+}
+
+.signup-form .heading {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.signup-form .heading h1 {
+  color: rgb(101, 101, 250);
+  font-size: clamp(22px, 3.5vw, 28px);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.signup-form .heading p {
+  color: #6c757d;
+  font-size: clamp(13px, 2vw, 15px);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.2rem;
+}
+
+.form-group label {
+  color: #495057;
+  font-weight: 600;
+  font-size: clamp(13px, 2.5vw, 15px);
+  margin-bottom: 0.4rem;
+}
+
+.form-group input {
+  font-size: clamp(13px, 2.5vw, 15px);
+  height: 2.8rem;
+  border-radius: 8px;
+  padding: 0 15px;
+  border: 2px solid #e2e8f0;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.form-group input[type="file"] {
+  padding: 8px 10px;
+  height: auto;
+  cursor: pointer;
+}
+
+.form-group input:focus {
+  border-color: rgb(101, 101, 246);
+  box-shadow: 0 0 0 3px rgba(101, 101, 246, 0.15);
+}
+
+.form-group input::placeholder {
+  color: #a0aec0;
+  font-size: 0.95em;
+}
+
+.signupBtn {
+  font-size: clamp(15px, 2.5vw, 17px);
+  padding: 12px 0;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(
+    to right,
+    rgb(123, 123, 229),
+    rgb(101, 101, 246),
+    rgb(101, 101, 250)
+  );
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  margin-top: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 12px rgba(101, 101, 250, 0.3);
+  transition:
+    transform 0.1s ease,
+    opacity 0.2s ease;
+}
+
+.signupBtn:hover {
+  opacity: 0.95;
+}
+
+.signupBtn:active {
+  transform: scale(0.98);
+}
+
+.loginLink {
+  text-align: center;
+  font-size: clamp(13px, 2.5vw, 15px);
+  color: #718096;
+}
+
+.loginLink a {
+  color: rgb(101, 101, 246);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.loginLink a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .Signup {
+    flex-direction: column;
+    width: 100%;
+    max-width: 450px;
+  }
+
+  .creaeAccount {
+    padding: 30px 20px;
+  }
+
+  .signup-form {
+    padding: 30px 20px;
+  }
+}

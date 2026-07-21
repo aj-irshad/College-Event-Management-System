@@ -1,0 +1,40 @@
+.verifyOTP {
+  width: 100%;
+  max-width: 400px;
+  margin: auto;
+  padding-top: 80px;
+}
+
+.verifyOTPHeading {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.verifyOTPHeading h1 {
+  margin-bottom: 10px;
+}
+
+.verifyOTPHeading p {
+  color: gray;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+input {
+  height: 45px;
+  padding-inline: 10px;
+  font-size: 18px;
+}
+
+button {
+  height: 45px;
+  cursor: pointer;
+}
+
+.warning {
+  color: red;
+}
