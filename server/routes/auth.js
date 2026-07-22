@@ -14,9 +14,6 @@ const authRouter = express.Router();
 
 authRouter.get("/alluser", testAPI);
 authRouter.get("/me", authMiddleware, getCurrentUser);
-// authRouter.get("/me", authMiddleware, (req, res) => {
-//   res.json({ message: "working" });
-// });
 authRouter.post("/signup", userSignUp);
 authRouter.post("/verify-otp", verifyOTP);
 authRouter.post("/login", userLogin);

@@ -6,23 +6,31 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.NODEMAILER_EMAIL,
+    pass: process.env.NODEMAILER_PASS,
   },
 });
 
 async function sendOTP(email, otp) {
   try {
     const info = await transporter.sendMail({
-      from: `"EMS" <${process.env.EMAIL_USER}>`,
-      to: `${email}`,
-      subject: "Regarding the Project",
-      html: `<h1>Your OTP is ${otp} </h1>`,
+      from: `"EMS" <${process.env.NODEMAILER_EMAIL}>`,
+      to: email,
+      subject: "Verification Code - EMS",
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>Your Verification Code</h2>
+          <p style="font-size: 24px; font-weight: bold; color: #6565fa;">${otp}</p>
+          <p>Please enter this OTP to proceed with your verification.</p>
+        </div>
+      `,
     });
 
     console.log("Email sent:", info.messageId);
+    return info;
   } catch (err) {
-    console.log(err);
+    console.error("Error sending email:", err.message);
+    throw err;
   }
 }
 

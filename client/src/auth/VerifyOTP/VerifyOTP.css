@@ -1,40 +1,180 @@
-.verifyOTP {
-  width: 100%;
-  max-width: 400px;
-  margin: auto;
-  padding-top: 80px;
+.VerifyMain {
+  background: #ffffff;
+  border-radius: 12px;
+  width: clamp(320px, 90vw, 850px);
+  display: flex;
+  flex-direction: row;
+  box-shadow: 0 10px 25px rgba(101, 101, 250, 0.15);
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-.verifyOTPHeading {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.verifyOTPHeading h1 {
-  margin-bottom: 10px;
-}
-
-.verifyOTPHeading p {
-  color: gray;
-}
-
-form {
+.verifyBanner {
+  flex: 1;
+  background: linear-gradient(
+    135deg,
+    rgb(123, 123, 229),
+    rgb(101, 101, 246),
+    rgb(101, 101, 250)
+  );
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  color: white;
+  text-align: center;
 }
 
-input {
-  height: 45px;
-  padding-inline: 10px;
-  font-size: 18px;
+.verifyBanner .verifyIcon {
+  width: clamp(80px, 12vw, 100px);
+  height: auto;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
 }
 
-button {
-  height: 45px;
-  cursor: pointer;
+.verifyBanner h1 {
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.verifyBanner p {
+  font-size: clamp(14px, 2vw, 16px);
+  opacity: 0.9;
+}
+
+.verifyForm {
+  flex: 1.2;
+  padding: clamp(25px, 4vw, 45px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.verifyForm .heading {
+  width: 100%;
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.verifyForm .heading h2 {
+  color: rgb(101, 101, 250);
+  font-size: clamp(22px, 3.5vw, 28px);
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.verifyForm .heading p {
+  font-size: clamp(13px, 2vw, 15px);
+  color: #6c757d;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.verifyForm .heading p strong {
+  color: #495057;
+}
+
+.formGrp {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.2rem;
+}
+
+.formGrp label {
+  color: #495057;
+  font-weight: 600;
+  font-size: clamp(13px, 2.5vw, 15px);
+  margin-bottom: 0.4rem;
+}
+
+.formGrp input {
+  font-size: clamp(13px, 2.5vw, 15px);
+  height: 2.8rem;
+  border-radius: 8px;
+  padding: 0 15px;
+  border: 2px solid #e2e8f0;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Specific styling for the OTP input to look like a code block */
+.otpGroup input {
+  font-size: clamp(20px, 4vw, 24px);
+  letter-spacing: 8px; /* Spreads out the digits */
+  font-weight: 600;
+  text-align: center;
+  padding: 0;
+}
+
+.formGrp input::placeholder {
+  color: #a0aec0;
+  letter-spacing: 4px;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.formGrp input:focus {
+  border-color: rgb(101, 101, 246);
+  box-shadow: 0 0 0 3px rgba(101, 101, 246, 0.15);
 }
 
 .warning {
   color: red;
+  font-size: clamp(13px, 2.5vw, 14px);
+  margin-bottom: 15px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.btnSection {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+}
+
+.verifyBtn {
+  background: linear-gradient(
+    to right,
+    rgb(123, 123, 229),
+    rgb(101, 101, 246),
+    rgb(101, 101, 250)
+  );
+  padding: 14px 0;
+  border-radius: 8px;
+  border: none;
+  font-size: clamp(15px, 2.5vw, 17px);
+  font-weight: 600;
+  color: white;
+  width: 100%;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(101, 101, 250, 0.3);
+  transition:
+    transform 0.1s ease,
+    opacity 0.2s ease;
+}
+
+.verifyBtn:hover {
+  opacity: 0.95;
+}
+
+.verifyBtn:active {
+  transform: scale(0.98);
+}
+
+@media screen and (max-width: 768px) {
+  .VerifyMain {
+    flex-direction: column;
+    width: 100%;
+    max-width: 450px;
+  }
+
+  .verifyBanner {
+    padding: 30px 20px;
+  }
+
+  .verifyForm {
+    padding: 30px 20px;
+  }
 }

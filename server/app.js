@@ -27,6 +27,13 @@ app.use(cors({ origin: VITE_URL, credentials: true }));
 // DB connection
 connection("eventManagementSystem");
 
+app.get("/test", (req, res) => {
+  res.json({
+    message: "hello",
+  });
+});
+
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use(express.static(path.join(__dirname, "../client/dist")));
 
 app.use("/auth", authRouter);

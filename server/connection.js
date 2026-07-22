@@ -1,10 +1,9 @@
 import mongoose from "mongoose";
+import "dotenv/config";
 
-async function userConnection(dbName) {
-  const url = `mongodb://localhost:27017/${dbName}`;
-
+async function userConnection() {
   try {
-    await mongoose.connect(url);
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDB connected successfully");
   } catch (err) {
     console.error("DB connection error:", err);
