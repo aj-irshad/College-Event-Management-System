@@ -1,3 +1,5 @@
+import fs from "fs/promises";
+
 import Users from "../model/user.js";
 import PendingUser from "../model/pendingUser.js";
 
@@ -90,45 +92,55 @@ const userLogin = async (req, res) => {
 };
 
 const userSignUp = async (req, res) => {
-  let otpSent = false;
-  let otpVerified = false;
   try {
-    const { name, email, password, image } = req.body;
+    const { name, email, password } = req.body;
 
+    // Validate required fields
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: "All required fields must be provided.",
+      });
+    }
+
+    // Check if user already exists
     const existingUser = await Users.findOne({ email });
 
     if (existingUser) {
       return res.status(400).json({
-        msg: "User already exist. Please login",
+        message: "User already exists. Please login.",
       });
     }
 
-    const otp = Math.floor(Math.random() * 9000 + 1000).toString();
-    const twoMinuteFromNow = Date.now() + 2 * 60 * 1000;
+    // Generate 4-digit OTP
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-    const pendingUser = {
-      name: name,
-      email: email,
-      password: await createHashPassword(password),
-      profileImage: image,
-      otp: otp,
-      otpExpires: twoMinuteFromNow,
-    };
+    // OTP expires in 2 minutes
+    const otpExpires = Date.now() + 2 * 60 * 1000;
 
+    // Remove previous pending signup (if any)
     await PendingUser.deleteOne({ email });
 
-    await PendingUser.create(pendingUser);
+    // Store pending user
+    await PendingUser.create({
+      name,
+      email,
+      password: await createHashPassword(password),
+      profileImage: req.file ? req.file.filename : null,
+      otp,
+      otpExpires,
+    });
 
+    // Send OTP
     await sendOTP(email, otp);
-    res.json({
-      message: "OTP sent successfully",
+
+    return res.status(200).json({
+      message: "OTP sent successfully.",
     });
   } catch (error) {
     console.error(error);
-    console.error(error.message);
-    console.error(error.stack);
-    res.status(500).json({
-      msg: "Internal server error",
+
+    return res.status(500).json({
+      message: "Internal server error.",
     });
   }
 };
@@ -146,8 +158,10 @@ const verifyOTP = async (req, res) => {
     }
 
     if (pendingUser.otpExpires < Date.now()) {
+      if (pendingUser.profileImage) {
+        await fs.unlink(`uploads/${pendingUser.profileImage}`).catch(() => {});
+      }
       await PendingUser.deleteOne({ email });
-
       return res.status(400).json({
         message: "OTP Expired",
       });
@@ -163,10 +177,12 @@ const verifyOTP = async (req, res) => {
       name: pendingUser.name,
       email: pendingUser.email,
       password: pendingUser.password,
-      profileImage: pendingUser.image,
+      profileImage: pendingUser.profileImage,
     };
 
     await Users.create(newUser);
+
+    await PendingUser.deleteOne({ email });
 
     return res.status(200).json({
       message: "Account successfully created",

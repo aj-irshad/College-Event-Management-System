@@ -9,6 +9,7 @@ function Signup() {
   const navigate = useNavigate();
 
   const [warning, setWarning] = useState("");
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -19,10 +20,11 @@ function Signup() {
 
   function handleChange(e) {
     const { name, value, files } = e.target;
-    setFormData({
-      ...formData,
+
+    setFormData((prev) => ({
+      ...prev,
       [name]: files ? files[0] : value,
-    });
+    }));
   }
 
   async function handleSubmit(e) {
@@ -35,11 +37,17 @@ function Signup() {
 
     setWarning("");
 
-    const signupData = {
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-    };
+    // Create multipart/form-data
+    const signupData = new FormData();
+
+    signupData.append("name", formData.name);
+    signupData.append("email", formData.email);
+    signupData.append("password", formData.password);
+
+    // Only append image if one is selected
+    if (formData.image) {
+      signupData.append("profile-img", formData.image);
+    }
 
     try {
       await signUp(signupData);
@@ -52,28 +60,29 @@ function Signup() {
         },
       });
     } catch (error) {
-      console.error(error.message);
+      console.error(error);
+
+      setWarning(error.response?.data?.message || "Something went wrong.");
     }
   }
 
   return (
-    <>
-      <main className="Signup">
-        <section className="creaeAccount">
-          <UsersRound className="signupUserIcon" />
-          <h1>Create Account</h1>
-          <p>Join our campus community and get started</p>
-        </section>
-        <SignupForm
-          warning={warning}
-          setWarning={setWarning}
-          formData={formData}
-          setFormData={setFormData}
-          handleChange={handleChange}
-          handleSubmit={handleSubmit}
-        />
-      </main>
-    </>
+    <main className="Signup">
+      <section className="creaeAccount">
+        <UsersRound className="signupUserIcon" />
+        <h1>Create Account</h1>
+        <p>Join our campus community and get started</p>
+      </section>
+
+      <SignupForm
+        warning={warning}
+        setWarning={setWarning}
+        formData={formData}
+        setFormData={setFormData}
+        handleChange={handleChange}
+        handleSubmit={handleSubmit}
+      />
+    </main>
   );
 }
 
