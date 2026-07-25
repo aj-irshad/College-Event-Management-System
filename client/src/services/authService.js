@@ -19,12 +19,12 @@ const logout = async () => {
   return await apiRequest.post("/auth/logout");
 };
 
-const getCurrentUser = async () => {
-  return apiRequest.get("/auth/me");
+const getUserProfile = async () => {
+  return await apiRequest.get("/auth/me");
 };
 
 const verifyOTP = async (otpData) => {
   return await apiRequest.post("/auth/verify-otp", otpData);
 };
 
-export { login, signUp, resetPassword, logout, getCurrentUser, verifyOTP };
+export { login, signUp, resetPassword, logout, getUserProfile, verifyOTP };

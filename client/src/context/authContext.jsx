@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import { getCurrentUser } from "../services/authService";
+import { getUserProfile } from "../services/authService";
 
 const authContext = createContext({});
 
@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkLogin = async () => {
       try {
-        const response = await getCurrentUser();
+        const response = await getUserProfile();
         setUser(response.data);
       } catch (err) {
         console.error(err.message);
