@@ -94,7 +94,7 @@ const userLogin = async (req, res) => {
 
 const userSignUp = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, contact, department } = req.body;
 
     // Validate required fields
     if (!name || !email || !password) {
@@ -126,6 +126,8 @@ const userSignUp = async (req, res) => {
       name,
       email,
       password: await createHashPassword(password),
+      contact,
+      department,
       profileImage: req.file ? req.file.filename : null,
       otp,
       otpExpires,
@@ -178,6 +180,8 @@ const verifyOTP = async (req, res) => {
       name: pendingUser.name,
       email: pendingUser.email,
       password: pendingUser.password,
+      contact: pendingUser.contact,
+      department: pendingUser.department,
       profileImage: pendingUser.profileImage,
     };
 

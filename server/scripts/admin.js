@@ -8,6 +8,7 @@ const ADMIN = {
   name: "Admin",
   email: process.env.ADMIN_EMAIL,
   password: process.env.ADMIN_PASSWORD,
+  contact: process.env.ADMIN_CONTACT,
 };
 
 const makeAdmin = async () => {
@@ -22,9 +23,9 @@ const makeAdmin = async () => {
 
     let user = await Users.findOne({ email: ADMIN.email });
 
-    if (user) {
-      const hashedPassword = await bcrypt.hash(ADMIN.password, 10);
+    const hashedPassword = await bcrypt.hash(ADMIN.password, 10);
 
+    if (user) {
       user.name = ADMIN.name;
       user.role = "admin";
       user.password = hashedPassword;
@@ -33,14 +34,14 @@ const makeAdmin = async () => {
 
       console.log(`${user.email} has been promoted to admin.`);
     } else {
-      const hashedPassword = await bcrypt.hash(ADMIN.password, 10);
-
       user = await Users.create({
         name: ADMIN.name,
         email: ADMIN.email,
         password: hashedPassword,
         role: "admin",
+        contact: 9864707102,
         profileImage: "../uploads/admin.jpeg",
+        department: "None",
       });
 
       console.log(`New admin account created: ${user.email}`);

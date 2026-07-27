@@ -47,6 +47,8 @@ const SignupForm = ({ warning, formData, handleChange, handleSubmit }) => {
           value={formData.password}
           onChange={handleChange}
           placeholder="Create a password"
+          pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=\[\]{};':&quot;\\|,.<>\/~`])[A-Za-z\d@$!%*?&^#()_+\-=\[\]{};':&quot;\\|,.<>\/~`]{8,16}$"
+          title="Password must be 8-16 characters and include at least one uppercase letter, one lowercase letter, one number, and one special character."
           required
         />
       </section>
@@ -65,11 +67,41 @@ const SignupForm = ({ warning, formData, handleChange, handleSubmit }) => {
       </section>
 
       <section className="form-group">
+        <label htmlFor="contact">Phone:</label>
+        <input
+          type="tel"
+          id="contact"
+          name="contact"
+          value={formData.contact}
+          onChange={handleChange}
+          placeholder="98XXXXXX"
+          pattern="(98|97)\d{8}"
+          title="Enter a valid Nepal phone number starting with 98 or 97."
+          required
+        />
+      </section>
+
+      <section className="form-group">
+        <label htmlFor="userDepartment">Department</label>
+        <select
+          name="department"
+          id="userDepartment"
+          value={formData.department}
+          onChange={handleChange}
+        >
+          <option value="B. Tech in CS & AI">B. Tech in CS & AI</option>
+          <option value="B. Tech in IT">B. Tech in IT</option>
+          <option value="Civil Engineering">Civil Engineering</option>
+          <option value="IT Engineering">IT Engineering</option>
+        </select>
+      </section>
+
+      <section className="form-group">
         <label htmlFor="profile-img">Profile Image</label>
         <input
           type="file"
           id="profile-img"
-          name="image"
+          name="profile-img"
           accept="image/*"
           onChange={handleChange}
         />

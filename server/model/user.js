@@ -21,6 +21,18 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
+    contact: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    department: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     role: {
       type: String,
       enum: ["user", "admin"],
@@ -29,7 +41,7 @@ const userSchema = new mongoose.Schema(
 
     profileImage: {
       type: String,
-      required: true,
+      default: "",
     },
   },
   {

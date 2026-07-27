@@ -1,19 +1,54 @@
 import mongoose from "mongoose";
+
 const pendingUserSchema = new mongoose.Schema(
   {
-    name: String,
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     email: {
       type: String,
+      required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
     },
-    password: String,
-    profileImage: String,
 
-    otp: String,
+    password: {
+      type: String,
+      required: true,
+    },
 
-    otpExpires: Date,
+    contact: {
+      type: String,
+      required: true,
+    },
+
+    department: {
+      type: String,
+      required: true,
+    },
+
+    profileImage: {
+      type: String,
+      default: "",
+    },
+
+    otp: {
+      type: String,
+      required: true,
+    },
+
+    otpExpires: {
+      type: Date,
+      required: true,
+    },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  },
 );
 
 const PendingUser = mongoose.model("PendingUser", pendingUserSchema);
