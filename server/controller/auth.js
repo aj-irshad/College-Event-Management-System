@@ -39,7 +39,7 @@ const getCurrentUser = async (req, res) => {
     res.status(200).json(user);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ msg: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 

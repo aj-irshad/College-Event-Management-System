@@ -3,6 +3,11 @@ import { useState, useEffect } from "react";
 
 import { getUserProfile } from "../services/authService";
 
+import Header from "./components/Header";
+import Aside from "./components/Aside";
+import Main from "./components/Main";
+import "./styles/home.css";
+
 const Home = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -14,7 +19,7 @@ const Home = () => {
         console.log(response.data);
         setUser(response.data);
       } catch (error) {
-        console.error(error.response?.data?.msg);
+        console.error(error.response?.data?.message);
         if (error.response?.status === 401) {
           navigate("/login");
         }
@@ -23,10 +28,18 @@ const Home = () => {
     checkLogin();
   }, [navigate]);
 
+  if (!user) {
+    return <h1>Loading...</h1>;
+  }
+
+  const isAdmin = user.role === "admin" ? true : false;
+  // const isAdmin = true;
+
   return (
-    <div>
-      <h1>Home</h1>
-      {user && user.role === "admin" && <p>Hello, Admin</p>}
+    <div id="home">
+      <Header user={user} />
+      <Aside />
+      <Main isAdmin={isAdmin} user={user} />
     </div>
   );
 };
