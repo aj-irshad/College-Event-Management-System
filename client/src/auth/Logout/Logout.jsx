@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "../../services/authService";
 import { LogOut } from "lucide-react";
 import "./logout.css";
+import "../auth.css";
 
 const Logout = () => {
   const navigate = useNavigate();

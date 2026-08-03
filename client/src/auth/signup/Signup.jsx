@@ -4,6 +4,7 @@ import { signUp } from "../../services/authService";
 import { UsersRound } from "lucide-react";
 import SignupForm from "./SignupForm";
 import "./signup.css";
+import "../auth.css";
 
 function Signup() {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ function Signup() {
     }
 
     const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=\[\]{};':"\\|,.<>/~`])[A-Za-z\d@$!%*?&^#()_+\-=\[\]{};':"\\|,.<>/~`]{8,16}$/;
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=[\]{};':"\\|,.<>/?~`])[A-Za-z\d@$!%*?&^#()_+\-=[\]{};':"\\|,.<>/?~`]{8,16}$/;
 
     if (!passwordRegex.test(formData.password)) {
       setWarning(

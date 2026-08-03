@@ -1,7 +1,3 @@
-/* ==========================================
-   Split-Screen Side-by-Side Signup Styling
-   ========================================== */
-
 /* Full page wrapper */
 .SignupPage {
   min-height: 100vh;
@@ -201,10 +197,6 @@
 .signup-form .loginLink a:hover {
   text-decoration: underline;
 }
-
-/* ==========================================
-   Mobile Responsive Adjustments
-   ========================================== */
 
 @media (max-width: 768px) {
   .SignupMain {

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import ResetBanner from "./ResetBanner";
 import ResetForm from "./ResetForm";
 import "./reset.css";
+import "../auth.css";
 
 const Resetpassword = () => {
   const navigate = useNavigate();
