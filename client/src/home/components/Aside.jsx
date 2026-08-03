@@ -1,16 +1,18 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import "../styles/aside.css";
 
-const Aside = () => {
+const Aside = ({ isAdmin }) => {
   return (
     <aside>
-      <Link to="/">Home</Link>
-      <Link to="/upcoming-events">Upcoming Events</Link>
-      <Link to="/ongoing-events">Ongoing Events</Link>
-      <Link to="/blogs">Blog</Link>
-      <Link to="/feedback">Feedback</Link>
-      <Link to="/polls">Polls</Link>
-      <Link to="/logout">Logout</Link>
+      <NavLink to="/" end>
+        {isAdmin ? "Dashboard" : "Home"}
+      </NavLink>
+      <NavLink to="/upcoming-events">Upcoming Events</NavLink>
+      <NavLink to="/ongoing-events">Ongoing Events</NavLink>
+      <NavLink to="/blogs">Blogs</NavLink>
+      <NavLink to="/feedback">Feedback</NavLink>
+      <NavLink to="/polls">Polls</NavLink>
+      <NavLink to="/logout">Logout</NavLink>
     </aside>
   );
 };

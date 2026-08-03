@@ -23,11 +23,15 @@ export const AuthProvider = ({ children }) => {
     checkLogin();
   }, []);
 
+  // Compute isAdmin whenever user object changes
+  const isAdmin = user?.role === "admin";
+
   return (
     <authContext.Provider
       value={{
         user,
         setUser,
+        isAdmin,
         loading,
       }}
     >

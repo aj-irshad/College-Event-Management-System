@@ -1,8 +1,8 @@
-const Dashboard = ({ isAdmin }) => {
+const Dashboard = () => {
   return (
     <div>
-      <h1>Dashboard</h1>
-      {isAdmin === "Admin" ? <p>Hello, Admin</p> : <p>Hello, User</p>}
+      <h1>Admin Dashboard</h1>
+      <p>Hello, Admin</p>
     </div>
   );
 };

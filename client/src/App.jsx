@@ -16,9 +16,10 @@ import OngoingEvents from "./home/components/OngoingEvents";
 import Feedback from "./home/components/Feedback";
 import Polls from "./home/components/Polls";
 import Dashboard from "./home/components/Dashboard";
+import UserHome from "./home/components/UserHome";
 
 const App = () => {
-  const { user, loading } = useContext(authContext);
+  const { user, loading, isAdmin } = useContext(authContext);
 
   if (loading) return <h2>Loading...</h2>;
 
@@ -40,8 +41,13 @@ const App = () => {
         path="/"
         element={user ? <Home /> : <Navigate to="/login" replace />}
       >
-        <Route index element={<Dashboard />} />
-        <Route element={<UpcomingEvents />} />
+        <Route
+          index
+          path="/"
+          element={isAdmin ? <Dashboard /> : <UserHome />}
+        />
+
+        {/* <Route element={<UpcomingEvents />} /> */}
         <Route path="upcoming-events" element={<UpcomingEvents />} />
         <Route path="ongoing-events" element={<OngoingEvents />} />
         <Route path="blogs" element={<Blogs />} />
