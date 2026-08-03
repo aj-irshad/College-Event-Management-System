@@ -33,7 +33,6 @@ const Home = () => {
   }
 
   const isAdmin = user.role === "admin" ? true : false;
-  // const isAdmin = true;
 
   return (
     <div id="home">

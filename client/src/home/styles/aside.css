@@ -1,0 +1,75 @@
+#home aside {
+  grid-area: aside;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 1.5rem 1rem;
+  background-color: #0f172a; /* Dark sleek slate theme */
+  border-right: 1px solid #1e293b;
+  overflow-y: auto;
+}
+
+/* Sidebar Navigation Links */
+#home aside a {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #94a3b8;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Hover and Focus States */
+#home aside a:hover {
+  background-color: #1e293b;
+  color: #ffffff;
+  transform: translateX(4px);
+}
+
+/* Active Link (for future NavLink usage) */
+#home aside a.active {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+/* Push 'Logout' to the bottom */
+#home aside a[href="/logout"] {
+  margin-top: auto;
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+#home aside a[href="/logout"]:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  transform: none;
+}
+
+/* Custom Scrollbar for Aside */
+#home aside::-webkit-scrollbar {
+  width: 5px;
+}
+
+#home aside::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  #home aside {
+    padding: 1rem 0.5rem;
+  }
+
+  #home aside a {
+    font-size: 0.85rem;
+    padding: 0.6rem 0.5rem;
+    justify-content: center;
+    text-align: center;
+  }
+}

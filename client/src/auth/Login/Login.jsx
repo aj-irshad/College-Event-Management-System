@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { GraduationCap, Mail, LockKeyhole } from "lucide-react";
 
+import "../auth.css";
 import "./login.css";
 import LoginForm from "./LoginForm";
 import { login } from "../../services/authService";

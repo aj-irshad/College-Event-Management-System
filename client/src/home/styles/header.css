@@ -1,58 +1,119 @@
-#home header {
-  grid-area: header;
-  height: 100%;
-  border: 1px solid red;
-  padding: 5px 15px;
+/* ==========================================
+   Header Component Styles
+   ========================================== */
 
+.header {
+  grid-area: header;
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0 1.5rem;
+  background-color: #ffffff;
 }
 
-#home header .searchBar {
-  width: 450px;
+/* --- Search Bar Section --- */
+.header .searchBar {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
   display: flex;
   align-items: center;
-  padding: 8px;
-
-  border: 1px solid rgb(255, 0, 0);
-  background-color: rgb(219, 217, 217);
-
-  border-radius: 10px;
-  position: relative;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 4px 12px;
+  transition: all 0.2s ease-in-out;
 }
 
-#home header .searchInput {
-  padding: 8px;
-  font-size: clamp(18px, 4vw, 24px);
-  width: 90%;
+/* Subtle focus ring on input container */
+.header .searchBar:focus-within {
+  background-color: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.header .searchInput {
+  width: 100%;
+  padding: 8px 36px 8px 8px;
+  font-size: 0.95rem;
+  color: #0f172a;
   border: none;
-  background-color: transparent;
-}
-
-#home header .searchIcon {
-  width: 40px;
-  height: auto;
-  stroke: rgb(116, 115, 115);
-  position: absolute;
-  right: 20px;
-}
-
-#home header .searchInput:active,
-#home header .searchInput:focus {
-  /* border: none; */
+  background: transparent;
   outline: none;
 }
 
-#home header .user {
-  display: flex;
+.header .searchInput::placeholder {
+  color: #94a3b8;
 }
 
-.user img {
-  width: 50px;
-  height: 50px;
-  border: none;
+.header .searchIcon {
+  position: absolute;
+  right: 14px;
+  width: 20px;
+  height: 20px;
+  color: #64748b;
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+
+.header .searchBar:focus-within .searchIcon {
+  color: #3b82f6;
+}
+
+/* --- User Profile & Notification Section --- */
+.header .user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Notification Bell Icon */
+.header .user svg {
+  width: 22px;
+  height: 22px;
+  color: #64748b;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.header .user svg:hover {
+  color: #1e293b;
+  transform: scale(1.05);
+}
+
+/* User Avatar */
+.header .userImage {
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  box-shadow: 5px 2px 8px rgb(121, 119, 119);
-  margin: 0 8px;
+  object-fit: cover; /* Prevents squishing/stretching */
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Profile Text Info */
+.header .profile {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.header .userName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header .department {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 2px 0 0 0;
+  line-height: 1;
+  text-transform: capitalize;
 }
