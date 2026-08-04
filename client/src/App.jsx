@@ -17,6 +17,7 @@ import Feedback from "./home/components/Feedback";
 import Polls from "./home/components/Polls";
 import Dashboard from "./home/components/Dashboard";
 import UserHome from "./home/components/UserHome";
+import CreateEvent from "./home/components/CreateEvent";
 
 const App = () => {
   const { user, loading, isAdmin } = useContext(authContext);
@@ -36,18 +37,26 @@ const App = () => {
       />
       <Route path="/verify-otp" element={<VerifyOTP />} />
 
-      {/* Protected Routes */}
+      {/* Protected Main Layout & Sub-routes */}
       <Route
         path="/"
         element={user ? <Home /> : <Navigate to="/login" replace />}
       >
+        {/* Dynamic Default Dashboard based on Role */}
         <Route
           index
-          path="/"
-          element={isAdmin ? <Dashboard /> : <UserHome />}
+          element={
+            isAdmin ? <Dashboard user={user} /> : <UserHome user={user} />
+          }
         />
 
-        {/* <Route element={<UpcomingEvents />} /> */}
+        {/* Admin-Only Route */}
+        <Route
+          path="create-event"
+          element={isAdmin ? <CreateEvent /> : <Navigate to="/" replace />}
+        />
+
+        {/* Shared Nested Navigation Routes */}
         <Route path="upcoming-events" element={<UpcomingEvents />} />
         <Route path="ongoing-events" element={<OngoingEvents />} />
         <Route path="blogs" element={<Blogs />} />
@@ -55,15 +64,18 @@ const App = () => {
         <Route path="polls" element={<Polls />} />
       </Route>
 
+      {/* Account Settings & Auth Actions */}
       <Route
         path="/reset"
         element={user ? <Resetpassword /> : <Navigate to="/login" replace />}
       />
-
       <Route
         path="/logout"
         element={user ? <Logout /> : <Navigate to="/login" replace />}
       />
+
+      {/* Catch-all Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
