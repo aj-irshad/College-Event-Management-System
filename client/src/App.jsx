@@ -3,30 +3,38 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import authContext from "./context/authContext";
 
-import Home from "./home/Home";
-import Login from "./auth/Login/Login";
-import Signup from "./auth/signup/Signup";
-import Resetpassword from "./auth/reset/Resetpassword";
-import Logout from "./auth/Logout/Logout";
-import VerifyOTP from "./auth/VerifyOTP/VerifyOTP";
+// Auth pages
+import Login from "./features/auth/pages/Login";
+import Signup from "./features/auth/pages/Signup";
+import Resetpassword from "./features/auth/pages/ResetForm";
+import VerifyOTP from "./features/auth/pages/VerifyOTP";
 
+// Main layout
+import Home from "./home/Home";
+
+// User and shared pages
+import UserHome from "./home/components/UserHome";
 import Blogs from "./home/components/Blogs";
 import UpcomingEvents from "./home/components/UpcomingEvents";
 import OngoingEvents from "./home/components/OngoingEvents";
 import Feedback from "./home/components/Feedback";
 import Polls from "./home/components/Polls";
-import Dashboard from "./home/components/Dashboard";
-import UserHome from "./home/components/UserHome";
-import CreateEvent from "./home/components/CreateEvent";
+
+// Admin pages
+import Dashboard from "./features/admin/pages/Dashboard";
+import CreateEvent from "./features/admin/pages/events/CreateEvent";
 
 const App = () => {
   const { user, loading, isAdmin } = useContext(authContext);
 
-  if (loading) return <h2>Loading...</h2>;
+  // Wait for authentication state
+  if (loading) {
+    return "Loading...";
+  }
 
   return (
     <Routes>
-      {/* Public Routes */}
+      // Public auth routes
       <Route
         path="/login"
         element={user ? <Navigate to="/" replace /> : <Login />}
@@ -35,46 +43,40 @@ const App = () => {
         path="/signup"
         element={user ? <Navigate to="/" replace /> : <Signup />}
       />
-      <Route path="/verify-otp" element={<VerifyOTP />} />
-
-      {/* Protected Main Layout & Sub-routes */}
+      <Route
+        path="/verify-otp"
+        element={user ? <Navigate to="/" replace /> : <VerifyOTP />}
+      />
+      // Protected main layout
       <Route
         path="/"
         element={user ? <Home /> : <Navigate to="/login" replace />}
       >
-        {/* Dynamic Default Dashboard based on Role */}
+        // Default dashboard
         <Route
           index
           element={
             isAdmin ? <Dashboard user={user} /> : <UserHome user={user} />
           }
         />
-
-        {/* Admin-Only Route */}
+        // Admin only
         <Route
           path="create-event"
           element={isAdmin ? <CreateEvent /> : <Navigate to="/" replace />}
         />
-
-        {/* Shared Nested Navigation Routes */}
+        // Shared routes
         <Route path="upcoming-events" element={<UpcomingEvents />} />
         <Route path="ongoing-events" element={<OngoingEvents />} />
         <Route path="blogs" element={<Blogs />} />
         <Route path="feedback" element={<Feedback />} />
         <Route path="polls" element={<Polls />} />
       </Route>
-
-      {/* Account Settings & Auth Actions */}
+      // Account
       <Route
         path="/reset"
         element={user ? <Resetpassword /> : <Navigate to="/login" replace />}
       />
-      <Route
-        path="/logout"
-        element={user ? <Logout /> : <Navigate to="/login" replace />}
-      />
-
-      {/* Catch-all Fallback */}
+      // Fallback
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -10,6 +10,7 @@ dotenv.config();
 import connection from "./connection.js";
 import authRouter from "./routes/auth.js";
 import userRouter from "./routes/user.js";
+import eventRouter from "./routes/events.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -40,6 +41,7 @@ app.use(express.static(path.join(__dirname, "../client/dist")));
 
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
+app.use("/events", eventRouter);
 
 app.get("/{*splat}", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist/index.html"));

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { verifyOTP } from "../../services/authService";
-import VerifyOTPForm from "./VerifyOTPForm";
+import { verifyOTP } from "../../../services/authService";
+import VerifyOTPForm from "../components/VerifyOTPForm";
 import { MailCheck } from "lucide-react";
-import "./verifyOTP.css";
+import "../styles/VerifyOTP.css";
 
 function VerifyOTP() {
   const navigate = useNavigate();

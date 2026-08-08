@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { GraduationCap, Mail, LockKeyhole } from "lucide-react";
 
 import "../auth.css";
-import "./login.css";
-import LoginForm from "./LoginForm";
-import { login } from "../../services/authService";
-import authContext from "../../context/authContext";
+import "../styles/login.css";
+import LoginForm from "../components/LoginForm";
+import { login } from "../../../services/authService";
+import authContext from "../../../context/authContext";
 
 const Login = () => {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { resetPassword } from "../../services/authService";
+import { resetPassword } from "../../../services/authService";
 import { useNavigate } from "react-router-dom";
 import ResetBanner from "./ResetBanner";
 import ResetForm from "./ResetForm";

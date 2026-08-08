@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signUp } from "../../services/authService";
+import { signUp } from "../../../services/authService";
 import { UsersRound } from "lucide-react";
-import SignupForm from "./SignupForm";
-import "./signup.css";
+import SignupForm from "../components/SignupForm";
+import "../styles/signup.css";
 import "../auth.css";
 
 function Signup() {
