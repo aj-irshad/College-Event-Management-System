@@ -25,8 +25,6 @@ async function sendOTP(email, otp) {
         </div>
       `,
     });
-
-    console.log("Email sent:", info.messageId);
     return info;
   } catch (err) {
     console.error("Error sending email:", err.message);

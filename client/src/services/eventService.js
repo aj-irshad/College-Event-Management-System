@@ -4,4 +4,8 @@ const createEvent = async (eventData) => {
   return apiRequest.post("/events/new-event", eventData);
 };
 
-export { createEvent };
+const getEvents = async () => {
+  return apiRequest.get("/events/get-events");
+};
+
+export { createEvent, getEvents };

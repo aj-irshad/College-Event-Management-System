@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  Flame,
-  Clock,
-  MapPin,
-  UsersRound,
-  ArrowUpRight,
-  Radio,
-  Search,
-} from "lucide-react";
+import { Flame, Clock, MapPin, UsersRound, Radio, Search } from "lucide-react";
 // import "../styles/ongoingEvents.css";
 
 // Dummy data for currently active events

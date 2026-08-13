@@ -9,7 +9,7 @@ import {
 
 import CreateEventBtn from "../components/CreateEventBtn";
 import EventCards from "../components/EventCards";
-import "../styles/dashboard.css";
+import "../styles/adminDashboard.css";
 import RecentEvent from "../components/RecentEvent";
 import RecentActivity from "../components/RecentActivity";
 
@@ -68,7 +68,7 @@ const recentEvents = [
   },
 ];
 
-const Dashboard = () => {
+const AdminDashboard = () => {
   return (
     <div className="dashboard-wrapper">
       {/* Top Header */}
@@ -96,8 +96,8 @@ const Dashboard = () => {
       </section>
 
       <div className="dashboard-content-grid">
-        <RecentEvent events={recentEvents} rightArrow={ArrowUpRight} />
-
+        <RecentEvent recentEvents={recentEvents} ArrowUpRight={ArrowUpRight} />
+        {/* <RecentEvent ArrowUpRight={ArrowUpRight} /> */}
         {/* Right Column: Recent Activity Feed */}
         <RecentActivity CheckCircle2={CheckCircle2} />
       </div>
@@ -105,4 +105,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default AdminDashboard;

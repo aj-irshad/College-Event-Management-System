@@ -1,18 +1,15 @@
 import apiRequest from "../api/apiRequest";
 
 const login = async (loginData) => {
-  const response = await apiRequest.post("/auth/login", loginData);
-  return response;
+  return await apiRequest.post("/auth/login", loginData);
 };
 
 const signUp = async (signupData) => {
-  const response = await apiRequest.post("/auth/signup", signupData);
-  return response;
+  return await apiRequest.post("/auth/signup", signupData);
 };
 
 const resetPassword = async (resetData) => {
-  const response = await apiRequest.patch("/auth/reset", resetData);
-  return response;
+  return await apiRequest.patch("/auth/reset", resetData);
 };
 
 const logout = async () => {
