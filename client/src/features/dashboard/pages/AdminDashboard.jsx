@@ -1,106 +1,112 @@
 import {
-  Calendar,
+  CalendarClock,
   Flame,
-  UsersRound,
-  Star,
-  ArrowUpRight,
   CheckCircle2,
+  Newspaper,
+  BarChart3,
+  MessageSquare,
+  CalendarDays,
+  Plus,
 } from "lucide-react";
 
-import CreateEventBtn from "../components/CreateEventBtn";
-import EventCards from "../components/EventCards";
+import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
+
+import EventBtn from "../../events/components/EventBtn";
+import eventContext from "../../../context/EventContext.jsx";
+
 import "../styles/adminDashboard.css";
-import RecentEvent from "../components/RecentEvent";
-import RecentActivity from "../components/RecentActivity";
-
-const stats = [
-  {
-    id: "upcoming",
-    label: "Upcoming Events",
-    count: 5,
-    Icon: Calendar,
-    colorClass: "card-upcoming",
-  },
-  {
-    id: "ongoing",
-    label: "Ongoing Events",
-    count: 2,
-    Icon: Flame,
-    colorClass: "card-ongoing",
-  },
-  {
-    id: "users",
-    label: "Total Users",
-    count: 50,
-    Icon: UsersRound,
-    colorClass: "card-users",
-  },
-  {
-    id: "feedback",
-    label: "Total Feedback",
-    count: 15,
-    Icon: Star,
-    colorClass: "card-feedback",
-  },
-];
-
-const recentEvents = [
-  {
-    id: 1,
-    name: "Tech Innovators Summit",
-    date: "Aug 12, 2026",
-    attendees: 120,
-    status: "Upcoming",
-  },
-  {
-    id: 2,
-    name: "Design Workshop 2026",
-    date: "Aug 06, 2026",
-    attendees: 45,
-    status: "Ongoing",
-  },
-  {
-    id: 3,
-    name: "AI & Future Dev Conference",
-    date: "Aug 20, 2026",
-    attendees: 200,
-    status: "Upcoming",
-  },
-];
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+
+  const { events, upcomingEvents, ongoingEvents, completedEvents } =
+    useContext(eventContext);
+
+  const stats = [
+    {
+      id: "upcoming",
+      label: "Upcoming Events",
+      count: upcomingEvents.length,
+      Icon: CalendarClock,
+      colorClass: "card-upcoming",
+    },
+    {
+      id: "ongoing",
+      label: "Ongoing Events",
+      count: ongoingEvents.length,
+      Icon: Flame,
+      colorClass: "card-ongoing",
+    },
+    {
+      id: "completed",
+      label: "Completed Events",
+      count: completedEvents.length,
+      Icon: CheckCircle2,
+      colorClass: "card-completed",
+    },
+    {
+      id: "blogs",
+      label: "Total Blogs",
+      count: 0,
+      Icon: Newspaper,
+      colorClass: "card-blogs",
+    },
+    {
+      id: "polls",
+      label: "Total Polls",
+      count: 0,
+      Icon: BarChart3,
+      colorClass: "card-polls",
+    },
+    {
+      id: "feedback",
+      label: "Total Feedback",
+      count: 0,
+      Icon: MessageSquare,
+      colorClass: "card-feedback",
+    },
+    {
+      id: "events",
+      label: "Total Events",
+      count: events.length,
+      Icon: CalendarDays,
+      colorClass: "card-total",
+    },
+  ];
+
   return (
     <div className="dashboard-wrapper">
-      {/* Top Header */}
       <header className="dashboard-header">
         <div className="header-text">
           <h1 className="dashboard-title">Dashboard Overview</h1>
+
           <p className="dashboard-subtitle">
             Welcome back! Here's what's happening today.
           </p>
         </div>
-        <CreateEventBtn />
+
+        <EventBtn
+          text="Create Event"
+          onClick={() => navigate("/create-event")}
+          icon={<Plus size={18} />}
+        />
       </header>
 
-      {/* Top Metric Cards */}
-      <section className="cards-grid">
+      <section className="stats-grid">
         {stats.map(({ id, label, count, Icon, colorClass }) => (
-          <EventCards
-            id={id}
-            label={label}
-            Icon={Icon}
-            colorClass={colorClass}
-            count={count}
-          />
+          <article key={id} className={`stat-card ${colorClass}`}>
+            <div className="stat-icon">
+              <Icon size={22} strokeWidth={2} />
+            </div>
+
+            <div className="stat-info">
+              <p>{label}</p>
+              <h2>{count}</h2>
+            </div>
+          </article>
         ))}
       </section>
-
-      <div className="dashboard-content-grid">
-        <RecentEvent recentEvents={recentEvents} ArrowUpRight={ArrowUpRight} />
-        {/* <RecentEvent ArrowUpRight={ArrowUpRight} /> */}
-        {/* Right Column: Recent Activity Feed */}
-        <RecentActivity CheckCircle2={CheckCircle2} />
-      </div>
     </div>
   );
 };

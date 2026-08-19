@@ -8,4 +8,12 @@ const getEvents = async () => {
   return apiRequest.get("/events/get-events");
 };
 
-export { createEvent, getEvents };
+const deleteEvent = async (eventId) => {
+  return apiRequest.delete(`/events/delete-event/${eventId}`);
+};
+
+const updateEvent = async (id, eventData) => {
+  return apiRequest.patch(`/events/edit-event/${id}`, eventData);
+};
+
+export { createEvent, getEvents, deleteEvent, updateEvent };

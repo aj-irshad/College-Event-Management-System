@@ -10,6 +10,7 @@ const Aside = ({ isAdmin }) => {
       </NavLink>
       <NavLink to="/upcoming-events">Upcoming Events</NavLink>
       <NavLink to="/ongoing-events">Ongoing Events</NavLink>
+      <NavLink to="/completed-events">Completed Events</NavLink>
       <NavLink to="/blogs">Blogs</NavLink>
       <NavLink to="/feedback">Feedback</NavLink>
       <NavLink to="/polls">Polls</NavLink>

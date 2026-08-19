@@ -1,368 +1,214 @@
-/* ==========================================================================
-   CSS Variables & Theme Tokens
-   ========================================================================== */
-:root {
-  /* Surface & Background Colors */
-  --bg-page: #f8fafc;
-  --bg-card: #ffffff;
-  --bg-hover: #f1f5f9;
-  --border-color: #e2e8f0;
-
-  /* Typography Colors */
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --text-subtle: #94a3b8;
-
-  /* Accent Color Variants */
-  --blue-bg: #eff6ff;
-  --blue-text: #2563eb;
-  --blue-hover: #1d4ed8;
-
-  --orange-bg: #fff7ed;
-  --orange-text: #ea580c;
-
-  --emerald-bg: #ecfdf5;
-  --emerald-text: #059669;
-
-  --amber-bg: #fffbeb;
-  --amber-text: #d97706;
-
-  /* Shadows & Radius */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-pill: 9999px;
-
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md:
-    0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-hover:
-    0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-}
-
-/* ==========================================================================
-   Dashboard Container Layout
-   ========================================================================== */
 .dashboard-wrapper {
   width: 100%;
+  max-width: 1380px;
+  margin: 0 auto;
+
   display: flex;
   flex-direction: column;
-  gap: 1.75rem;
-  color: var(--text-main);
+  gap: 2rem;
+
   box-sizing: border-box;
 }
 
-/* ==========================================================================
+/* =========================
    Dashboard Header
-   ========================================================================== */
+========================= */
+
 .dashboard-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+
+  padding-bottom: 1.5rem;
+
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .header-text {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 
 .dashboard-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--text-main);
-  line-height: 1.2;
   margin: 0;
-  letter-spacing: -0.02em;
+
+  color: #0f172a;
+
+  font-size: clamp(1.6rem, 2vw, 2rem);
+  font-weight: 700;
+
+  line-height: 1.2;
 }
 
 .dashboard-subtitle {
-  font-size: 0.9rem;
-  color: var(--text-muted);
   margin: 0;
+
+  color: #64748b;
+
+  font-size: 0.95rem;
 }
 
-/* Primary CTA Button */
-.primary-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background-color: var(--blue-text);
-  color: #ffffff;
-  border: none;
-  padding: 0.625rem 1.25rem;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    transform 0.15s ease,
-    box-shadow 0.2s ease;
-  box-shadow: var(--shadow-sm);
-}
+/* =========================
+   Statistics Grid
+========================= */
 
-.primary-btn:hover {
-  background-color: var(--blue-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-/* ==========================================================================
-   Top Metric Cards Grid
-   ========================================================================== */
-.cards-grid {
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 1.25rem;
+
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 1.5rem;
 }
+
+/* =========================
+   Statistics Card
+========================= */
 
 .stat-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
+  min-height: 165px;
+
+  padding: 1.35rem;
+
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  box-shadow: var(--shadow-sm);
+  flex-direction: column;
+  justify-content: space-between;
+
+  background: #ffffff;
+
+  border: 1px solid #edf1f5;
+  border-radius: 16px;
+
+  box-sizing: border-box;
+
+  box-shadow: 0 5px 20px rgba(15, 23, 42, 0.05);
+
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
+  transform: translateY(-3px);
+
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
 }
 
-.icon-wrapper {
-  padding: 0.75rem;
-  border-radius: var(--radius-sm);
+/* =========================
+   Icon
+========================= */
+
+.stat-icon {
+  width: 46px;
+  height: 46px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+
+  border-radius: 12px;
 }
 
-.stat-content {
+/* =========================
+   Text
+========================= */
+
+.stat-info {
   display: flex;
   flex-direction: column;
-}
-
-.stat-count {
-  font-size: 1.625rem;
-  font-weight: 700;
-  color: var(--text-main);
-  line-height: 1.2;
-}
-
-.stat-label {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  margin: 0.2rem 0 0 0;
-}
-
-/* Color Theming for Metric Cards */
-.card-upcoming .icon-wrapper {
-  background-color: var(--blue-bg);
-  color: var(--blue-text);
-}
-
-.card-ongoing .icon-wrapper {
-  background-color: var(--orange-bg);
-  color: var(--orange-text);
-}
-
-.card-users .icon-wrapper {
-  background-color: var(--emerald-bg);
-  color: var(--emerald-text);
-}
-
-.card-feedback .icon-wrapper {
-  background-color: var(--amber-bg);
-  color: var(--amber-text);
-}
-
-/* ==========================================================================
-   Main Content Layout Grid (Table + Activity)
-   ========================================================================== */
-.dashboard-content-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
-  align-items: start;
-}
-
-.content-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.25rem;
-}
-
-.card-header h2 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-main);
-  margin: 0;
-}
-
-.text-btn {
-  background: none;
-  border: none;
-  color: var(--blue-text);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
   gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--radius-sm);
-  transition: background-color 0.15s ease;
 }
 
-.text-btn:hover {
-  background-color: var(--blue-bg);
-}
-
-/* ==========================================================================
-   Data Table Styling
-   ========================================================================== */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 0.875rem;
-}
-
-.data-table th {
-  color: var(--text-muted);
-  font-weight: 600;
-  padding: 0.75rem 0.5rem;
-  border-bottom: 1px solid var(--border-color);
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.data-table td {
-  padding: 0.875rem 0.5rem;
-  border-bottom: 1px solid var(--border-color);
-  color: var(--text-main);
-}
-
-.data-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.data-table tbody tr:hover {
-  background-color: var(--bg-page);
-}
-
-.font-semibold {
-  font-weight: 600;
-}
-
-/* Status Badges */
-.status-badge {
-  display: inline-block;
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--radius-pill);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.status-badge.upcoming {
-  background-color: var(--blue-bg);
-  color: var(--blue-text);
-}
-
-.status-badge.ongoing {
-  background-color: var(--orange-bg);
-  color: var(--orange-text);
-}
-
-/* ==========================================================================
-   Activity Feed Styling
-   ========================================================================== */
-.activity-list {
-  list-style: none;
-  padding: 0;
+.stat-info p {
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+
+  color: #64748b;
+
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
-.activity-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.875rem;
-}
-
-.activity-icon {
-  flex-shrink: 0;
-  margin-top: 0.15rem;
-}
-
-.activity-title {
-  font-size: 0.875rem;
+.stat-info h2 {
   margin: 0;
-  color: var(--text-main);
-  line-height: 1.4;
+
+  color: #0f172a;
+
+  font-size: 2rem;
+  font-weight: 700;
+
+  line-height: 1;
 }
 
-.activity-time {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  display: block;
-  margin-top: 0.2rem;
+/* =========================
+   Icon Backgrounds
+========================= */
+
+.card-upcoming .stat-icon {
+  background: #eef2ff;
+  color: #4f46e5;
 }
 
-/* Utility Colors for Icons */
-.text-blue {
-  color: var(--blue-text);
+.card-ongoing .stat-icon {
+  background: #fff7ed;
+  color: #ea580c;
 }
 
-.text-green {
-  color: var(--emerald-text);
+.card-completed .stat-icon {
+  background: #ecfdf5;
+  color: #059669;
 }
 
-.text-orange {
-  color: var(--orange-text);
+.card-blogs .stat-icon {
+  background: #f5f3ff;
+  color: #7c3aed;
 }
 
-/* ==========================================================================
-   Responsive Breakpoints
-   ========================================================================== */
-@media (max-width: 900px) {
-  .dashboard-content-grid {
-    grid-template-columns: 1fr;
+.card-polls .stat-icon {
+  background: #ecfeff;
+  color: #0891b2;
+}
+
+.card-feedback .stat-icon {
+  background: #fefce8;
+  color: #ca8a04;
+}
+
+.card-total .stat-icon {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+/* =========================
+   Tablet
+========================= */
+
+@media (max-width: 1000px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* =========================
+   Mobile
+========================= */
 
 @media (max-width: 600px) {
+  .dashboard-wrapper {
+    gap: 1.5rem;
+  }
+
   .dashboard-header {
+    align-items: flex-start;
     flex-direction: column;
-    align-items: stretch;
+    gap: 1rem;
   }
 
-  .primary-btn {
-    justify-content: center;
-  }
-
-  .cards-grid {
+  .stats-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .stat-card {
+    min-height: 140px;
   }
 }

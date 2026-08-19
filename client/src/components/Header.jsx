@@ -2,7 +2,6 @@ import { Search, Bell } from "lucide-react";
 import "../styles/header.css";
 
 const Header = ({ user }) => {
-  console.log(user);
   return (
     <header className="header">
       <form className="searchBar">
@@ -17,7 +16,7 @@ const Header = ({ user }) => {
       <section className="user">
         <Bell />
         <img
-          src={`${import.meta.env.VITE_BASE_URL}/uploads/${user.profileImage}`}
+          src={`${import.meta.env.VITE_BASE_URL}/uploads/user/${user.profileImage}`}
           alt={`${user.name}'s image`}
           className="userImage"
         />

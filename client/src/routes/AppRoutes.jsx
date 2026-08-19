@@ -18,21 +18,25 @@ import Home from "../layout/Home";
 // User
 
 // Admin
-import CreateEvent from "../features/admin/pages/events/CreateEvent";
+import CreateEvent from "../features/events/pages/CreateEvent";
 
 // Dashboard
 import AdminDashboard from "../features/dashboard/pages/AdminDashboard";
 import UserDashboard from "../features/dashboard/pages/UserDashboard";
 
 // Home Components
-import Blogs from "../features/blogs/Blogs";
 import UpcomingEvents from "../features/events/pages/UpcomingEvents";
 import OngoingEvents from "../features/events/pages/OngoingEvents";
+import CompletedEvent from "../features/events/pages/CompletedEvent";
+import EditEvent from "../features/events/pages/EditEvent";
+import Blogs from "../features/blogs/pages/Blogs";
+import EditBlog from "../features/blogs/pages/EditBlog";
 import Feedback from "../features/feedback/Feedback";
 import Polls from "../features/polls/Polls";
 
 // Context
 import authContext from "../context/authContext";
+import PostBlog from "../features/blogs/pages/PostBlog";
 
 const AppRoutes = () => {
   const { user, isAdmin } = useContext(authContext);
@@ -70,6 +74,8 @@ const AppRoutes = () => {
 
           <Route path="ongoing-events" element={<OngoingEvents />} />
 
+          <Route path="completed-events" element={<CompletedEvent />} />
+
           <Route path="blogs" element={<Blogs />} />
 
           <Route path="feedback" element={<Feedback />} />
@@ -80,6 +86,9 @@ const AppRoutes = () => {
 
           <Route element={<AdminRoute />}>
             <Route path="create-event" element={<CreateEvent />} />
+            <Route path="/edit-event/:id" element={<EditEvent />} />
+            <Route path="/post-blog" element={<PostBlog />} />
+            <Route path="/edit-blog/:id" element={<EditBlog />} />
           </Route>
         </Route>
 

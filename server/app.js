@@ -8,9 +8,11 @@ import status from "express-status-monitor";
 dotenv.config();
 
 import connection from "./connection.js";
+import startEventStatusJob from "./controller/eventStatusJob.js";
 import authRouter from "./routes/auth.js";
 import userRouter from "./routes/user.js";
 import eventRouter from "./routes/events.js";
+import blogRouter from "./routes/blog.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,6 +32,9 @@ app.use(cors({ origin: VITE_URL, credentials: true }));
 // DB connection
 connection("eventManagementSystem");
 
+// check and update the status every minute
+// startEventStatusJob();
+
 app.get("/test", (req, res) => {
   res.json({
     message: "hello",
@@ -42,6 +47,7 @@ app.use(express.static(path.join(__dirname, "../client/dist")));
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/events", eventRouter);
+app.use("/blog", blogRouter);
 
 app.get("/{*splat}", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist/index.html"));

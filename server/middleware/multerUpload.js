@@ -2,7 +2,13 @@ import multer from "multer";
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/");
+    if (file.fieldname === "profile-img") {
+      cb(null, "uploads/user");
+    } else if (file.fieldname === "blog-img") {
+      cb(null, "uploads/blog");
+    } else {
+      cb(new Error("Invalid fieldname"));
+    }
   },
   filename: function (req, file, cb) {
     const ext = file.originalname.split(".").pop();
@@ -12,6 +18,6 @@ const storage = multer.diskStorage({
 
 const uploads = multer({ storage });
 
-const uploadProfileImage = (fieldName) => uploads.single(fieldName);
+const uploadImage = (fieldName) => uploads.single(fieldName);
 
-export default uploadProfileImage;
+export default uploadImage;

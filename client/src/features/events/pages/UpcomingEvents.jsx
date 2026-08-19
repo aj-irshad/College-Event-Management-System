@@ -1,17 +1,19 @@
-import CreateEvent from "../../admin/pages/events/CreateEvent";
 import { useContext } from "react";
-import authContext from "../../../context/authContext";
+import eventContext from "../../../context/EventContext.jsx";
+
+import EventsPage from "../components/EventPage.jsx";
+import "../styles/upcomingEvent.css";
+
 const UpcomingEvents = () => {
-  const { isAdmin } = useContext(authContext);
+  const { upcomingEvents } = useContext(eventContext);
+
   return (
     <>
-      <section className="title">
-        <article className="upcoming-events">
-          <p>Upcoming Events</p>
-          <p>Checkout the events coming soon</p>
-        </article>
-        {isAdmin ? <CreateEvent /> : null}
-      </section>
+      <EventsPage
+        events={upcomingEvents}
+        title="Upcoming Events"
+        subtitle="Checkout the events coming soon"
+      />
     </>
   );
 };
