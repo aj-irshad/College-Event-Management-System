@@ -35,12 +35,10 @@ connection("eventManagementSystem");
 // check and update the status every minute
 // startEventStatusJob();
 
-app.get("/test", (req, res) => {
-  res.json({
-    message: "hello",
-  });
+app.post("/blog/test", (req, res) => {
+  console.log("BLOG TEST ROUTE HIT");
+  res.json({ message: "blog route works" });
 });
-
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use(express.static(path.join(__dirname, "../client/dist")));
 

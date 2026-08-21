@@ -1,0 +1,125 @@
+.blog-page {
+  width: 100%;
+  min-height: 100vh;
+  padding: 2rem clamp(1rem, 5vw, 5rem);
+  box-sizing: border-box;
+  color: var(--text-primary, #111827);
+}
+
+/* Back Button */
+.back-to-blogs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 2rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 9px;
+  color: var(--text-primary, #374151);
+  background: var(--card-bg, #ffffff);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.back-to-blogs:hover {
+  transform: translateX(-2px);
+  background: var(--secondary-bg, #f9fafb);
+}
+
+/* Header */
+.blog-page-header {
+  max-width: 900px;
+  margin: 0 auto 2rem;
+}
+
+.blog-page-date {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.8rem;
+  color: var(--primary-color, #6366f1);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.blog-page-header h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  line-height: 1.15;
+  font-weight: 800;
+}
+
+/* Image */
+.blog-page-image-wrapper {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--secondary-bg, #f3f4f6);
+}
+
+.blog-page-image {
+  display: block;
+  width: 100%;
+  max-height: 550px;
+  object-fit: cover;
+}
+
+/* Content */
+.blog-page-content {
+  max-width: 800px;
+  margin: 2.5rem auto;
+  font-size: 1.05rem;
+  line-height: 1.85;
+  color: var(--text-secondary, #4b5563);
+}
+
+.blog-page-content p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* Not Found */
+.blog-not-found {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.blog-not-found h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.8rem;
+}
+
+.blog-not-found p {
+  margin: 0 0 1.5rem;
+  color: var(--text-secondary, #6b7280);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .blog-page {
+    padding: 1.25rem 1rem;
+  }
+
+  .blog-page-header h1 {
+    font-size: 2rem;
+  }
+
+  .blog-page-image-wrapper {
+    border-radius: 10px;
+  }
+
+  .blog-page-content {
+    margin-top: 1.5rem;
+    font-size: 1rem;
+  }
+}

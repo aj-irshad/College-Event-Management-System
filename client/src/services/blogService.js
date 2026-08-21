@@ -11,4 +11,10 @@ const getBlogs = () => {
 const updateBlog = (id, blogData) => {
   return apiRequest.patch(`/blog/update-blog/${id}`, blogData);
 };
-export { createBlog, getBlogs, updateBlog };
+
+const deleteBlog = (blogId) => {
+  return apiRequest.delete("/blog/delete-blog", {
+    data: { blogId },
+  });
+};
+export { createBlog, getBlogs, updateBlog, deleteBlog };

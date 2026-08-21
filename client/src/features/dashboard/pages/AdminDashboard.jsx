@@ -86,11 +86,19 @@ const AdminDashboard = () => {
           </p>
         </div>
 
-        <EventBtn
-          text="Create Event"
-          onClick={() => navigate("/create-event")}
-          icon={<Plus size={18} />}
-        />
+        <div className="dashboard-actions">
+          <EventBtn
+            text="Create Event"
+            onClick={() => navigate("/create-event")}
+            icon={<Plus size={18} />}
+          />
+
+          <EventBtn
+            text="Create Blog"
+            onClick={() => navigate("/post-blog")}
+            icon={<Newspaper size={18} />}
+          />
+        </div>
       </header>
 
       <section className="stats-grid">

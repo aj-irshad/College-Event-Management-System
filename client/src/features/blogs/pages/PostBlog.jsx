@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { createBlog } from "../../../services/blogService";
+import blogContext from "../../../context/blogContext";
 
 import "../style/createBlog.css";
 
@@ -12,6 +13,7 @@ const PostBlog = () => {
   const [eventDate, setEventDate] = useState("");
   const [blogImg, setBlogImg] = useState(null);
 
+  const { setBlogs } = useContext(blogContext);
   const handleBlogSubmit = async (e) => {
     e.preventDefault();
 
@@ -29,6 +31,8 @@ const PostBlog = () => {
       const response = await createBlog(blogData);
 
       alert(response.data.message);
+
+      setBlogs((prevBlogs) => [...prevBlogs, response.data.blog]);
 
       // Optional: reset form after successful submission
       setPostTitle("");
@@ -77,7 +81,6 @@ const PostBlog = () => {
             type="date"
             id="eventDate"
             name="eventDate"
-            required
             value={eventDate}
             onChange={(e) => setEventDate(e.target.value)}
           />
@@ -91,6 +94,7 @@ const PostBlog = () => {
             id="blogImg"
             name="blog-img"
             accept="image/*"
+            required
             onChange={(e) => setBlogImg(e.target.files[0])}
           />
         </section>

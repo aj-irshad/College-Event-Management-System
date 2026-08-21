@@ -1,7 +1,4 @@
-/* 
-   Create Blog
- */
-
+/* Create Blog */
 .create-post-wrapper {
   width: min(100%, 850px);
   margin: 2rem auto;
@@ -13,7 +10,6 @@
 }
 
 /* Form */
-
 .create-post-wrapper form {
   display: flex;
   flex-direction: column;
@@ -21,7 +17,6 @@
 }
 
 /* Form Group */
-
 .postBlog-form-grp {
   display: flex;
   flex-direction: column;
@@ -29,7 +24,6 @@
 }
 
 /* Labels */
-
 .postBlog-form-grp label {
   font-size: 0.95rem;
   font-weight: 600;
@@ -37,23 +31,17 @@
 }
 
 /* Inputs */
-
 .postBlog-form-grp input,
 .postBlog-form-grp textarea {
   width: 100%;
   padding: 0.8rem 0.9rem;
-
   font-family: inherit;
   font-size: 0.95rem;
   color: var(--text-color, #1f2937);
-
   background: var(--input-bg, #f9fafb);
-
   border: 1px solid var(--border-color, #d1d5db);
   border-radius: var(--border-radius-sm, 8px);
-
   outline: none;
-
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
@@ -61,7 +49,6 @@
 }
 
 /* Textarea */
-
 .postBlog-form-grp textarea {
   min-height: 180px;
   resize: vertical;
@@ -69,19 +56,15 @@
 }
 
 /* Focus */
-
 .postBlog-form-grp input:focus,
 .postBlog-form-grp textarea:focus {
   border-color: var(--primary-color, #2563eb);
-
   box-shadow: 0 0 0 3px
     color-mix(in srgb, var(--primary-color, #2563eb) 15%, transparent);
-
   background: var(--card-bg, #ffffff);
 }
 
-/* File input */
-
+/* File Input */
 .postBlog-form-grp input[type="file"] {
   padding: 0.55rem;
   cursor: pointer;
@@ -90,18 +73,13 @@
 .postBlog-form-grp input[type="file"]::file-selector-button {
   margin-right: 0.75rem;
   padding: 0.55rem 0.85rem;
-
   font-family: inherit;
   font-weight: 500;
-
   color: var(--primary-color, #2563eb);
   background: var(--primary-light, #eff6ff);
-
   border: none;
   border-radius: 6px;
-
   cursor: pointer;
-
   transition: background-color 0.2s ease;
 }
 
@@ -111,24 +89,18 @@
 }
 
 /* Submit Button */
-
 .create-post-wrapper button[type="submit"] {
   width: 100%;
   margin-top: 0.5rem;
   padding: 0.85rem 1.25rem;
-
   border: none;
   border-radius: var(--border-radius-sm, 8px);
-
   background: var(--primary-color, #2563eb);
   color: white;
-
   font-family: inherit;
   font-size: 1rem;
   font-weight: 600;
-
   cursor: pointer;
-
   transition:
     transform 0.2s ease,
     background-color 0.2s ease,
@@ -144,10 +116,7 @@
   transform: scale(0.98);
 }
 
-/* 
-   Responsive
- */
-
+/* Responsive */
 @media (max-width: 768px) {
   .create-post-wrapper {
     width: calc(100% - 2rem);

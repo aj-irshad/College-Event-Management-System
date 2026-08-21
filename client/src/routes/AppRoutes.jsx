@@ -30,6 +30,7 @@ import OngoingEvents from "../features/events/pages/OngoingEvents";
 import CompletedEvent from "../features/events/pages/CompletedEvent";
 import EditEvent from "../features/events/pages/EditEvent";
 import Blogs from "../features/blogs/pages/Blogs";
+import BlogPage from "../features/blogs/pages/BlogPage";
 import EditBlog from "../features/blogs/pages/EditBlog";
 import Feedback from "../features/feedback/Feedback";
 import Polls from "../features/polls/Polls";
@@ -77,6 +78,8 @@ const AppRoutes = () => {
           <Route path="completed-events" element={<CompletedEvent />} />
 
           <Route path="blogs" element={<Blogs />} />
+
+          <Route path="blogs/:id" element={<BlogPage />} />
 
           <Route path="feedback" element={<Feedback />} />
 

@@ -4,13 +4,16 @@ const BlogSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      requires: true,
+      required: true,
       trim: true,
     },
     description: {
       type: String,
-      requires: true,
+      required: true,
       trim: true,
+    },
+    eventDate: {
+      type: Date,
     },
     blogImage: {
       type: String,
