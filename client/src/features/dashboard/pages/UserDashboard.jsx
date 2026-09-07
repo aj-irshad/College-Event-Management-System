@@ -11,16 +11,19 @@ import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import eventContext from "../../../context/EventContext";
+import blogContext from "../../../context/blogContext";
+
 import StaticCard from "../components/StaticCard";
+import EventTable from "../components/EventTable";
 
 import "../styles/userDashboard.css";
-import EventTable from "../components/EventTable";
 
 // Upcoming registered events
 
 const UserDashboard = ({ user = { name: "User" } }) => {
   const navigate = useNavigate();
   const { upcomingEvents, ongoingEvents } = useContext(eventContext);
+  const { totalBlogs } = useContext(blogContext);
 
   return (
     <div className="dashboard-wrapper">
@@ -41,28 +44,28 @@ const UserDashboard = ({ user = { name: "User" } }) => {
         {/* Upcoming Events */}
         <StaticCard
           icon={<Calendar size={22} />}
-          count={upcomingEvents}
+          count={upcomingEvents.length}
           cardName="Upcoming Events"
         />
 
         {/* Ongoing Events */}
         <StaticCard
           icon={<Flame size={22} />}
-          count={ongoingEvents}
+          count={ongoingEvents.length}
           cardName="Ongoing Events"
         />
 
         {/* Active Polls */}
         <StaticCard
           icon={<Vote size={22} />}
-          // count={4}
+          count={0}
           cardName="Active Polls"
         />
 
         {/* Saved Blogs */}
         <StaticCard
           icon={<BookOpen size={22} />}
-          //  count={12}
+          count={totalBlogs}
           cardName="Blogs"
         />
       </section>

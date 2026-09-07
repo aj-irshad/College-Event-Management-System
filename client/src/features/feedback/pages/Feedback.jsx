@@ -1,46 +1,11 @@
-import { useEffect, useState } from "react";
-import { fetchFeedback } from "../../../services/feedbackService";
-import FeedbackCard from "../components/FeedbackCard";
-import "../styles/feedback.css";
+import UserFeedback from "../components/UserAdmin";
+import AdminFeedback from "../components/AdminFeedback";
+import { useContext } from "react";
+import authContext from "../../../context/authContext";
+
 const FeedbackPage = () => {
-  const [feedbacks, setFeedbacks] = useState([]);
-
-  useEffect(() => {
-    const getFeedbacks = async () => {
-      try {
-        const response = await fetchFeedback();
-
-        setFeedbacks(response.data.feedback);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    getFeedbacks();
-  }, []);
-
-  // Remove submitted feedback from the page
-  const removeFeedback = (feedbackId) => {
-    setFeedbacks((prevFeedbacks) =>
-      prevFeedbacks.filter((feedback) => feedback._id !== feedbackId),
-    );
-  };
-
-  return (
-    <section className="feedbackPage">
-      <h1>Feedback</h1>
-
-      <div className="feedbackContainer">
-        {feedbacks.map((feedback) => (
-          <FeedbackCard
-            key={feedback._id}
-            feedback={feedback}
-            removeFeedback={removeFeedback}
-          />
-        ))}
-      </div>
-    </section>
-  );
+  const { isAdmin } = useContext(authContext);
+  return isAdmin ? <AdminFeedback /> : <UserFeedback />;
 };
 
 export default FeedbackPage;

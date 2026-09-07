@@ -66,9 +66,13 @@ const EditBlog = () => {
         ),
       );
 
+      alert("Blog successfully updated");
       navigate("/blogs");
     } catch (error) {
-      console.error("Error updating blog:", error);
+      console.error("ERROR:", error);
+      console.error("Error response:", error.response?.data);
+
+      alert(error.response?.data?.message || "Failed to update blog");
     } finally {
       setUpdating(false);
     }

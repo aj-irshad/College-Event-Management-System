@@ -1,4 +1,12 @@
-import { Users, CalendarDays, Clock, MapPin, Trash, Edit } from "lucide-react";
+import {
+  Users,
+  CalendarDays,
+  Clock,
+  MapPin,
+  Trash,
+  Edit,
+  MessageSquarePlus,
+} from "lucide-react";
 import "../styles/eventcard.css";
 import EventBtn from "../components/EventBtn";
 import { useContext } from "react";
@@ -20,9 +28,8 @@ const EventCards = ({ event, isAdmin }) => {
       <section className="eventMain">
         <header className="eventHeader">
           <div className="eventType">
-            <Users size={22} aria-hidden="true" />
+            <Users size={18} aria-hidden="true" />
             <span>{event.event_type}</span>
-            {/* <span>Hello</span> */}
           </div>
         </header>
 
@@ -34,7 +41,7 @@ const EventCards = ({ event, isAdmin }) => {
           <dl className="eventDetails">
             <div className="eventDetail">
               <dt>
-                <CalendarDays size={20} aria-hidden="true" />
+                <CalendarDays size={18} aria-hidden="true" />
                 <span>Date</span>
               </dt>
 
@@ -47,7 +54,7 @@ const EventCards = ({ event, isAdmin }) => {
 
             <div className="eventDetail">
               <dt>
-                <Clock size={20} aria-hidden="true" />
+                <Clock size={18} aria-hidden="true" />
                 <span>Time</span>
               </dt>
 
@@ -62,7 +69,7 @@ const EventCards = ({ event, isAdmin }) => {
 
             <div className="eventDetail">
               <dt>
-                <MapPin size={20} aria-hidden="true" />
+                <MapPin size={18} aria-hidden="true" />
                 <span>Venue</span>
               </dt>
 
@@ -76,37 +83,39 @@ const EventCards = ({ event, isAdmin }) => {
       <footer className="eventFooter">
         <div className="eventStats">
           <div className="eventStat">
-            <Users size={22} aria-hidden="true" />
-
+            <Users size={18} aria-hidden="true" />
             <div>
               <strong>Status</strong>
               <span>{event.status}</span>
             </div>
           </div>
-          {isAdmin && (
-            <EventBtn
-              text={"Delete"}
-              onClick={() => handleDeleteEvent(event._id)}
-              icon={<Trash size={18} />}
-              style={{ backgroundColor: "red" }}
-            />
-          )}
 
           {isAdmin && (
-            <EventBtn
-              text={"Edit"}
-              icon={<Edit size={18} />}
-              onClick={() => navigate(`/edit-event/${event._id}`)}
-            />
-          )}
+            <div className="btnSection">
+              <EventBtn
+                text={"Edit"}
+                icon={<Edit size={16} />}
+                className="eventBtnSecondary"
+                onClick={() => navigate(`/edit-event/${event._id}`)}
+              />
 
-          {isAdmin && event.status === "Completed" && (
-            <button
-              className="feedbackBtn"
-              onClick={() => navigate(`/feedback/${event._id}`)}
-            >
-              Create Feedback
-            </button>
+              <EventBtn
+                text={"Delete"}
+                onClick={() => handleDeleteEvent(event._id)}
+                icon={<Trash size={16} />}
+                className="eventBtnDanger"
+              />
+
+              {event.status === "Completed" && (
+                <button
+                  className="feedbackBtn"
+                  onClick={() => navigate(`/feedback/${event._id}`)}
+                >
+                  <MessageSquarePlus size={16} />
+                  <span>Feedback</span>
+                </button>
+              )}
+            </div>
           )}
         </div>
       </footer>

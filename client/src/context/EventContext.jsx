@@ -54,6 +54,7 @@ export const EventProvider = ({ children }) => {
     <eventContext.Provider
       value={{
         events,
+        setEvents,
         eventLoading,
         ongoingEvents,
         upcomingEvents,

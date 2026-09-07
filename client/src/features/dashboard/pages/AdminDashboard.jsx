@@ -14,6 +14,8 @@ import { useNavigate } from "react-router-dom";
 
 import EventBtn from "../../events/components/EventBtn";
 import eventContext from "../../../context/EventContext.jsx";
+import blogContext from "../../../context/blogContext.jsx";
+import feedbackContext from "../../../context/feedbackContext.jsx";
 
 import "../styles/adminDashboard.css";
 
@@ -22,7 +24,8 @@ const AdminDashboard = () => {
 
   const { events, upcomingEvents, ongoingEvents, completedEvents } =
     useContext(eventContext);
-
+  const { totalBlogs } = useContext(blogContext);
+  const { totalFeedback } = useContext(feedbackContext);
   const stats = [
     {
       id: "upcoming",
@@ -48,7 +51,7 @@ const AdminDashboard = () => {
     {
       id: "blogs",
       label: "Total Blogs",
-      count: 0,
+      count: totalBlogs,
       Icon: Newspaper,
       colorClass: "card-blogs",
     },
@@ -62,7 +65,7 @@ const AdminDashboard = () => {
     {
       id: "feedback",
       label: "Total Feedback",
-      count: 0,
+      count: totalFeedback,
       Icon: MessageSquare,
       colorClass: "card-feedback",
     },

@@ -12,4 +12,8 @@ const submitFeedback = (feedbackData) => {
   return apiRequest.post("feedback/submit-feedback", feedbackData);
 };
 
-export { createFeedback, fetchFeedback, submitFeedback };
+const fetchAllFeedback = () => {
+  return apiRequest.get("/feedback/all-feedback");
+};
+
+export { createFeedback, fetchFeedback, submitFeedback, fetchAllFeedback };

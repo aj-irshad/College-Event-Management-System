@@ -48,7 +48,9 @@ const EditEvent = () => {
     }
   }, [event]);
 
-  const handleEdit = async (id) => {
+  const handleEdit = async (e, id) => {
+    e.preventDefault();
+
     const updatedEvent = {
       title: editTitle,
       description: editDescription,
@@ -83,8 +85,7 @@ const EditEvent = () => {
           <form
             className="editEventForm"
             onSubmit={(e) => {
-              e.preventDefault();
-              handleEdit(event._id);
+              handleEdit(e, event._id);
             }}
           >
             <label htmlFor="eventTitle">Title:</label>
