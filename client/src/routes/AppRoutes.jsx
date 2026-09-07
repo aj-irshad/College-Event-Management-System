@@ -32,12 +32,13 @@ import EditEvent from "../features/events/pages/EditEvent";
 import Blogs from "../features/blogs/pages/Blogs";
 import BlogPage from "../features/blogs/pages/BlogPage";
 import EditBlog from "../features/blogs/pages/EditBlog";
-import Feedback from "../features/feedback/Feedback";
+import Feedback from "../features/feedback/pages/Feedback";
 import Polls from "../features/polls/Polls";
 
 // Context
 import authContext from "../context/authContext";
 import PostBlog from "../features/blogs/pages/PostBlog";
+import CreateFeedback from "../features/feedback/pages/CreateFeedback";
 
 const AppRoutes = () => {
   const { user, isAdmin } = useContext(authContext);
@@ -92,6 +93,7 @@ const AppRoutes = () => {
             <Route path="/edit-event/:id" element={<EditEvent />} />
             <Route path="/post-blog" element={<PostBlog />} />
             <Route path="/edit-blog/:id" element={<EditBlog />} />
+            <Route path="/feedback/:eventId" element={<CreateFeedback />} />
           </Route>
         </Route>
 

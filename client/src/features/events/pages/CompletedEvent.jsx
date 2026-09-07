@@ -1,7 +1,8 @@
 import { useContext } from "react";
 import eventContext from "../../../context/EventContext.jsx";
-import "../styles/upcomingEvent.css";
 import EventsPage from "../components/EventPage.jsx";
+import "../styles/upcomingEvent.css";
+
 const CompletedEvent = () => {
   const { completedEvents } = useContext(eventContext);
 

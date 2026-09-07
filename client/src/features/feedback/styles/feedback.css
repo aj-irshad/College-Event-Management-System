@@ -1,0 +1,172 @@
+/* 
+   Feedback Page
+*/
+
+.feedbackPage {
+  width: 100%;
+  max-width: 1200px;
+  /* margin: 0 auto; */
+}
+
+.feedbackPage h1 {
+  margin-bottom: 25px;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+}
+
+/* 
+   Feedback Cards Container
+*/
+
+.feedbackContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* 
+   Feedback Card
+*/
+
+.feedbackCard {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Header */
+
+.feedbackCardHeader {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 12px;
+}
+
+.feedbackCardHeader span {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.feedbackCardHeader h2 {
+  margin: 5px 0 0;
+  font-size: 1.2rem;
+}
+
+/* Body */
+
+.feedbackCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.feedbackQuestion {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* Rating */
+
+.rating {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rating label,
+.comment label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.rating select {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.rating select:focus {
+  border-color: #555;
+}
+
+/* Comment */
+
+.comment {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.comment textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 10px;
+  resize: vertical;
+
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+
+  font-family: inherit;
+  font-size: 0.95rem;
+
+  outline: none;
+}
+
+.comment textarea:focus {
+  border-color: #555;
+}
+
+/* Footer */
+
+.feedbackCardFooter {
+  margin-top: auto;
+}
+
+.feedbackCardFooter button {
+  width: 100%;
+  padding: 10px 15px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: #222;
+  color: white;
+
+  font-size: 0.95rem;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.feedbackCardFooter button:hover {
+  opacity: 0.85;
+}
+
+/* 
+   Mobile
+*/
+
+@media (max-width: 600px) {
+  .feedbackPage {
+    padding: 20px 15px;
+  }
+
+  .feedbackContainer {
+    grid-template-columns: 1fr;
+  }
+
+  .feedbackCard {
+    padding: 16px;
+  }
+}

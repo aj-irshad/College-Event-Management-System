@@ -13,6 +13,7 @@ import authRouter from "./routes/auth.js";
 import userRouter from "./routes/user.js";
 import eventRouter from "./routes/events.js";
 import blogRouter from "./routes/blog.js";
+import feedbackRouter from "./routes/feedback.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -46,6 +47,7 @@ app.use("/auth", authRouter);
 app.use("/user", userRouter);
 app.use("/events", eventRouter);
 app.use("/blog", blogRouter);
+app.use("/feedback", feedbackRouter);
 
 app.get("/{*splat}", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist/index.html"));

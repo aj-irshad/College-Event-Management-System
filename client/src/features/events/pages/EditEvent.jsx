@@ -67,6 +67,7 @@ const EditEvent = () => {
       );
       setEvents(newEventData);
 
+      alert("Successfully updated event info.");
       navigate("/upcoming-events");
     } catch (err) {
       console.error(`Error updating event: ${err.message}`);

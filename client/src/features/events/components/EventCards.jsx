@@ -99,6 +99,15 @@ const EventCards = ({ event, isAdmin }) => {
               onClick={() => navigate(`/edit-event/${event._id}`)}
             />
           )}
+
+          {isAdmin && event.status === "Completed" && (
+            <button
+              className="feedbackBtn"
+              onClick={() => navigate(`/feedback/${event._id}`)}
+            >
+              Create Feedback
+            </button>
+          )}
         </div>
       </footer>
     </article>

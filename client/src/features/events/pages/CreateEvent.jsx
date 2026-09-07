@@ -78,7 +78,7 @@ const CreateEvent = () => {
       }
 
       await createEventContext(finalEventData);
-
+      alert("Successfully created event");
       navigate("/upcoming-events");
     } catch (err) {
       setError(err.message || "An unexpected error occurred.");

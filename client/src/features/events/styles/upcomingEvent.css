@@ -1,3 +1,4 @@
+/* Event design variables */
 :root {
   --event-bg: #ffffff;
   --event-border: #f1f5f9;
@@ -24,14 +25,12 @@
   --icon-color-status: #d97706;
 }
 
-/*
-   EVENTS PAGE HEADER */
+/* Events page header */
 
 .title {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-
   gap: 1.5rem;
 
   margin-bottom: 1.75rem;
@@ -51,7 +50,6 @@
 
   font-size: clamp(1.6rem, 2.5vw, 2.1rem);
   font-weight: 800;
-
   line-height: 1.2;
   letter-spacing: -0.025em;
 }
@@ -65,19 +63,255 @@
   line-height: 1.5;
 }
 
-/*
-   EVENTS GRID */
+/* Events grid */
 
 .upcomingEventsCards {
   width: 100%;
 
   display: grid;
-
   grid-template-columns: 1fr;
-
   gap: 1.25rem;
 
   box-sizing: border-box;
+}
+
+/* Event card */
+
+.event-card {
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  background: var(--event-bg);
+
+  border: 1px solid var(--event-border);
+  border-radius: var(--event-radius);
+
+  overflow: hidden;
+
+  box-shadow: var(--event-shadow);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.event-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+/* Card content */
+
+.event-card-content {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+
+  padding: 1.15rem 1.2rem 1rem;
+}
+
+/* Event type */
+
+.event-type {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+
+  padding-bottom: 0.65rem;
+
+  border-bottom: 1px solid var(--event-border);
+
+  color: var(--event-primary);
+
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Event title */
+
+.event-card h2,
+.event-card-title {
+  margin: 0;
+
+  color: var(--event-text-title);
+
+  font-size: 1.2rem;
+  font-weight: 750;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+}
+
+/* Event description */
+
+.event-card-description {
+  margin: 0;
+
+  color: var(--event-text-body);
+
+  font-size: 0.82rem;
+  line-height: 1.55;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  overflow: hidden;
+}
+
+/* Event details */
+
+.event-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+
+  margin-top: 0.15rem;
+}
+
+.event-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.event-detail-icon {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+}
+
+.event-detail-content {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.event-detail-label {
+  color: var(--event-text-label);
+
+  font-size: 0.68rem;
+  font-weight: 500;
+}
+
+.event-detail-value {
+  color: var(--event-text-title);
+
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* Event detail icon colors */
+
+.event-detail.date .event-detail-icon {
+  background: var(--icon-bg-date);
+  color: var(--icon-color-date);
+}
+
+.event-detail.time .event-detail-icon {
+  background: var(--icon-bg-time);
+  color: var(--icon-color-time);
+}
+
+.event-detail.venue .event-detail-icon {
+  background: var(--icon-bg-venue);
+  color: var(--icon-color-venue);
+}
+
+/* Card footer */
+
+.event-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  padding: 0.85rem 1.15rem;
+
+  background: #fafbfc;
+
+  border-top: 1px solid var(--event-border);
+}
+
+/* Event status */
+
+.event-status {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.event-status-icon {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background: var(--icon-bg-status);
+  color: var(--icon-color-status);
+}
+
+.event-status-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.event-status-label {
+  color: var(--event-text-title);
+
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.event-status-value {
+  color: var(--event-text-label);
+
+  font-size: 0.68rem;
+}
+
+/* Admin action buttons */
+
+.event-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.event-actions button {
+  min-width: 62px;
+
+  padding: 0.55rem 0.75rem;
+
+  border-radius: 8px;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  cursor: pointer;
 }
 
 /* Tablet */
@@ -107,277 +341,12 @@
   }
 }
 
-/*
-   EVENT CARD */
-
-.event-card {
-  width: 100%;
-
-  display: flex;
-  flex-direction: column;
-
-  background: var(--event-bg);
-
-  border: 1px solid var(--event-border);
-  border-radius: var(--event-radius);
-
-  overflow: hidden;
-
-  box-shadow: var(--event-shadow);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.event-card:hover {
-  transform: translateY(-3px);
-
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-}
-
-/*
-   CARD CONTENT */
-
-.event-card-content {
-  padding: 1.15rem 1.2rem 1rem;
-
-  display: flex;
-  flex-direction: column;
-
-  gap: 0.85rem;
-
-  flex: 1;
-}
-
-/*
-   EVENT TYPE */
-
-.event-type {
-  display: flex;
-  align-items: center;
-
-  gap: 0.45rem;
-
-  padding-bottom: 0.65rem;
-
-  border-bottom: 1px solid var(--event-border);
-
-  color: var(--event-primary);
-
-  font-size: 0.72rem;
-  font-weight: 700;
-
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-/*
-   EVENT TITLE */
-
-.event-card h2,
-.event-card-title {
-  margin: 0;
-
-  color: var(--event-text-title);
-
-  font-size: 1.2rem;
-  font-weight: 750;
-
-  line-height: 1.3;
-
-  letter-spacing: -0.015em;
-}
-
-/*
-   DESCRIPTION */
-
-.event-card-description {
-  margin: 0;
-
-  color: var(--event-text-body);
-
-  font-size: 0.82rem;
-  line-height: 1.55;
-
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-
-  overflow: hidden;
-}
-
-/*
-   EVENT DETAILS */
-
-.event-details {
-  display: flex;
-  flex-direction: column;
-
-  gap: 0.65rem;
-
-  margin-top: 0.15rem;
-}
-
-.event-detail {
-  display: flex;
-  align-items: center;
-
-  gap: 0.7rem;
-}
-
-.event-detail-icon {
-  width: 38px;
-  height: 38px;
-
-  flex-shrink: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 10px;
-}
-
-.event-detail-content {
-  min-width: 0;
-
-  display: flex;
-  flex-direction: column;
-
-  gap: 0.15rem;
-}
-
-.event-detail-label {
-  color: var(--event-text-label);
-
-  font-size: 0.68rem;
-  font-weight: 500;
-}
-
-.event-detail-value {
-  color: var(--event-text-title);
-
-  font-size: 0.8rem;
-  font-weight: 600;
-
-  line-height: 1.35;
-}
-
-/*
-   ICON COLORS */
-
-.event-detail.date .event-detail-icon {
-  background: var(--icon-bg-date);
-  color: var(--icon-color-date);
-}
-
-.event-detail.time .event-detail-icon {
-  background: var(--icon-bg-time);
-  color: var(--icon-color-time);
-}
-
-.event-detail.venue .event-detail-icon {
-  background: var(--icon-bg-venue);
-  color: var(--icon-color-venue);
-}
-
-/*
-   CARD FOOTER */
-
-.event-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 0.75rem;
-
-  padding: 0.85rem 1.15rem;
-
-  background: #fafbfc;
-
-  border-top: 1px solid var(--event-border);
-}
-
-/*
-   STATUS */
-
-.event-status {
-  display: flex;
-  align-items: center;
-
-  gap: 0.6rem;
-
-  min-width: 0;
-}
-
-.event-status-icon {
-  width: 34px;
-  height: 34px;
-
-  flex-shrink: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 9px;
-
-  background: var(--icon-bg-status);
-  color: var(--icon-color-status);
-}
-
-.event-status-text {
-  display: flex;
-  flex-direction: column;
-
-  gap: 0.1rem;
-}
-
-.event-status-label {
-  color: var(--event-text-title);
-
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.event-status-value {
-  color: var(--event-text-label);
-
-  font-size: 0.68rem;
-}
-
-/*
-   ADMIN BUTTONS */
-
-.event-actions {
-  display: flex;
-  align-items: center;
-
-  gap: 0.5rem;
-}
-
-.event-actions button {
-  min-width: 62px;
-
-  padding: 0.55rem 0.75rem;
-
-  border-radius: 8px;
-
-  font-size: 0.75rem;
-  font-weight: 600;
-
-  cursor: pointer;
-}
-
-/*
-   MOBILE HEADER */
+/* Mobile header */
 
 @media (max-width: 540px) {
   .title {
     flex-direction: column;
     align-items: stretch;
-
     gap: 1rem;
 
     margin-bottom: 1.25rem;
@@ -386,7 +355,6 @@
   .title > button,
   .title > a {
     width: 100%;
-
     justify-content: center;
   }
 
@@ -399,8 +367,7 @@
   }
 }
 
-/*
-   SMALL MOBILE CARDS */
+/* Small mobile */
 
 @media (max-width: 480px) {
   .upcomingEventsCards {
