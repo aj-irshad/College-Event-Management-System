@@ -1,8 +1,12 @@
 import Event from "../model/events.js";
+
 import {
   getEventStatus,
   updateEventStatus,
 } from "../services/eventStatusService.js";
+
+import sendEventNotification from "../utils/notification.js";
+import fetchAllEmails from "../utils/fetchUserEmails.js";
 
 const getAllEvent = async (req, res) => {
   try {
@@ -37,6 +41,7 @@ const createNewEvent = async (req, res) => {
     }
 
     const status = getEventStatus(start_at, end_at);
+
     const newEvent = {
       title: title,
       description: description,
@@ -48,6 +53,12 @@ const createNewEvent = async (req, res) => {
     };
 
     const createdEvent = await Event.create(newEvent);
+    const emails = await fetchAllEmails();
+
+    // Send notifications
+    await Promise.all(
+      emails.map((email) => sendEventNotification(email, createdEvent)),
+    );
 
     return res.status(201).json({
       message: "Successfully created new event",

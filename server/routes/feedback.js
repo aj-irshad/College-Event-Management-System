@@ -5,6 +5,7 @@ import {
   createFeedback,
   getFeedback,
   submitFeedback,
+  getAllFeedback,
 } from "../controller/feedback.js";
 const feedbackRouter = express.Router();
 
@@ -21,8 +22,15 @@ feedbackRouter.post(
   createFeedback,
 );
 
-feedbackRouter.get("/fetch-feedback", authMiddleware, getFeedback);
+// admin feedback which user give feedback
+feedbackRouter.get("/fetch-feedbackForms", authMiddleware, getFeedback);
 
 feedbackRouter.post("/submit-feedback", authMiddleware, submitFeedback);
 
+feedbackRouter.get(
+  "/users-feedbacks",
+  authMiddleware,
+  adminMiddleware,
+  getAllFeedback,
+);
 export default feedbackRouter;

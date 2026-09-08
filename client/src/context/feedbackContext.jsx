@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 
-import { fetchAllFeedback } from "../services/feedbackService";
+import { fetchFeedback } from "../services/feedbackService";
 
 const feedbackContext = createContext({});
 
@@ -10,7 +10,7 @@ export const FeedbackProvider = ({ children }) => {
   useEffect(() => {
     const getAllFeedbacks = async () => {
       try {
-        const response = await fetchAllFeedback();
+        const response = await fetchFeedback();
 
         setTotalFeedback(response.data.feedback.length);
       } catch (err) {

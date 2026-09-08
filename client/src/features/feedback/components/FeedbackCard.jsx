@@ -29,8 +29,8 @@ const FeedbackCard = ({ feedback, removeFeedback }) => {
   return (
     <article className="feedbackCard">
       <header className="feedbackCardHeader">
-        <span>{feedback.event.event_type}</span>
-        <h2>{feedback.event.title}</h2>
+        <span>{feedback.event?.event_type}</span>
+        <h2>{feedback.event?.title}</h2>
       </header>
 
       <div className="feedbackCardBody">

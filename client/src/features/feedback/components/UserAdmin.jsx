@@ -10,6 +10,8 @@ const UserFeedback = () => {
       try {
         const response = await fetchFeedback();
 
+        console.log("Feedback data:", response.data.feedback);
+
         setFeedbacks(response.data.feedback);
       } catch (error) {
         console.error(error);

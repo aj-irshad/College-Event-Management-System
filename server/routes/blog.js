@@ -1,6 +1,11 @@
 import express from "express";
 
-import { createBlog, deleteBlog, getBlogs } from "../controller/blog.js";
+import {
+  createBlog,
+  deleteBlog,
+  getBlogs,
+  updateBlog,
+} from "../controller/blog.js";
 import uploadImage from "../middleware/multerUpload.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import adminMiddleware from "../middleware/adminMiddleware.js";
@@ -17,5 +22,13 @@ blogRouter.post(
 blogRouter.get("/get-blog", getBlogs);
 
 blogRouter.delete("/delete-blog", authMiddleware, adminMiddleware, deleteBlog);
+
+blogRouter.patch(
+  "/update-blog/:id",
+  authMiddleware,
+  adminMiddleware,
+  uploadImage("blog-img"),
+  updateBlog,
+);
 
 export default blogRouter;

@@ -19,6 +19,12 @@ const FeedbackFormSchema = new mongoose.Schema(
   },
 );
 
+// Delete document 48 hours after createdAt
+FeedbackFormSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: 48 * 60 * 60 },
+);
+
 const FeedbackForm = mongoose.model("FeedbackForm", FeedbackFormSchema);
 
 export default FeedbackForm;

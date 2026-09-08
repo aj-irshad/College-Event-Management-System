@@ -1,0 +1,108 @@
+/*   CREATE FEEDBACK */
+
+.createFeedback {
+  width: 100%;
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 35px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+/* Heading */
+.createFeedback h2 {
+  margin: 0 0 25px;
+  color: #0f172a;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* Input */
+.createFeedback input {
+  width: 100%;
+  height: 48px;
+  padding: 0 15px;
+  box-sizing: border-box;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 15px;
+
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.createFeedback input::placeholder {
+  color: #94a3b8;
+}
+
+.createFeedback input:focus {
+  border-color: #64748b;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.12);
+}
+
+/* Button */
+.createFeedback button {
+  width: 100%;
+  height: 48px;
+  margin-top: 18px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #0f172a;
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.createFeedback button:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+}
+
+.createFeedback button:active {
+  transform: translateY(0);
+}
+
+/*
+   RESPONSIVE */
+
+@media (max-width: 768px) {
+  .createFeedback {
+    width: calc(100% - 40px);
+    margin: 30px auto;
+    padding: 25px;
+  }
+
+  .createFeedback h2 {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .createFeedback {
+    width: calc(100% - 24px);
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  .createFeedback h2 {
+    font-size: 22px;
+  }
+
+  .createFeedback input,
+  .createFeedback button {
+    height: 46px;
+  }
+}

@@ -5,7 +5,7 @@ import PendingUser from "../model/pendingUser.js";
 
 import { setUser } from "../services/auth.js";
 import { createHashPassword, compareHashPassword } from "../services/bcrypt.js";
-import sendOTP from "../otpSender.js";
+import sendOTP from "../utils/otpSender.js";
 
 // TEST API FOR ALL USER
 const testAPI = async (req, res) => {

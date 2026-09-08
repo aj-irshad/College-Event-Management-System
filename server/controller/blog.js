@@ -43,6 +43,49 @@ const getBlogs = async (req, res) => {
   }
 };
 
+const updateBlog = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { title, description, eventDate } = req.body;
+
+    const blog = await Blog.findById(id);
+
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found",
+      });
+    }
+
+    // Update normal fields
+    blog.title = title;
+    blog.description = description;
+    blog.eventDate = eventDate;
+
+    // Update image only if a new image was uploaded
+    if (req.file) {
+      blog.blogImage = req.file.filename;
+    }
+
+    const updatedBlog = await blog.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Blog updated successfully",
+      blog: updatedBlog,
+    });
+  } catch (error) {
+    console.error("Error updating blog:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update blog",
+      error: error.message,
+    });
+  }
+};
+
 const deleteBlog = async (req, res) => {
   try {
     const { blogId } = req.body;
@@ -71,4 +114,5 @@ const deleteBlog = async (req, res) => {
     });
   }
 };
-export { createBlog, getBlogs, deleteBlog };
+
+export { createBlog, getBlogs, updateBlog, deleteBlog };

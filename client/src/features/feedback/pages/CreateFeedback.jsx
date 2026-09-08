@@ -2,6 +2,8 @@ import { useParams } from "react-router-dom";
 import { useState } from "react";
 import { createFeedback } from "../../../services/feedbackService";
 
+import "../styles/createFeedback.css";
+
 const CreateFeedback = () => {
   const { eventId } = useParams();
   const [question, setQuestion] = useState("");
@@ -24,7 +26,7 @@ const CreateFeedback = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="createFeedback" onSubmit={handleSubmit}>
       <h2>Create Feedback</h2>
 
       <input
