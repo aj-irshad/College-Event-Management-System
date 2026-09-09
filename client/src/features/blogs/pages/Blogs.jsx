@@ -18,9 +18,9 @@ const Blogs = () => {
     <main className="blogs-page">
       <header className="blogs-header">
         <div className="blogs-header-content">
-          <p className="blogs-eyebrow">Campus Stories</p>
-
-          <h1 className="blogs-title">Blog</h1>
+          <h1 className="blogs-title" style={{ fontSize: "40px" }}>
+            Blog
+          </h1>
 
           <p className="blogs-subtitle">
             Discover the latest stories, updates, and events from our college

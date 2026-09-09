@@ -8,7 +8,7 @@ const EventTable = ({ events }) => {
           <th>Event Name</th>
           <th>Date & Time</th>
           <th>Location</th>
-          <th>RSVP Status</th>
+          <th>Status</th>
         </tr>
       </thead>
 

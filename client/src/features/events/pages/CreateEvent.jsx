@@ -31,6 +31,18 @@ const CreateEvent = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const getCurrentDateTime = () => {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -61,7 +73,12 @@ const CreateEvent = () => {
     setError("");
 
     try {
-      // Use custom event type when "Other" is selected
+      if (new Date(eventData.start_at) < new Date()) {
+        setError("Event start date and time cannot be in the past.");
+        setLoading(false);
+        return;
+      }
+
       const finalEventData = {
         ...eventData,
         event_type:
@@ -70,7 +87,6 @@ const CreateEvent = () => {
             : eventData.event_type,
       };
 
-      // Prevent submitting an empty custom event type
       if (eventData.event_type === "Other" && !customEventType.trim()) {
         setError("Please enter an event type.");
         setLoading(false);
@@ -78,6 +94,7 @@ const CreateEvent = () => {
       }
 
       await createEventContext(finalEventData);
+
       alert("Successfully created event");
       navigate("/upcoming-events");
     } catch (err) {
@@ -192,6 +209,7 @@ const CreateEvent = () => {
                 name="start_at"
                 value={eventData.start_at}
                 onChange={handleChange}
+                min={getCurrentDateTime()}
                 required
               />
             </div>

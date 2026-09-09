@@ -18,7 +18,7 @@ const CreateFeedback = () => {
 
       console.log(feedbackData);
       await createFeedback(feedbackData);
-      setQuestion[" "];
+      setQuestion("");
       alert("Feedback created successfully");
     } catch (error) {
       console.error(error);

@@ -14,7 +14,7 @@ const Header = ({ user }) => {
         {/* <button className="searchBtn">Search event's blogs</button> */}
       </form>
       <section className="user">
-        <Bell />
+        {/* <Bell /> */}
         <img
           src={`${import.meta.env.VITE_BASE_URL}/uploads/user/${user.profileImage}`}
           alt={`${user.name}'s image`}

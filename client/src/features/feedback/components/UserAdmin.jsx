@@ -32,7 +32,7 @@ const UserFeedback = () => {
     <section className="feedbackPage">
       <h1>Feedback</h1>
 
-      <div className="feedbackContainer">
+      {/* <div className="feedbackContainer">
         {feedbacks.map((feedback) => (
           <FeedbackCard
             key={feedback._id}
@@ -40,7 +40,25 @@ const UserFeedback = () => {
             removeFeedback={removeFeedback}
           />
         ))}
-      </div>
+      </div> */}
+
+      {feedbacks.length > 0 ? (
+        <div className="feedbackContainer">
+          {feedbacks.map((feedback) => (
+            <FeedbackCard
+              key={feedback._id}
+              feedback={feedback}
+              removeFeedback={removeFeedback}
+            />
+          ))}
+        </div>
+      ) : (
+        <section className="empty-admin-feedback">
+          <div className="empty-admin-feedback-icon">✦</div>
+
+          <h2>No feedback yet</h2>
+        </section>
+      )}
     </section>
   );
 };
