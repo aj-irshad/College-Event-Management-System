@@ -1,4 +1,5 @@
 import Event from "../model/events.js";
+import { getIO } from "../socket.js";
 
 import {
   getEventStatus,
@@ -53,6 +54,15 @@ const createNewEvent = async (req, res) => {
     };
 
     const createdEvent = await Event.create(newEvent);
+    const io = getIO();
+
+    console.log(
+      "Emitting newEvent:",
+      createdEvent._id,
+      "connected sockets:",
+      io.sockets.sockets.size,
+    );
+    io.emit("newEvent", createdEvent);
     const emails = await fetchAllEmails();
 
     // Send notifications

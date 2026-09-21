@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
-import { fetchFeedback } from "../../../services/feedbackService";
+import { fetchFeedbackForm } from "../../../services/feedbackService";
 import FeedbackCard from "./FeedbackCard";
-import "../styles/feedback.css";
+import "../styles/userFeedback.css";
+
 const UserFeedback = () => {
+  console.log("User");
   const [feedbacks, setFeedbacks] = useState([]);
 
   useEffect(() => {
     const getFeedbacks = async () => {
       try {
-        const response = await fetchFeedback();
+        const response = await fetchFeedbackForm();
 
         console.log("Feedback data:", response.data.feedback);
 
@@ -31,16 +33,6 @@ const UserFeedback = () => {
   return (
     <section className="feedbackPage">
       <h1>Feedback</h1>
-
-      {/* <div className="feedbackContainer">
-        {feedbacks.map((feedback) => (
-          <FeedbackCard
-            key={feedback._id}
-            feedback={feedback}
-            removeFeedback={removeFeedback}
-          />
-        ))}
-      </div> */}
 
       {feedbacks.length > 0 ? (
         <div className="feedbackContainer">

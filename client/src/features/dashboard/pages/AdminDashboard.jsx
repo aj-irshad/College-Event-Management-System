@@ -7,15 +7,18 @@ import {
   MessageSquare,
   CalendarDays,
   Plus,
+  Vote,
 } from "lucide-react";
 
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import EventBtn from "../../events/components/EventBtn";
+import PollBtn from "../../polls/components/PollBtn.jsx";
 import eventContext from "../../../context/EventContext.jsx";
 import blogContext from "../../../context/blogContext.jsx";
 import feedbackContext from "../../../context/feedbackContext.jsx";
+import pollContext from "../../../context/pollContext.jsx";
 
 import "../styles/adminDashboard.css";
 
@@ -26,6 +29,7 @@ const AdminDashboard = () => {
     useContext(eventContext);
   const { totalBlogs } = useContext(blogContext);
   const { totalFeedback } = useContext(feedbackContext);
+  const { totalPolls } = useContext(pollContext);
   const stats = [
     {
       id: "upcoming",
@@ -58,7 +62,7 @@ const AdminDashboard = () => {
     {
       id: "polls",
       label: "Total Polls",
-      count: 0,
+      count: totalPolls,
       Icon: BarChart3,
       colorClass: "card-polls",
     },
@@ -100,6 +104,14 @@ const AdminDashboard = () => {
             text="Create Blog"
             onClick={() => navigate("/post-blog")}
             icon={<Newspaper size={18} />}
+          />
+
+          <PollBtn
+            text={"Create Poll"}
+            onClick={() => navigate(`/create-poll`)}
+            className="pollBtnSecondary"
+            icon={<Vote size={16} />}
+            style={{ backgroundColor: "blue", color: "white" }}
           />
         </div>
       </header>

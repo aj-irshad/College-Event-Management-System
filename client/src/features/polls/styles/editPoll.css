@@ -1,0 +1,440 @@
+/* Edit Poll Page */
+
+.edit-poll-page {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background-color: #f5f7fb;
+  box-sizing: border-box;
+}
+
+.edit-poll-container {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 32px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+}
+
+/* Header */
+
+.edit-poll-header {
+  margin-bottom: 30px;
+}
+
+.edit-poll-header h1 {
+  margin: 0 0 8px;
+  color: #1f2937;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.edit-poll-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Form */
+
+.edit-poll-form {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-group > label {
+  color: #374151;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Inputs */
+
+.form-group input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  background-color: #ffffff;
+  color: #1f2937;
+  font-size: 15px;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.form-group input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-group input::placeholder {
+  color: #9ca3af;
+}
+
+.form-group input:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+/* Options Header */
+
+.options-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.options-header label {
+  color: #374151;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Options List */
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Option Row */
+
+.option-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.option-number {
+  min-width: 25px;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.option-input-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Remove Option Button */
+
+.remove-option-btn {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background-color: #fee2e2;
+  color: #dc2626;
+  font-size: 20px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.remove-option-btn:hover:not(:disabled) {
+  background-color: #fecaca;
+  transform: scale(1.04);
+}
+
+.remove-option-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Actions */
+
+.edit-poll-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.edit-poll-actions button {
+  min-height: 40px;
+}
+
+/* Cancel Button */
+
+.cancel-btn {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+/* Update Button */
+
+.update-poll-btn {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.update-poll-btn:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+/* Loading */
+
+.edit-poll-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background-color: #f5f7fb;
+  box-sizing: border-box;
+}
+
+.edit-poll-loading p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 16px;
+  text-align: center;
+}
+
+/* Actions */
+
+.edit-poll-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.edit-poll-actions button {
+  min-height: 40px;
+}
+
+/* Cancel Button */
+
+.edit-poll-actions .cancel-btn {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.edit-poll-actions .cancel-btn:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+/* Update Button */
+
+.edit-poll-actions .update-poll-btn {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.edit-poll-actions .update-poll-btn:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+/* Large Screens */
+
+@media (min-width: 1200px) {
+  .edit-poll-page {
+    padding: 50px 30px;
+  }
+
+  .edit-poll-container {
+    max-width: 720px;
+    padding: 36px;
+  }
+}
+
+/* Tablet */
+
+@media (max-width: 768px) {
+  .edit-poll-page {
+    padding: 30px 16px;
+  }
+
+  .edit-poll-container {
+    max-width: 650px;
+    padding: 28px;
+  }
+
+  .edit-poll-header {
+    margin-bottom: 25px;
+  }
+
+  .edit-poll-header h1 {
+    font-size: 26px;
+  }
+
+  .edit-poll-form {
+    gap: 22px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .edit-poll-page {
+    padding: 20px 12px;
+  }
+
+  .edit-poll-container {
+    padding: 22px 18px;
+    border-radius: 10px;
+  }
+
+  .edit-poll-header {
+    margin-bottom: 22px;
+  }
+
+  .edit-poll-header h1 {
+    margin-bottom: 6px;
+    font-size: 24px;
+  }
+
+  .edit-poll-header p {
+    font-size: 14px;
+  }
+
+  .edit-poll-form {
+    gap: 20px;
+  }
+
+  .form-group {
+    gap: 8px;
+  }
+
+  .form-group > label,
+  .options-header label {
+    font-size: 14px;
+  }
+
+  .form-group input {
+    padding: 11px 12px;
+    font-size: 14px;
+  }
+
+  .options-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option-input-row {
+    gap: 7px;
+  }
+
+  .option-number {
+    min-width: 20px;
+    font-size: 13px;
+  }
+
+  .remove-option-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .edit-poll-actions {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .edit-poll-actions button {
+    width: 100%;
+  }
+}
+
+/* Small Mobile */
+
+@media (max-width: 400px) {
+  .edit-poll-page {
+    padding: 15px 8px;
+  }
+
+  .edit-poll-container {
+    padding: 20px 14px;
+    border-radius: 8px;
+  }
+
+  .edit-poll-header h1 {
+    font-size: 22px;
+  }
+
+  .edit-poll-header p {
+    font-size: 13px;
+  }
+
+  .option-input-row {
+    gap: 5px;
+  }
+
+  .option-number {
+    min-width: 18px;
+    font-size: 12px;
+  }
+
+  .form-group input {
+    padding: 10px;
+  }
+
+  .remove-option-btn {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+/* Extra Small Screens */
+
+@media (max-width: 320px) {
+  .edit-poll-page {
+    padding: 10px 6px;
+  }
+
+  .edit-poll-container {
+    padding: 18px 12px;
+  }
+
+  .edit-poll-header h1 {
+    font-size: 20px;
+  }
+
+  .option-input-row {
+    gap: 4px;
+  }
+
+  .option-number {
+    min-width: 16px;
+  }
+
+  .remove-option-btn {
+    width: 32px;
+    height: 32px;
+  }
+}

@@ -1,13 +1,20 @@
 import { createContext, useEffect, useState } from "react";
+import { io } from "socket.io-client";
+
 import { getEvents, createEvent, deleteEvent } from "../services/eventService";
 
 const eventContext = createContext({});
+
+const socket = io(import.meta.env.VITE_BASE_URL, {
+  withCredentials: true,
+});
 
 export const EventProvider = ({ children }) => {
   const [events, setEvents] = useState([]);
   const [eventLoading, setEventLoading] = useState(true);
 
   useEffect(() => {
+    // Fetch existing events
     const getAllEvents = async () => {
       try {
         const response = await getEvents();
@@ -22,10 +29,44 @@ export const EventProvider = ({ children }) => {
     getAllEvents();
   }, []);
 
+  useEffect(() => {
+    const handleConnect = () => {
+      console.log("Socket connected:", socket.id);
+    };
+
+    const handleConnectError = (error) => {
+      console.error("Socket connect_error:", error.message);
+    };
+
+    const handleNewEvent = (newEvent) => {
+      console.log("Received newEvent:", newEvent);
+      setEvents((prevEvents) => {
+        if (prevEvents.some((event) => event._id === newEvent._id)) {
+          return prevEvents;
+        }
+
+        return [...prevEvents, newEvent];
+      });
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("connect_error", handleConnectError);
+    socket.on("newEvent", handleNewEvent);
+
+    if (socket.connected) {
+      handleConnect();
+    }
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("connect_error", handleConnectError);
+      socket.off("newEvent", handleNewEvent);
+    };
+  }, []);
+
   const createEventContext = async (eventData) => {
     try {
       const response = await createEvent(eventData);
-      setEvents((prevEvents) => [...prevEvents, response.data.event]);
       return response;
     } catch (err) {
       console.error(err.message);

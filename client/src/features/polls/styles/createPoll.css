@@ -1,0 +1,185 @@
+/* Create Poll Form */
+
+.createPollQuestion {
+  width: 100%;
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 35px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+/* Heading */
+
+.createPollQuestion h2 {
+  margin: 0 0 25px;
+  color: #0f172a;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* Question Input */
+
+.createPollQuestion > input {
+  width: 100%;
+  height: 48px;
+  padding: 0 15px;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.createPollQuestion > input::placeholder {
+  color: #94a3b8;
+}
+
+.createPollQuestion > input:focus {
+  border-color: #64748b;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.12);
+}
+
+/* Options Title */
+
+.optionTitle {
+  margin: 25px 0 10px;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Options List */
+
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Option Input */
+
+.optionInput {
+  width: 100%;
+  height: 48px;
+  padding: 0 15px;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.optionInput::placeholder {
+  color: #94a3b8;
+}
+
+.optionInput:focus {
+  border-color: #64748b;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.12);
+}
+
+/* Poll Actions */
+
+.pollActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+/* Add Option Button */
+
+.addOptionButton {
+  width: 100%;
+  height: 44px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.addOptionButton:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.addOptionButton:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Create Poll Button */
+
+.createPollButton {
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.createPollButton:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+}
+
+.createPollButton:active {
+  transform: translateY(0);
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .createPollQuestion {
+    width: calc(100% - 40px);
+    margin: 30px auto;
+    padding: 25px;
+  }
+
+  .createPollQuestion h2 {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .createPollQuestion {
+    width: calc(100% - 24px);
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  .createPollQuestion h2 {
+    font-size: 22px;
+  }
+
+  .createPollQuestion > input,
+  .optionInput {
+    height: 46px;
+  }
+
+  .createPollButton,
+  .addOptionButton {
+    height: 46px;
+  }
+}

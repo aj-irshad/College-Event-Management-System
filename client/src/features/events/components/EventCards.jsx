@@ -104,6 +104,7 @@ const EventCards = ({ event, isAdmin }) => {
                 onClick={() => handleDeleteEvent(event._id)}
                 icon={<Trash size={16} />}
                 className="eventBtnDanger"
+                style={{ backgroundColor: "red" }}
               />
 
               {event.status === "Completed" && (

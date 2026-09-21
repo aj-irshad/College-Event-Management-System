@@ -3,8 +3,10 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "path";
+import http from "http";
 import { fileURLToPath } from "url";
 import status from "express-status-monitor";
+import { initIO } from "./socket.js";
 dotenv.config();
 
 import connection from "./connection.js";
@@ -14,24 +16,33 @@ import userRouter from "./routes/user.js";
 import eventRouter from "./routes/events.js";
 import blogRouter from "./routes/blog.js";
 import feedbackRouter from "./routes/feedback.js";
+import pollRouter from "./routes/polls.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const BASE_URL = process.env.BASE_URL;
 const VITE_URL = process.env.VITE_BASE_URL;
 
+const server = http.createServer(app);
+const io = initIO(server, VITE_URL);
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // MIDDLEWARE
-app.use(status());
+app.use(
+  status({
+    websocket: io,
+    socketPath: "/status-socket/",
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({ origin: VITE_URL, credentials: true }));
 
 // DB connection
-connection("eventManagementSystem");
+connection();
 
 // check and update the status every minute
 // startEventStatusJob();
@@ -48,11 +59,12 @@ app.use("/user", userRouter);
 app.use("/events", eventRouter);
 app.use("/blog", blogRouter);
 app.use("/feedback", feedbackRouter);
+app.use("/polls", pollRouter);
 
 app.get("/{*splat}", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist/index.html"));
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is listening at ${PORT}`);
 });

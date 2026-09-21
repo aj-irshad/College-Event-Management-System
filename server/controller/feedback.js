@@ -24,7 +24,7 @@ const createFeedback = async (req, res) => {
   }
 };
 
-// user fetch feedback form for submit
+// FETCH FEEDBACK FORMS
 const getFeedback = async (req, res) => {
   try {
     const submittedFeedback = await Feedback.find({
@@ -53,7 +53,7 @@ const getFeedback = async (req, res) => {
   }
 };
 
-// submit feedback
+// USER SUBMIT FEEDBACK
 const submitFeedback = async (req, res) => {
   try {
     const { feedbackForm, event, ratings, comment } = req.body;
@@ -90,6 +90,7 @@ const submitFeedback = async (req, res) => {
   }
 };
 
+// ADMIN GETS USER REVIEW
 const getAllFeedback = async (req, res) => {
   try {
     const feedback = await Feedback.find()
@@ -110,4 +111,43 @@ const getAllFeedback = async (req, res) => {
   }
 };
 
-export { createFeedback, getFeedback, submitFeedback, getAllFeedback };
+// DELETE FEEDBACK FORM
+const deleteFeedbackForm = async (req, res) => {
+  try {
+    const { feedbackFormId } = req.params;
+
+    // Check if feedback form exists
+    const feedbackForm = await FeedbackForm.findById(feedbackFormId);
+
+    if (!feedbackForm) {
+      return res.status(404).json({
+        message: "Feedback form not found",
+      });
+    }
+
+    // Delete the feedback form
+    await FeedbackForm.findByIdAndDelete(feedbackFormId);
+
+    // Delete all user feedback submitted for this form
+    await Feedback.deleteMany({
+      feedbackForm: feedbackFormId,
+    });
+
+    res.status(200).json({
+      message: "Feedback form deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting feedback form:", error);
+
+    res.status(500).json({
+      message: "Failed to delete feedback form",
+    });
+  }
+};
+export {
+  createFeedback,
+  getFeedback,
+  submitFeedback,
+  getAllFeedback,
+  deleteFeedbackForm,
+};

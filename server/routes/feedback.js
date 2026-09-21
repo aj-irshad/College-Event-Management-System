@@ -6,15 +6,11 @@ import {
   getFeedback,
   submitFeedback,
   getAllFeedback,
+  deleteFeedbackForm,
 } from "../controller/feedback.js";
 const feedbackRouter = express.Router();
 
-feedbackRouter.get("/test", (req, res) => {
-  res.status(200).json({
-    message: "Successfully reached feedback route",
-  });
-});
-
+// ADMIN CREATE FEEDBACK
 feedbackRouter.post(
   "/create-feedback",
   authMiddleware,
@@ -22,15 +18,25 @@ feedbackRouter.post(
   createFeedback,
 );
 
-// admin feedback which user give feedback
+// FEEDBACK FORM FOR USER
 feedbackRouter.get("/fetch-feedbackForms", authMiddleware, getFeedback);
 
+// USER SUBMIT REVIEW
 feedbackRouter.post("/submit-feedback", authMiddleware, submitFeedback);
 
+// USERS REVIEW FOR ADMIN PAGE
 feedbackRouter.get(
   "/users-feedbacks",
   authMiddleware,
   adminMiddleware,
   getAllFeedback,
 );
+
+feedbackRouter.delete(
+  "/delete-feedback/:feedbackFormId",
+  authMiddleware,
+  adminMiddleware,
+  deleteFeedbackForm,
+);
+
 export default feedbackRouter;

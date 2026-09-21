@@ -1,7 +1,6 @@
 import { NavLink } from "react-router-dom";
 import "../styles/aside.css";
 import LogoutButton from "./auth/LogoutButton";
-
 const Aside = ({ isAdmin }) => {
   return (
     <aside>
@@ -12,7 +11,10 @@ const Aside = ({ isAdmin }) => {
       <NavLink to="/ongoing-events">Ongoing Events</NavLink>
       <NavLink to="/completed-events">Completed Events</NavLink>
       <NavLink to="/blogs">Blogs</NavLink>
-      <NavLink to="/feedback">Feedback</NavLink>
+      <NavLink to="/feedback">
+        {isAdmin ? "User Feedbacks" : "Feedback"}
+      </NavLink>
+      {isAdmin && <NavLink to="/feedback-forms">Feedback Forms</NavLink>}
       <NavLink to="/polls">Polls</NavLink>
       {/* <NavLink to="/logout">Logout</NavLink>
        */}

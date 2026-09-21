@@ -1,0 +1,458 @@
+/* Feedback Page */
+
+.feedbackPage {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.feedbackPage h1 {
+  margin: 0 0 25px;
+  color: #1e293b;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* Feedback Cards Container */
+
+.feedbackContainer {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+/* Feedback Card */
+
+.feedbackCard {
+  width: 100%;
+  min-width: 0;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.feedbackCard:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+}
+
+/* Header */
+
+.feedbackCardHeader {
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.feedbackCardHeader span {
+  display: block;
+  margin-bottom: 5px;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.feedbackCardHeader h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.2rem;
+  font-weight: 650;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* Body */
+
+.feedbackCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+/* Feedback Question */
+
+.feedbackQuestion {
+  margin: 0;
+  color: #334155;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* Rating */
+
+.rating {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.rating label,
+.comment label {
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Rating Select */
+
+.rating select {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  background: #f8fafc;
+  color: #334155;
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.rating select:hover {
+  border-color: #94a3b8;
+}
+
+.rating select:focus {
+  border-color: #6366f1;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+/* Comment */
+
+.comment {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.comment textarea {
+  width: 100%;
+  min-height: 105px;
+  padding: 11px 12px;
+  box-sizing: border-box;
+  resize: vertical;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  background: #f8fafc;
+  color: #334155;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.comment textarea::placeholder {
+  color: #94a3b8;
+}
+
+.comment textarea:hover {
+  border-color: #94a3b8;
+}
+
+.comment textarea:focus {
+  border-color: #6366f1;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+/* Footer */
+
+.feedbackCardFooter {
+  margin-top: auto;
+  padding-top: 2px;
+}
+
+/* Submit Button */
+
+.feedbackCardFooter button {
+  width: 100%;
+  min-height: 43px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  background: #4f46e5;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.feedbackCardFooter button:hover:not(:disabled) {
+  background: #4338ca;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+  transform: translateY(-1px);
+}
+
+.feedbackCardFooter button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.feedbackCardFooter button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Empty Feedback */
+
+.empty-admin-feedback {
+  width: 100%;
+  padding: 60px 20px;
+  box-sizing: border-box;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.empty-admin-feedback-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 22px;
+}
+
+.empty-admin-feedback h2 {
+  margin: 0;
+  color: #334155;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+/* Large Screens */
+
+@media (min-width: 1200px) {
+  .feedbackPage {
+    max-width: 1250px;
+    padding: 45px 25px;
+  }
+
+  .feedbackContainer {
+    gap: 24px;
+  }
+
+  .feedbackCard {
+    padding: 26px;
+  }
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+  .feedbackPage {
+    padding: 30px 18px;
+  }
+
+  .feedbackContainer {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .feedbackCard {
+    padding: 22px;
+  }
+}
+
+/* Small Tablet */
+
+@media (max-width: 768px) {
+  .feedbackPage {
+    padding: 28px 16px;
+  }
+
+  .feedbackPage h1 {
+    margin-bottom: 22px;
+  }
+
+  .feedbackCard {
+    padding: 20px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .feedbackPage {
+    padding: 20px 12px;
+  }
+
+  .feedbackPage h1 {
+    margin-bottom: 18px;
+    font-size: 1.6rem;
+  }
+
+  .feedbackContainer {
+    gap: 15px;
+  }
+
+  .feedbackCard {
+    padding: 18px;
+    gap: 16px;
+    border-radius: 12px;
+  }
+
+  .feedbackCardHeader {
+    padding-bottom: 12px;
+  }
+
+  .feedbackCardHeader span {
+    font-size: 0.8rem;
+  }
+
+  .feedbackCardHeader h2 {
+    font-size: 1.05rem;
+  }
+
+  .feedbackCardBody {
+    gap: 15px;
+  }
+
+  .feedbackQuestion {
+    font-size: 0.95rem;
+  }
+
+  .rating label,
+  .comment label {
+    font-size: 0.85rem;
+  }
+
+  .rating select {
+    min-height: 40px;
+    font-size: 0.9rem;
+  }
+
+  .comment textarea {
+    min-height: 100px;
+    font-size: 0.9rem;
+  }
+
+  .feedbackCardFooter button {
+    min-height: 41px;
+    font-size: 0.9rem;
+  }
+
+  .empty-admin-feedback {
+    padding: 50px 15px;
+  }
+}
+
+/* Small Mobile */
+
+@media (max-width: 400px) {
+  .feedbackPage {
+    padding: 15px 9px;
+  }
+
+  .feedbackPage h1 {
+    font-size: 1.45rem;
+  }
+
+  .feedbackCard {
+    padding: 15px;
+    border-radius: 10px;
+  }
+
+  .feedbackCardHeader h2 {
+    font-size: 1rem;
+  }
+
+  .feedbackQuestion {
+    font-size: 0.9rem;
+  }
+
+  .rating select {
+    min-height: 38px;
+    padding: 8px 9px;
+    font-size: 0.85rem;
+  }
+
+  .comment textarea {
+    min-height: 90px;
+    padding: 9px 10px;
+    font-size: 0.85rem;
+  }
+
+  .feedbackCardFooter button {
+    min-height: 39px;
+    font-size: 0.85rem;
+  }
+
+  .empty-admin-feedback {
+    padding: 40px 12px;
+  }
+
+  .empty-admin-feedback-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 19px;
+  }
+}
+
+/* Extra Small Mobile */
+
+@media (max-width: 320px) {
+  .feedbackPage {
+    padding: 12px 7px;
+  }
+
+  .feedbackCard {
+    padding: 13px;
+  }
+
+  .feedbackPage h1 {
+    font-size: 1.35rem;
+  }
+
+  .feedbackCardHeader span {
+    font-size: 0.75rem;
+  }
+
+  .feedbackCardHeader h2 {
+    font-size: 0.95rem;
+  }
+
+  .feedbackQuestion {
+    font-size: 0.85rem;
+  }
+
+  .rating label,
+  .comment label {
+    font-size: 0.8rem;
+  }
+}

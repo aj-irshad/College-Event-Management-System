@@ -1,4 +1,4 @@
-import UserFeedback from "../components/UserAdmin";
+import UserFeedback from "../components/UserFeedback";
 import AdminFeedback from "../components/AdminFeedback";
 import { useContext } from "react";
 import authContext from "../../../context/authContext";

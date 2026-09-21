@@ -1,10 +1,11 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { createFeedback } from "../../../services/feedbackService";
 
 import "../styles/createFeedback.css";
 
 const CreateFeedback = () => {
+  const navigate = useNavigate();
   const { eventId } = useParams();
   const [question, setQuestion] = useState("");
 
@@ -15,11 +16,10 @@ const CreateFeedback = () => {
         event: eventId,
         question,
       };
-
-      console.log(feedbackData);
       await createFeedback(feedbackData);
       setQuestion("");
       alert("Feedback created successfully");
+      navigate("/feedback");
     } catch (error) {
       console.error(error);
     }

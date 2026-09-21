@@ -6,6 +6,7 @@ import { AuthProvider } from "./context/authContext.jsx";
 import { EventProvider } from "./context/EventContext.jsx";
 import { BlogProvider } from "./context/blogContext.jsx";
 import { FeedbackProvider } from "./context/feedbackContext.jsx";
+import { PollProvider } from "./context/pollContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -13,7 +14,9 @@ createRoot(document.getElementById("root")).render(
       <EventProvider>
         <BlogProvider>
           <FeedbackProvider>
-            <App />
+            <PollProvider>
+              <App />
+            </PollProvider>
           </FeedbackProvider>
         </BlogProvider>
       </EventProvider>
