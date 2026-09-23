@@ -11,11 +11,7 @@ export const initIO = (httpServer, corsOrigin) => {
   });
 
   io.on("connection", (socket) => {
-    console.log("Socket connected:", socket.id);
-
-    socket.on("disconnect", () => {
-      console.log("Socket disconnected:", socket.id);
-    });
+    socket.on("disconnect", () => {});
   });
 
   return io;
@@ -25,6 +21,5 @@ export const getIO = () => {
   if (!io) {
     throw new Error("Socket.IO has not been initialized");
   }
-
   return io;
 };

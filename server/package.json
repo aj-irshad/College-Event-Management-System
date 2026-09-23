@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "nodemon app.js",
-    "admin": "node scripts/admin.js"
+    "admin": "node scripts/admin.js",
+    "event": "node scripts/createEvent.js"
   },
   "keywords": [
     "ems",

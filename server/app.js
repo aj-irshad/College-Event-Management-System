@@ -14,6 +14,7 @@ import startEventStatusJob from "./controller/eventStatusJob.js";
 import authRouter from "./routes/auth.js";
 import userRouter from "./routes/user.js";
 import eventRouter from "./routes/events.js";
+import participantRouter from "./routes/participant.js";
 import blogRouter from "./routes/blog.js";
 import feedbackRouter from "./routes/feedback.js";
 import pollRouter from "./routes/polls.js";
@@ -46,11 +47,6 @@ connection();
 
 // check and update the status every minute
 // startEventStatusJob();
-
-app.post("/blog/test", (req, res) => {
-  console.log("BLOG TEST ROUTE HIT");
-  res.json({ message: "blog route works" });
-});
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use(express.static(path.join(__dirname, "../client/dist")));
 
@@ -60,6 +56,7 @@ app.use("/events", eventRouter);
 app.use("/blog", blogRouter);
 app.use("/feedback", feedbackRouter);
 app.use("/polls", pollRouter);
+app.use("/participant", participantRouter);
 
 app.get("/{*splat}", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist/index.html"));

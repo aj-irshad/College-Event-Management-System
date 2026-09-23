@@ -39,7 +39,6 @@ export const EventProvider = ({ children }) => {
     };
 
     const handleNewEvent = (newEvent) => {
-      console.log("Received newEvent:", newEvent);
       setEvents((prevEvents) => {
         if (prevEvents.some((event) => event._id === newEvent._id)) {
           return prevEvents;

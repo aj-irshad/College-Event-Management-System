@@ -33,8 +33,7 @@ const Resetpassword = () => {
     setCheckMatchPassword(true);
 
     try {
-      const response = await resetPassword(formData);
-      console.log(response);
+      await resetPassword(formData);
       alert("Reset password successful");
       navigate("/login");
     } catch (err) {

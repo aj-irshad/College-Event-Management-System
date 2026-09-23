@@ -8,8 +8,6 @@ const seedEvents = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
 
-    console.log("MongoDB connected");
-
     const events = [
       {
         title: "Tech Fest 2026",
@@ -64,8 +62,6 @@ const seedEvents = async () => {
     ];
 
     const createdEvents = await Event.insertMany(events);
-
-    console.log(`${createdEvents.length} events created successfully`);
 
     await mongoose.connection.close();
   } catch (error) {

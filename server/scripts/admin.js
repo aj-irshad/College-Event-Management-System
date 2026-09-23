@@ -38,8 +38,6 @@ const makeAdmin = async () => {
       user.department = ADMIN.department;
 
       await user.save();
-
-      console.log(`${user.email} has been promoted to admin.`);
     } else {
       user = await Users.create({
         name: ADMIN.name,
@@ -50,8 +48,6 @@ const makeAdmin = async () => {
         profileImage: ADMIN.profileImage,
         department: ADMIN.department,
       });
-
-      console.log(`New admin account created: ${user.email}`);
     }
 
     process.exit(0);

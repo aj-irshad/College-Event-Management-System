@@ -40,6 +40,8 @@ import Polls from "../features/polls/pages/Polls";
 
 // Context
 import authContext from "../context/authContext";
+import ParticipateEvent from "../features/events/pages/ParticipateEvent";
+import SearchPage from "../components/pages/SearchPage";
 
 const AppRoutes = () => {
   const { user, isAdmin } = useContext(authContext);
@@ -72,23 +74,17 @@ const AppRoutes = () => {
           />
 
           {/*  USER / COMMON ROUTES  */}
-
+          <Route path="/search" element={<SearchPage />} />
           <Route path="upcoming-events" element={<UpcomingEvents />} />
-
           <Route path="ongoing-events" element={<OngoingEvents />} />
-
           <Route path="completed-events" element={<CompletedEvent />} />
-
           <Route path="blogs" element={<Blogs />} />
-
           <Route path="blogs/:id" element={<BlogPage />} />
-
           <Route path="feedback" element={<Feedback />} />
-
           <Route path="polls" element={<Polls />} />
+          <Route path="/participate/:eventId" element={<ParticipateEvent />} />
 
           {/*  ADMIN ROUTES  */}
-
           <Route element={<AdminRoute />}>
             <Route path="create-event" element={<CreateEvent />} />
             <Route path="/edit-event/:id" element={<EditEvent />} />

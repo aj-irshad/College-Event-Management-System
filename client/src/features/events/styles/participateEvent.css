@@ -1,0 +1,311 @@
+/* Participate Event Page */
+
+.participatePage {
+  width: 100%;
+  max-width: 700px;
+  margin: 40px auto;
+  padding: 35px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+}
+
+/* Header */
+
+.participateHeader {
+  margin-bottom: 25px;
+}
+
+.participateHeader h1 {
+  margin: 0 0 8px;
+  color: #1e293b;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.participateHeader p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Form */
+
+.participateForm {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Participation Options */
+
+.participationOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.participationOption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 14px 16px;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.participationOption:hover {
+  border-color: #94a3b8;
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
+.participationOption input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: #4f46e5;
+  cursor: pointer;
+}
+
+.participationOption span {
+  line-height: 1.4;
+}
+
+/* Selected Option */
+
+.participationOption:has(input:checked) {
+  border-color: #6366f1;
+  background: #eef2ff;
+  color: #3730a3;
+  font-weight: 600;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.08);
+}
+
+/* Actions */
+
+.participateActions {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.participateActions button {
+  flex: 1;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+/* Submit Button */
+
+.participateSubmitBtn {
+  border: none;
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.participateSubmitBtn:hover:not(:disabled) {
+  background: #4338ca;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+  transform: translateY(-1px);
+}
+
+.participateSubmitBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.participateSubmitBtn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Cancel Button */
+
+.participateCancelBtn {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+}
+
+.participateCancelBtn:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  color: #1e293b;
+  transform: translateY(-1px);
+}
+
+/* Large Screens */
+
+@media (min-width: 1200px) {
+  .participatePage {
+    max-width: 720px;
+    margin-top: 45px;
+    padding: 38px;
+  }
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+  .participatePage {
+    max-width: 650px;
+    margin: 30px auto;
+    padding: 30px;
+  }
+}
+
+/* Small Tablet */
+
+@media (max-width: 768px) {
+  .participatePage {
+    margin: 28px auto;
+    padding: 26px;
+  }
+
+  .participateHeader {
+    margin-bottom: 22px;
+  }
+
+  .participateHeader h1 {
+    font-size: 1.7rem;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .participatePage {
+    width: calc(100% - 24px);
+    margin: 20px auto;
+    padding: 22px 18px;
+    border-radius: 12px;
+  }
+
+  .participateHeader h1 {
+    font-size: 1.5rem;
+  }
+
+  .participateHeader p {
+    font-size: 0.9rem;
+  }
+
+  .participationOptions {
+    gap: 10px;
+  }
+
+  .participationOption {
+    min-height: 50px;
+    padding: 13px 14px;
+    font-size: 0.9rem;
+  }
+
+  .participationOption input {
+    width: 17px;
+    height: 17px;
+  }
+
+  .participateActions {
+    flex-direction: column-reverse;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .participateActions button {
+    min-height: 42px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Small Mobile */
+
+@media (max-width: 400px) {
+  .participatePage {
+    width: calc(100% - 18px);
+    margin: 15px auto;
+    padding: 18px 14px;
+    border-radius: 10px;
+  }
+
+  .participateHeader {
+    margin-bottom: 18px;
+  }
+
+  .participateHeader h1 {
+    font-size: 1.4rem;
+  }
+
+  .participateHeader p {
+    font-size: 0.85rem;
+  }
+
+  .participationOption {
+    min-height: 48px;
+    padding: 12px;
+    gap: 10px;
+    font-size: 0.85rem;
+  }
+
+  .participationOption input {
+    width: 16px;
+    height: 16px;
+  }
+
+  .participateActions button {
+    min-height: 40px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Extra Small Mobile */
+
+@media (max-width: 320px) {
+  .participatePage {
+    width: calc(100% - 14px);
+    margin: 12px auto;
+    padding: 15px 11px;
+  }
+
+  .participateHeader h1 {
+    font-size: 1.3rem;
+  }
+
+  .participateHeader p {
+    font-size: 0.8rem;
+  }
+
+  .participationOption {
+    padding: 10px;
+    font-size: 0.8rem;
+  }
+
+  .participateActions {
+    gap: 8px;
+  }
+}

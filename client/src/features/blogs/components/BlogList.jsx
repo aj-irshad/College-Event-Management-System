@@ -18,7 +18,7 @@ const BlogList = ({ blog, isAdmin }) => {
       await deleteBlog(blogId);
       setBlogs((prevBlogs) => prevBlogs.filter((blog) => blog._id !== blogId));
     } catch (err) {
-      console.log(`Error: ${err.message}`);
+      console.error(`Error: ${err.message}`);
     }
   };
 

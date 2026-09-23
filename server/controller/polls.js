@@ -4,9 +4,6 @@ import PollVote from "../model/UserVotes.js";
 const createPolls = async (req, res) => {
   try {
     const { question, options } = req.body;
-
-    console.log(question);
-    console.log(options);
     await AdminPollsForm.create({
       question,
       options,
@@ -86,9 +83,6 @@ const submitPollVote = async (req, res) => {
       user: userId,
       selectedOption,
     });
-
-    console.log("Vote submitted:", vote);
-
     res.status(201).json({
       message: "Vote submitted successfully",
       vote,

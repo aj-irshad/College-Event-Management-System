@@ -1,317 +1,422 @@
-/* Event design variables */
+/* Event Design Variables */
+
 :root {
   --event-bg: #ffffff;
-  --event-border: #f1f5f9;
-  --event-radius: 18px;
-  --event-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  --event-border: #e2e8f0;
+  --event-border-hover: #cbd5e1;
+  --event-radius: 14px;
+  --event-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
 
   --event-text-title: #1e293b;
   --event-text-body: #64748b;
   --event-text-label: #94a3b8;
 
-  --event-primary: #5c5be5;
-  --event-primary-hover: #4b4acb;
+  --event-primary: #4f46e5;
+  --event-primary-hover: #4338ca;
 
-  --icon-bg-date: #eef2ff;
-  --icon-color-date: #6366f1;
+  --event-success: #10b981;
+  --event-success-bg: #ecfdf5;
 
-  --icon-bg-time: #ecfdf5;
-  --icon-color-time: #10b981;
+  --event-danger: #ef4444;
+  --event-danger-hover: #dc2626;
+  --event-danger-bg: #fef2f2;
 
-  --icon-bg-venue: #fffbeb;
-  --icon-color-venue: #f59e0b;
+  --event-icon-date-bg: #eef2ff;
+  --event-icon-date: #6366f1;
 
-  --icon-bg-status: #fef3c7;
-  --icon-color-status: #d97706;
+  --event-icon-time-bg: #ecfdf5;
+  --event-icon-time: #10b981;
+
+  --event-icon-venue-bg: #fffbeb;
+  --event-icon-venue: #f59e0b;
+
+  --event-icon-status-bg: #fef3c7;
+  --event-icon-status: #d97706;
 }
 
-/* Events page header */
+/* Events Page Header */
 
-.title {
+.eventsPageHeader {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 1.5rem;
-
   margin-bottom: 1.75rem;
   padding-bottom: 1.25rem;
-
   border-bottom: 1px solid var(--event-border);
 }
 
-.heading {
+.eventsPageHeading {
   min-width: 0;
 }
 
-.heading p:first-child {
-  margin: 0 0 0.3rem;
-
+.eventsPageHeading h1 {
+  margin: 0 0 0.35rem;
   color: var(--event-text-title);
-
   font-size: clamp(1.6rem, 2.5vw, 2.1rem);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.025em;
 }
 
-.heading p:last-child {
+.eventsPageHeading p {
   margin: 0;
-
   color: var(--event-text-body);
-
   font-size: 0.9rem;
   line-height: 1.5;
 }
 
-/* Events grid */
+/* Events Grid */
 
 .upcomingEventsCards {
   width: 100%;
-
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.25rem;
-
   box-sizing: border-box;
 }
 
-/* Event card */
+/* Event Card */
 
-.event-card {
+.eventCard {
   width: 100%;
-
+  min-width: 0;
   display: flex;
   flex-direction: column;
-
+  box-sizing: border-box;
   background: var(--event-bg);
-
   border: 1px solid var(--event-border);
   border-radius: var(--event-radius);
-
   overflow: hidden;
-
   box-shadow: var(--event-shadow);
-
   transition:
     transform 0.2s ease,
+    border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
 
-.event-card:hover {
+.eventCard:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  border-color: var(--event-border-hover);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
 }
 
-/* Card content */
+/* Main Event Section */
 
-.event-card-content {
+.eventMain {
   flex: 1;
-
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-
-  padding: 1.15rem 1.2rem 1rem;
 }
 
-/* Event type */
+/* Event Header */
 
-.event-type {
+.eventHeader {
+  padding: 1rem 1.2rem 0;
+}
+
+.eventType {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-
-  padding-bottom: 0.65rem;
-
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--event-border);
-
   color: var(--event-primary);
-
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-/* Event title */
-
-.event-card h2,
-.event-card-title {
-  margin: 0;
-
-  color: var(--event-text-title);
-
-  font-size: 1.2rem;
-  font-weight: 750;
-  line-height: 1.3;
-  letter-spacing: -0.015em;
+.eventType svg {
+  flex-shrink: 0;
 }
 
-/* Event description */
+/* Event Content */
 
-.event-card-description {
+.eventContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem 1.2rem 1.2rem;
+}
+
+/* Event Title */
+
+.eventTitle {
   margin: 0;
+  color: var(--event-text-title);
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  overflow-wrap: anywhere;
+}
 
+/* Event Description */
+
+.eventDescription {
+  margin: 0;
   color: var(--event-text-body);
-
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   line-height: 1.55;
 
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-
   overflow: hidden;
 }
 
-/* Event details */
+/* Event Details */
 
-.event-details {
+.eventDetails {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-
-  margin-top: 0.15rem;
+  margin: 0.15rem 0 0;
 }
 
-.event-detail {
-  display: flex;
+.eventDetail {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
   align-items: center;
   gap: 0.7rem;
 }
 
-.event-detail-icon {
+.eventDetail dt {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0;
+}
+
+.eventDetail dd {
+  grid-column: 2;
+  min-width: 0;
+  margin: -1.2rem 0 0;
+  color: var(--event-text-title);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+/* Detail Icon */
+
+.eventDetailIcon {
   width: 38px;
   height: 38px;
-
-  flex-shrink: 0;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
+  flex-shrink: 0;
   border-radius: 10px;
 }
 
-.event-detail-content {
-  min-width: 0;
-
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.event-detail-label {
+.eventDetailLabel {
   color: var(--event-text-label);
-
   font-size: 0.68rem;
   font-weight: 500;
 }
 
-.event-detail-value {
-  color: var(--event-text-title);
+/* Date */
 
-  font-size: 0.8rem;
-  font-weight: 600;
-  line-height: 1.35;
+.eventDate .eventDetailIcon {
+  background: var(--event-icon-date-bg);
+  color: var(--event-icon-date);
 }
 
-/* Event detail icon colors */
+/* Time */
 
-.event-detail.date .event-detail-icon {
-  background: var(--icon-bg-date);
-  color: var(--icon-color-date);
+.eventTime .eventDetailIcon {
+  background: var(--event-icon-time-bg);
+  color: var(--event-icon-time);
 }
 
-.event-detail.time .event-detail-icon {
-  background: var(--icon-bg-time);
-  color: var(--icon-color-time);
+/* Venue */
+
+.eventVenue .eventDetailIcon {
+  background: var(--event-icon-venue-bg);
+  color: var(--event-icon-venue);
 }
 
-.event-detail.venue .event-detail-icon {
-  background: var(--icon-bg-venue);
-  color: var(--icon-color-venue);
+/* Event Footer */
+
+.eventFooter {
+  padding: 0.85rem 1.15rem;
+  background: #fafbfc;
+  border-top: 1px solid var(--event-border);
 }
 
-/* Card footer */
-
-.event-card-footer {
+.eventStats {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-
-  padding: 0.85rem 1.15rem;
-
-  background: #fafbfc;
-
-  border-top: 1px solid var(--event-border);
 }
 
-/* Event status */
+/* Event Status */
 
-.event-status {
+.eventStatus {
   min-width: 0;
-
   display: flex;
   align-items: center;
   gap: 0.6rem;
 }
 
-.event-status-icon {
+.eventStatusIcon {
   width: 34px;
   height: 34px;
-
-  flex-shrink: 0;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
+  flex-shrink: 0;
   border-radius: 9px;
-
-  background: var(--icon-bg-status);
-  color: var(--icon-color-status);
+  background: var(--event-icon-status-bg);
+  color: var(--event-icon-status);
 }
 
-.event-status-text {
+.eventStatusText {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
 }
 
-.event-status-label {
+.eventStatusText strong {
   color: var(--event-text-title);
-
   font-size: 0.72rem;
   font-weight: 700;
 }
 
-.event-status-value {
+.eventStatusText span {
   color: var(--event-text-label);
-
   font-size: 0.68rem;
 }
 
-/* Admin action buttons */
+/* Event Actions */
 
-.event-actions {
+.eventActions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.event-actions button {
-  min-width: 62px;
+/* Shared Event Button */
 
-  padding: 0.55rem 0.75rem;
-
+.eventActions button,
+.eventsPageHeader button,
+.eventStats > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 38px;
+  padding: 0.55rem 0.8rem;
   border-radius: 8px;
-
-  font-size: 0.75rem;
+  font-family: inherit;
+  font-size: 0.78rem;
   font-weight: 600;
-
   cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.eventActions button:hover:not(:disabled),
+.eventsPageHeader button:hover:not(:disabled),
+.eventStats > button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+/* Create Event */
+
+.eventBtnCreate {
+  border: none;
+  background: var(--event-primary);
+  color: #ffffff;
+}
+
+.eventBtnCreate:hover {
+  background: var(--event-primary-hover);
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+}
+
+/* Participate */
+
+.eventBtnPrimary {
+  border: none;
+  background: var(--event-primary);
+  color: #ffffff;
+}
+
+.eventBtnPrimary:hover {
+  background: var(--event-primary-hover);
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
+}
+
+/* Participated */
+
+.eventBtnDisabled {
+  border: 1px solid #d1d5db;
+  background: #e5e7eb;
+  color: #6b7280;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.eventBtnDisabled:hover {
+  transform: none !important;
+  box-shadow: none;
+}
+
+/* Edit */
+
+.eventBtnSecondary {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+}
+
+.eventBtnSecondary:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+/* Delete */
+
+.eventBtnDanger {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.eventBtnDanger:hover {
+  border-color: #fca5a5;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Feedback */
+
+.eventFeedbackBtn {
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  color: #4f46e5;
+}
+
+.eventFeedbackBtn:hover {
+  border-color: #a5b4fc;
+  background: #e0e7ff;
+  color: #4338ca;
 }
 
 /* Tablet */
@@ -332,7 +437,7 @@
   }
 }
 
-/* Large desktop */
+/* Large Desktop */
 
 @media (min-width: 1350px) {
   .upcomingEventsCards {
@@ -341,49 +446,104 @@
   }
 }
 
-/* Mobile header */
+/* Mobile Header */
 
 @media (max-width: 540px) {
-  .title {
+  .eventsPageHeader {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
-
     margin-bottom: 1.25rem;
   }
 
-  .title > button,
-  .title > a {
+  .eventsPageHeader > button {
     width: 100%;
-    justify-content: center;
   }
 
-  .heading p:first-child {
+  .eventsPageHeading h1 {
     font-size: 1.6rem;
   }
 
-  .heading p:last-child {
+  .eventsPageHeading p {
     font-size: 0.85rem;
+  }
+
+  .eventStats {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .eventStats > button {
+    width: 100%;
+  }
+
+  .eventActions {
+    width: 100%;
+  }
+
+  .eventActions button {
+    flex: 1;
   }
 }
 
-/* Small mobile */
+/* Small Mobile */
 
 @media (max-width: 480px) {
   .upcomingEventsCards {
     gap: 1rem;
   }
 
-  .event-card-content {
-    padding: 1rem;
+  .eventHeader {
+    padding: 0.9rem 1rem 0;
   }
 
-  .event-card-footer {
+  .eventContent {
+    padding: 0.9rem 1rem 1rem;
+  }
+
+  .eventFooter {
     padding: 0.75rem 1rem;
   }
 
-  .event-card h2,
-  .event-card-title {
+  .eventTitle {
     font-size: 1.1rem;
+  }
+
+  .eventDescription {
+    font-size: 0.82rem;
+  }
+
+  .eventActions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .eventActions button {
+    width: 100%;
+  }
+}
+
+/* Extra Small Mobile */
+
+@media (max-width: 350px) {
+  .eventActions {
+    grid-template-columns: 1fr;
+  }
+
+  .eventDetail {
+    gap: 0.55rem;
+  }
+
+  .eventDetail dt {
+    gap: 0.55rem;
+  }
+
+  .eventDetailIcon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .eventDetail dd {
+    font-size: 0.75rem;
   }
 }
