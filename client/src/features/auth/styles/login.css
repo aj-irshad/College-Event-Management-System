@@ -136,6 +136,37 @@
   text-decoration: underline;
 }
 
+/* Add these styles to your login.css */
+
+.passwordInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInputWrapper input {
+  width: 100%;
+  padding-right: 45px; /* Make space for the absolute toggle button */
+}
+
+.passwordToggleBtn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #a0aec0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.passwordToggleBtn:hover {
+  color: rgb(101, 101, 246);
+}
+
 @media (max-width: 768px) {
   .LoginMain {
     flex-direction: column;

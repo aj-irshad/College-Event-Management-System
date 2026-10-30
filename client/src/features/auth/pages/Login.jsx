@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { GraduationCap, Mail, LockKeyhole } from "lucide-react";
+import { GraduationCap, Mail, LockKeyhole, Eye, EyeOff } from "lucide-react";
 
 import "../auth.css";
 import "../styles/login.css";
@@ -61,6 +61,8 @@ const Login = () => {
       <LoginForm
         Mail={Mail}
         LockKeyhole={LockKeyhole}
+        Eye={Eye}
+        EyeOff={EyeOff}
         formData={formData}
         handleChange={handleChange}
         handleSubmit={handleSubmit}

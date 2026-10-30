@@ -1,5 +1,3 @@
-/* Header */
-
 .header {
   grid-area: header;
   width: 100%;
@@ -7,18 +5,55 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: 1rem;
   padding: 0 1.5rem;
   box-sizing: border-box;
   background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  position: relative;
+  overflow: visible;
+  z-index: 1100;
 }
 
-/* Search Bar */
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  max-width: 520px;
+}
+
+/* Hamburger Menu Toggle Button (Hidden on Desktop) */
+.menuToggleBtn {
+  display: none;
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+}
+
+.menuToggleBtn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+}
 
 .searchBar {
   position: relative;
   width: 100%;
-  max-width: 420px;
   display: flex;
   align-items: center;
   background: #f8fafc;
@@ -26,7 +61,6 @@
   border-radius: 10px;
   transition:
     border-color 0.2s ease,
-    background-color 0.2s ease,
     box-shadow 0.2s ease;
 }
 
@@ -36,45 +70,37 @@
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 
-/* Search Input */
-
 .searchInput {
   width: 100%;
   min-width: 0;
-  padding: 10px 45px 10px 13px;
+  padding: 9px 40px 9px 12px;
   box-sizing: border-box;
   border: none;
   outline: none;
   background: transparent;
   color: #1e293b;
-  font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 .searchInput::placeholder {
   color: #94a3b8;
 }
 
-/* Search Button */
-
 .searchBtn {
   position: absolute;
   top: 50%;
-  right: 7px;
-  width: 34px;
-  height: 34px;
+  right: 6px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   transform: translateY(-50%);
   border: none;
-  border-radius: 7px;
+  border-radius: 6px;
   background: transparent;
   color: #64748b;
   cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
 }
 
 .searchBtn:hover {
@@ -82,182 +108,307 @@
   color: #4f46e5;
 }
 
-.searchBtn:active {
-  background: #e0e7ff;
-}
-
-.searchBtn:focus-visible {
-  outline: 2px solid #6366f1;
-  outline-offset: 2px;
-}
-
-/* User Profile */
-
-.userProfile {
-  min-width: 0;
+.notificationWrapper {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 11px;
 }
 
-/* User Image */
+.bellBtn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  color: #475569;
+}
+
+.bellBtn:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.notificationBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #ef4444;
+  color: #ffffff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 2px solid #ffffff;
+  box-sizing: border-box;
+  line-height: 1;
+}
+
+.notificationDropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 360px;
+  max-width: min(360px, calc(100vw - 1.5rem));
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -3px rgba(15, 23, 42, 0.1);
+  z-index: 9999;
+  overflow: hidden;
+  animation: notificationPanelIn 0.16s ease;
+}
+
+@keyframes notificationPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notificationDropdown {
+    animation: none;
+  }
+}
+
+.notificationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fafbfc;
+}
+
+.notificationTitleArea {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.notificationHeader h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.notificationCountBadge {
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.markAsReadBtn {
+  background: none;
+  border: none;
+  color: #4f46e5;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.markAsReadBtn:disabled {
+  color: #94a3b8;
+  cursor: default;
+}
+
+.notificationList {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.notificationItem {
+  display: flex;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-bottom: 1px solid #f8fafc;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.notificationItem:hover {
+  background-color: #f8fafc;
+}
+
+.notificationItem.unread {
+  background: #eef2ff;
+  box-shadow: inset 3px 0 0 #6366f1;
+}
+
+.notificationItem.unread:hover {
+  background-color: #e0e7ff;
+}
+
+.notificationItem.unread .notificationItemTop h4 {
+  color: #312e81;
+}
+
+.notificationItemIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #eef2ff;
+  color: #4f46e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notificationItemIcon.muted {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.notificationItemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.notificationItemTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.15rem;
+}
+
+.notificationItemTop h4 {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.notificationItemTop span {
+  font-size: 0.65rem;
+  color: #94a3b8;
+}
+
+.notificationItemContent p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #475569;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.noNotifications {
+  text-align: center;
+  padding: 1.5rem;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.notificationError {
+  color: #b91c1c;
+}
+
+.notificationFooter {
+  padding: 0.55rem 1rem;
+  background: #fafbfc;
+  border-top: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+.closeNotificationBtn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
 .userImage {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
   object-fit: cover;
   border: 2px solid #e2e8f0;
   border-radius: 50%;
   background: #f1f5f9;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
 }
 
-/* Profile Information */
-
 .profileInfo {
-  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
 .userName {
-  max-width: 180px;
   margin: 0;
   color: #1e293b;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
 .department {
-  max-width: 180px;
   margin: 2px 0 0;
   color: #64748b;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 500;
-  line-height: 1.3;
   text-transform: capitalize;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
-
-/* Tablet */
-
-@media (max-width: 900px) {
-  .header {
-    padding: 0 1.1rem;
-    gap: 1rem;
-  }
-
-  .searchBar {
-    max-width: 350px;
-  }
-
-  .userName {
-    max-width: 150px;
-  }
-
-  .department {
-    max-width: 150px;
-  }
-}
-
-/* Small Tablet */
 
 @media (max-width: 768px) {
-  .header {
-    padding: 0 1rem;
+  .menuToggleBtn {
+    display: flex; /* Show hamburger button on mobile */
   }
-
-  .searchBar {
-    max-width: 300px;
-  }
-
   .profileInfo {
     display: none;
   }
-
-  .userProfile {
-    gap: 0;
+  .headerRight {
+    position: relative;
   }
-
-  .userImage {
-    width: 40px;
-    height: 40px;
-  }
-}
-
-/* Mobile */
-
-@media (max-width: 600px) {
-  .header {
-    gap: 0.75rem;
-    padding: 0 0.75rem;
-  }
-
-  .searchBar {
-    max-width: none;
-  }
-
-  .searchInput {
-    padding: 9px 42px 9px 11px;
-    font-size: 0.85rem;
-  }
-
-  .searchBtn {
-    width: 32px;
-    height: 32px;
-    right: 5px;
-  }
-
-  .userImage {
-    width: 38px;
-    height: 38px;
+  .notificationDropdown {
+    width: min(340px, calc(100vw - 1.25rem));
+    max-width: calc(100vw - 1.25rem);
+    right: 0;
   }
 }
 
-/* Small Mobile */
-
-@media (max-width: 400px) {
-  .header {
-    padding: 0 0.6rem;
+@media (max-width: 480px) {
+  .notificationWrapper {
+    position: static;
   }
-
-  .userImage {
-    width: 36px;
-    height: 36px;
-  }
-
-  .searchInput {
-    font-size: 0.8rem;
-  }
-}
-
-/* Extra Small Mobile */
-
-@media (max-width: 320px) {
-  .header {
-    gap: 0.5rem;
-  }
-
-  .userImage {
-    width: 34px;
-    height: 34px;
-  }
-
-  .searchInput {
-    padding-left: 9px;
-    font-size: 0.78rem;
-  }
-
-  .searchBtn {
-    width: 30px;
-    height: 30px;
+  .notificationDropdown {
+    width: calc(100vw - 1rem);
+    max-width: calc(100vw - 1rem);
+    right: 0.5rem;
   }
 }

@@ -1,79 +1,164 @@
-#home aside {
+/* Sidebar Container */
+#home aside,
+.appSidebar {
   grid-area: aside;
   height: 100vh;
   position: sticky;
   top: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 1.5rem 1rem;
-  background-color: #0f172a; /* Dark sleek slate theme */
+  padding: 1.25rem 0.85rem;
+  background-color: #0f172a; /* Sleek dark slate */
   border-right: 1px solid #1e293b;
-  overflow-y: auto;
+  box-sizing: border-box;
+  overflow: hidden; /* Prevents whole sidebar from scrolling out of bounds */
+}
 
-  position: sticky;
-  top: 0;
-  /* height: 100vh; */
+/* Sidebar Brand / Header */
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem 1.25rem 0.75rem;
+  border-bottom: 1px solid #1e293b;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+}
+
+.sidebarLogoIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgb(123, 123, 229), rgb(101, 101, 246));
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(101, 101, 250, 0.25);
+}
+
+.sidebarBrandText h2 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.2;
+}
+
+.sidebarBrandText span {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* Scrollable Navigation Area */
+.sidebarNav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  overflow-y: auto; /* Only links scroll if they exceed height */
+  padding-right: 2px;
 }
 
 /* Sidebar Navigation Links */
-#home aside a {
+#home aside a,
+.appSidebar a {
   display: flex;
   align-items: center;
-  padding: 0.75rem 1rem;
-  font-size: 0.95rem;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.88rem;
   font-weight: 500;
   color: #94a3b8;
   text-decoration: none;
   border-radius: 8px;
   transition: all 0.2s ease-in-out;
+  flex-shrink: 0;
 }
 
 /* Hover and Focus States */
-#home aside a:hover {
+#home aside a:hover,
+.appSidebar a:hover {
   background-color: #1e293b;
   color: #ffffff;
-  transform: translateX(4px);
+  transform: translateX(3px);
 }
 
-/* Active Link (for future NavLink usage) */
-#home aside a.active {
-  background-color: #2563eb;
-  color: #ffffff;
+/* Active Link Styling */
+#home aside a.active,
+.appSidebar a.active {
+  background: linear-gradient(to right, rgba(37, 99, 235, 0.2), transparent);
+  color: #60a5fa;
+  border-left: 3px solid #2563eb;
+  font-weight: 600;
 }
 
-/* Push 'Logout' to the bottom */
-#home aside a[href="/logout"] {
+/* Pinned Footer Section */
+.sidebarFooter {
+  flex-shrink: 0;
   margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid #1e293b;
+}
+
+/* Logout Button / Link Styling */
+#home aside a[href="/logout"],
+.appSidebar a[href="/logout"],
+.appSidebar .logoutBtnClass {
   color: #f87171;
   border: 1px solid rgba(239, 68, 68, 0.2);
+  width: 100%;
+  box-sizing: border-box;
 }
 
-#home aside a[href="/logout"]:hover {
-  background-color: rgba(239, 68, 68, 0.15);
+#home aside a[href="/logout"]:hover,
+.appSidebar a[href="/logout"]:hover {
+  background-color: rgba(239, 68, 68, 0.12);
   color: #ef4444;
   transform: none;
+  border-color: rgba(239, 68, 68, 0.4);
 }
 
-/* Custom Scrollbar for Aside */
-#home aside::-webkit-scrollbar {
-  width: 5px;
+/* Custom Scrollbar for Nav Links */
+.sidebarNav::-webkit-scrollbar {
+  width: 4px;
 }
 
-#home aside::-webkit-scrollbar-thumb {
+.sidebarNav::-webkit-scrollbar-thumb {
   background-color: #334155;
   border-radius: 4px;
 }
 
-@media (max-width: 768px) {
-  #home aside {
-    padding: 1rem 0.5rem;
+/* Responsive Tablet & Mobile Adjustments */
+@media (max-width: 1024px) {
+  .sidebarBrandText {
+    display: none;
   }
-
-  #home aside a {
-    font-size: 0.85rem;
-    padding: 0.6rem 0.5rem;
+  .sidebarHeader {
     justify-content: center;
-    text-align: center;
+    padding: 0.5rem 0 1rem 0;
+  }
+  #home aside a span,
+  .appSidebar a span {
+    display: none;
+  }
+  #home aside,
+  .appSidebar {
+    width: 75px;
+    padding: 1rem 0.5rem;
+    align-items: center;
+  }
+  #home aside a,
+  .appSidebar a {
+    justify-content: center;
+    padding: 0.75rem;
+  }
+  #home aside a.active,
+  .appSidebar a.active {
+    border-left: none;
+    background-color: #1e293b;
+    color: #60a5fa;
   }
 }

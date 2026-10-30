@@ -6,41 +6,45 @@
   color: var(--text-primary, #111827);
 }
 
-/* Back Button */
+/* Enhanced Back Button */
 .back-to-blogs {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   margin-bottom: 2rem;
-  padding: 0.65rem 0.9rem;
+  padding: 0.6rem 1rem;
   border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: 9px;
+  border-radius: 50px; /* Modern pill style */
   color: var(--text-primary, #374151);
   background: var(--card-bg, #ffffff);
   text-decoration: none;
   font-size: 0.88rem;
   font-weight: 600;
-  transition:
-    transform 0.2s ease,
-    background 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease;
 }
 
 .back-to-blogs:hover {
-  transform: translateX(-2px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--primary-color, #6366f1);
+  color: var(--primary-color, #6366f1);
   background: var(--secondary-bg, #f9fafb);
 }
 
-/* Header */
+/* Header - Stacked by default, can be flex on wider screens if preferred */
 .blog-page-header {
   max-width: 900px;
   margin: 0 auto 2rem;
+  display: flex;
+  flex-direction: column; /* Ensures date is always stacked above title */
+  gap: 0.5rem;
 }
 
 .blog-page-date {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  margin-bottom: 0.8rem;
   color: var(--primary-color, #6366f1);
   font-size: 0.9rem;
   font-weight: 600;
@@ -49,11 +53,11 @@
 .blog-page-header h1 {
   margin: 0;
   font-size: clamp(1.8rem, 5vw, 2.5rem);
-  line-height: 1.15;
+  line-height: 1.2;
   font-weight: 800;
 }
 
-/* Image */
+/* Image with Shadow Separation */
 .blog-page-image-wrapper {
   width: 100%;
   max-width: 700px;
@@ -61,6 +65,9 @@
   overflow: hidden;
   border-radius: 16px;
   background: var(--secondary-bg, #f3f4f6);
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1); /* Adds depth shadow */
 }
 
 .blog-page-image {
@@ -104,18 +111,19 @@
   color: var(--text-secondary, #6b7280);
 }
 
-/* Responsive */
+/* Responsive tweaks for smaller screens */
 @media (max-width: 600px) {
   .blog-page {
     padding: 1.25rem 1rem;
   }
 
   .blog-page-header h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 
   .blog-page-image-wrapper {
-    border-radius: 10px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px -3px rgba(0, 0, 0, 0.08);
   }
 
   .blog-page-content {

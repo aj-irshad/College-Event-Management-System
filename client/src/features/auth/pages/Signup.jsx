@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signUp } from "../../../services/authService";
-import { UsersRound } from "lucide-react";
+import { UsersRound, Eye, EyeOff } from "lucide-react";
 import SignupForm from "../components/SignupForm";
 import "../styles/signup.css";
 import "../auth.css";
@@ -93,6 +93,8 @@ function Signup() {
           formData={formData}
           handleChange={handleChange}
           handleSubmit={handleSubmit}
+          Eye={Eye}
+          EyeOff={EyeOff}
         />
       </div>
     </main>

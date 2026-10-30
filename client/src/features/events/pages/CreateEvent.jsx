@@ -24,8 +24,10 @@ const CreateEvent = () => {
     venue: "",
     start_at: "",
     end_at: "",
+    price: 0,
   });
 
+  const [priceType, setPriceType] = useState("free"); // "free" or "paid"
   const [customEventType, setCustomEventType] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -50,6 +52,23 @@ const CreateEvent = () => {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handlePriceTypeChange = (e) => {
+    const value = e.target.value;
+    setPriceType(value);
+
+    if (value === "free") {
+      setEventData((prev) => ({
+        ...prev,
+        price: 0,
+      }));
+    } else {
+      setEventData((prev) => ({
+        ...prev,
+        price: "",
+      }));
+    }
   };
 
   const handleEventTypeChange = (e) => {
@@ -79,19 +98,29 @@ const CreateEvent = () => {
         return;
       }
 
+      if (eventData.event_type === "Other" && !customEventType.trim()) {
+        setError("Please enter an event type.");
+        setLoading(false);
+        return;
+      }
+
+      if (
+        priceType === "paid" &&
+        (!eventData.price || Number(eventData.price) <= 0)
+      ) {
+        setError("Please enter a valid ticket price amount.");
+        setLoading(false);
+        return;
+      }
+
       const finalEventData = {
         ...eventData,
         event_type:
           eventData.event_type === "Other"
             ? customEventType.trim()
             : eventData.event_type,
+        price: priceType === "free" ? 0 : Number(eventData.price),
       };
-
-      if (eventData.event_type === "Other" && !customEventType.trim()) {
-        setError("Please enter an event type.");
-        setLoading(false);
-        return;
-      }
 
       await createEventContext(finalEventData);
 
@@ -169,6 +198,7 @@ const CreateEvent = () => {
               {eventData.event_type === "Other" && (
                 <input
                   type="text"
+                  className="custom-input-spacing"
                   placeholder="Enter event type"
                   value={customEventType}
                   onChange={(e) => setCustomEventType(e.target.value)}
@@ -193,6 +223,50 @@ const CreateEvent = () => {
                 required
               />
             </div>
+          </div>
+
+          {/* Ticket Pricing (Free / Paid) */}
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="priceType">Participation Type</label>
+
+              <select
+                id="priceType"
+                value={priceType}
+                onChange={handlePriceTypeChange}
+                required
+              >
+                <option value="free">Free Participation</option>
+                <option value="paid">Paid Ticket</option>
+              </select>
+            </div>
+
+            {priceType === "paid" ? (
+              <div className="form-group">
+                <label htmlFor="price">Ticket Amount (Rs)</label>
+
+                <input
+                  type="number"
+                  id="price"
+                  name="price"
+                  step="10"
+                  placeholder="e.g. 15.00"
+                  value={eventData.price}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            ) : (
+              <div className="form-group">
+                <label>Ticket Cost</label>
+                <input
+                  type="text"
+                  value="Rs 0.00 (Free)"
+                  disabled
+                  className="disabled-input-field"
+                />
+              </div>
+            )}
           </div>
 
           {/* Start + End */}

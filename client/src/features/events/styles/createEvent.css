@@ -269,6 +269,17 @@
   cursor: not-allowed;
 }
 
+/* Additional pricing field adjustments */
+.custom-input-spacing {
+  margin-top: 0.5rem;
+}
+
+.disabled-input-field {
+  background-color: #f8fafc !important;
+  color: #64748b !important;
+  cursor: not-allowed;
+}
+
 /* 
    Tablet
  */

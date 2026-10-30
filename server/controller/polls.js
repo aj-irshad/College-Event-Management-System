@@ -1,13 +1,22 @@
 import AdminPollsForm from "../model/adminPolls.js";
 import PollVote from "../model/UserVotes.js";
+
+import createNotification from "../utils/bellNotification.js";
 // ADMIN CREATE POLL FORMS
 const createPolls = async (req, res) => {
   try {
     const { question, options } = req.body;
-    await AdminPollsForm.create({
+    const newPoll = await AdminPollsForm.create({
       question,
       options,
     });
+
+    createNotification(
+      "New Campus Poll Active",
+      `Cast your vote for: "${question}"`,
+      "poll",
+      newPoll._id,
+    ).catch((err) => console.error("Background notification error:", err));
 
     res.status(201).json({
       message: "Poll successfully created",
@@ -83,6 +92,7 @@ const submitPollVote = async (req, res) => {
       user: userId,
       selectedOption,
     });
+
     res.status(201).json({
       message: "Vote submitted successfully",
       vote,

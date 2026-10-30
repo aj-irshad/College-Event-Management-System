@@ -5,7 +5,6 @@ import eventContext from "../../../context/EventContext.jsx";
 import "../styles/editEvent.css";
 
 import { updateEvent } from "../../../services/eventService.js";
-// import { getEvent, updateEvent } from "../../../services/eventService.js";
 
 const EditEvent = () => {
   const formatDateTimeLocal = (date) => {
@@ -27,6 +26,8 @@ const EditEvent = () => {
   const [editStartAt, setEditStartAt] = useState("");
   const [editEndAt, setEditEndAt] = useState("");
   const [editVenue, setEditVenue] = useState("");
+  const [editPrice, setEditPrice] = useState(0);
+  const [priceType, setPriceType] = useState("free");
 
   const { events, setEvents } = useContext(eventContext);
 
@@ -45,11 +46,39 @@ const EditEvent = () => {
       setEditEndAt(formatDateTimeLocal(event.end_at));
       setEditVenue(event.venue);
       setEditStatus(event.status);
+
+      const eventPrice = event.price !== undefined ? event.price : 0;
+      setEditPrice(eventPrice);
+      setPriceType(eventPrice > 0 ? "paid" : "free");
     }
   }, [event]);
 
+  const handlePriceTypeChange = (e) => {
+    const value = e.target.value;
+    setPriceType(value);
+
+    if (value === "free") {
+      setEditPrice(0);
+    } else if (editPrice === 0) {
+      setEditPrice("");
+    }
+  };
+
   const handleEdit = async (e, id) => {
     e.preventDefault();
+
+    // Enforce end time is strictly greater than start time
+    if (new Date(editEndAt) <= new Date(editStartAt)) {
+      alert(
+        "End date and time must be strictly after the start date and time.",
+      );
+      return;
+    }
+
+    if (priceType === "paid" && (!editPrice || Number(editPrice) <= 0)) {
+      alert("Please enter a valid ticket price amount.");
+      return;
+    }
 
     const updatedEvent = {
       title: editTitle,
@@ -59,6 +88,7 @@ const EditEvent = () => {
       end_at: new Date(editEndAt),
       venue: editVenue,
       status: editStatus,
+      price: priceType === "free" ? 0 : Number(editPrice),
     };
 
     try {
@@ -115,8 +145,35 @@ const EditEvent = () => {
               onChange={(e) => setEditEventType(e.target.value)}
             />
 
-            <label htmlFor="eventStatus">Status:</label>
+            {/* Admission Type Selection */}
+            <label htmlFor="priceType">Participation Type:</label>
+            <select
+              id="priceType"
+              required
+              value={priceType}
+              onChange={handlePriceTypeChange}
+            >
+              <option value="free">Free Participation</option>
+              <option value="paid">Paid Ticket</option>
+            </select>
 
+            {/* Conditional Price Amount Input */}
+            {priceType === "paid" && (
+              <>
+                <label htmlFor="editPrice">Ticket Amount (Rs):</label>
+                <input
+                  type="number"
+                  id="editPrice"
+                  step="10"
+                  required
+                  placeholder="e.g. 500.00"
+                  value={editPrice}
+                  onChange={(e) => setEditPrice(e.target.value)}
+                />
+              </>
+            )}
+
+            <label htmlFor="eventStatus">Status:</label>
             <select
               id="eventStatus"
               required
@@ -143,6 +200,7 @@ const EditEvent = () => {
               type="datetime-local"
               id="endAt"
               required
+              min={editStartAt} // Dynamically restricts selecting a time earlier than the start date/time
               value={editEndAt}
               onChange={(e) => setEditEndAt(e.target.value)}
             />

@@ -1,18 +1,16 @@
 import {
   Users,
   CalendarDays,
-  Clock,
   MapPin,
   Trash,
   Edit,
   MessageSquarePlus,
-  UserPlus,
+  Check,
 } from "lucide-react";
 
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
-import EventBtn from "../components/EventBtn";
 import eventContext from "../../../context/EventContext";
 import { formatDate, formatTime } from "../../../hooks/dateFormatter.js";
 
@@ -20,146 +18,132 @@ import "../styles/eventcard.css";
 
 const EventCards = ({ event, isAdmin, hasParticipated }) => {
   const navigate = useNavigate();
-
   const { deleteEventContext } = useContext(eventContext);
 
   const handleDeleteEvent = async (eventId) => {
     await deleteEventContext(eventId);
   };
 
+  // Determine pricing display text
+  const priceDisplay =
+    event.price && event.price > 0
+      ? `Rs ${Number(event.price).toFixed(2)} Paid`
+      : "Free";
+
   return (
     <article className="eventCard">
-      <section className="eventMain">
-        <header className="eventHeader">
-          <div className="eventType">
-            <Users size={18} aria-hidden="true" />
-            <span>{event.event_type}</span>
-          </div>
-        </header>
+      {/* Top Header / Badges Row (Replaces the image banner) */}
+      <div className="eventCard-header-badges">
+        <span
+          className={`eventStatus-badge eventStatus-${(
+            event.status || "Upcoming"
+          ).toLowerCase()}`}
+        >
+          {event.status || "Upcoming"}
+        </span>
+        <span
+          className={`eventPrice-badge ${
+            event.price && event.price > 0 ? "paid" : "free"
+          }`}
+        >
+          {priceDisplay}
+        </span>
+      </div>
 
-        <div className="eventContent">
-          <h2 className="eventTitle">{event.title}</h2>
-
-          <p className="eventDescription">{event.description}</p>
-
-          <dl className="eventDetails">
-            {/* Date */}
-            <div className="eventDetail eventDate">
-              <dt>
-                <span className="eventDetailIcon">
-                  <CalendarDays size={18} aria-hidden="true" />
-                </span>
-
-                <span className="eventDetailLabel">Date</span>
-              </dt>
-
-              <dd>
-                <time dateTime={event.start_at}>
-                  {formatDate(event.start_at)}
-                </time>
-              </dd>
-            </div>
-
-            {/* Time */}
-            <div className="eventDetail eventTime">
-              <dt>
-                <span className="eventDetailIcon">
-                  <Clock size={18} aria-hidden="true" />
-                </span>
-
-                <span className="eventDetailLabel">Time</span>
-              </dt>
-
-              <dd>
-                <time dateTime={event.start_at}>
-                  {formatTime(event.start_at)}
-                </time>
-
-                {" – "}
-
-                <time dateTime={event.end_at}>{formatTime(event.end_at)}</time>
-              </dd>
-            </div>
-
-            {/* Venue */}
-            <div className="eventDetail eventVenue">
-              <dt>
-                <span className="eventDetailIcon">
-                  <MapPin size={18} aria-hidden="true" />
-                </span>
-
-                <span className="eventDetailLabel">Venue</span>
-              </dt>
-
-              <dd>{event.venue}</dd>
-            </div>
-          </dl>
+      {/* Main Content Body */}
+      <div className="eventCard-body">
+        <div className="eventCard-type-wrapper">
+          <span className="eventCard-type">
+            <Users size={14} aria-hidden="true" />
+            {event.event_type}
+          </span>
         </div>
-      </section>
 
-      <footer className="eventFooter">
-        <div className="eventStats">
-          {/* Event Status */}
-          <div className="eventStatus">
-            <span className="eventStatusIcon">
-              <Users size={18} aria-hidden="true" />
+        <h2 className="eventCard-title" title={event.title}>
+          {event.title}
+        </h2>
+
+        <p className="eventCard-description">{event.description}</p>
+
+        {/* Event Metadata (Date, Time, Venue) */}
+        <div className="eventCard-meta">
+          <div className="eventCard-meta-item">
+            <CalendarDays size={16} aria-hidden="true" />
+            <span>
+              {formatDate(event.start_at)} • {formatTime(event.start_at)} -{" "}
+              {formatTime(event.end_at)}
             </span>
-
-            <div className="eventStatusText">
-              <strong>Status</strong>
-              <span>{event.status}</span>
-            </div>
           </div>
 
-          {/* User Participation Button */}
-          {!isAdmin && event.status === "Upcoming" && (
-            <EventBtn
-              text={hasParticipated ? "Participated" : "Participate"}
-              icon={<UserPlus size={16} />}
-              onClick={
-                hasParticipated
-                  ? null
-                  : () => navigate(`/participate/${event._id}`)
-              }
-              disabled={hasParticipated}
-              className={
-                hasParticipated ? "eventBtnDisabled" : "eventBtnPrimary"
-              }
-            />
-          )}
-
-          {/* Admin Actions */}
-          {isAdmin && (
-            <div className="eventActions">
-              <EventBtn
-                text="Edit"
-                icon={<Edit size={16} />}
-                className="eventBtnSecondary"
-                onClick={() => navigate(`/edit-event/${event._id}`)}
-              />
-
-              <EventBtn
-                text="Delete"
-                icon={<Trash size={16} />}
-                className="eventBtnDanger"
-                onClick={() => handleDeleteEvent(event._id)}
-              />
-
-              {/* Feedback for Completed Events */}
-              {event.status === "Completed" && (
-                <button
-                  className="eventFeedbackBtn"
-                  onClick={() => navigate(`/feedback/${event._id}`)}
-                  type="button"
-                >
-                  <MessageSquarePlus size={16} />
-                  <span>Feedback</span>
-                </button>
-              )}
-            </div>
-          )}
+          <div className="eventCard-meta-item">
+            <MapPin size={16} aria-hidden="true" />
+            <span className="eventCard-venue">{event.venue}</span>
+          </div>
         </div>
-      </footer>
+      </div>
+
+      {/* Card Footer Actions */}
+      <div className="eventCard-footer">
+        {!isAdmin ? (
+          <div className="eventCard-actions">
+            {hasParticipated ? (
+              <button
+                type="button"
+                className="eventCard-btn eventCard-btn-success"
+                disabled
+              >
+                <Check size={16} /> Registered
+              </button>
+            ) : event.status === "Upcoming" ? (
+              <button
+                type="button"
+                className="eventCard-btn eventCard-btn-primary"
+                onClick={() => navigate(`/participate/${event._id}`)}
+              >
+                {event.price && event.price > 0
+                  ? `Pay Rs ${event.price}`
+                  : "Participate"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="eventCard-btn eventCard-btn-secondary"
+                disabled
+              >
+                {event.status}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="eventCard-actions admin-actions">
+            <button
+              type="button"
+              className="eventCard-btn eventCard-btn-secondary"
+              onClick={() => navigate(`/edit-event/${event._id}`)}
+            >
+              <Edit size={16} /> Edit
+            </button>
+
+            <button
+              type="button"
+              className="eventCard-btn eventCard-btn-danger"
+              onClick={() => handleDeleteEvent(event._id)}
+            >
+              <Trash size={16} /> Delete
+            </button>
+
+            {event.status === "Completed" && (
+              <button
+                type="button"
+                className="eventCard-btn eventCard-btn-primary feedback-btn"
+                onClick={() => navigate(`/feedback/${event._id}`)}
+              >
+                <MessageSquarePlus size={16} /> Feedback
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </article>
   );
 };

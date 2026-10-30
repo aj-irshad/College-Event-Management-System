@@ -1,6 +1,6 @@
 import FeedbackForm from "../model/feedbackAdmin.js";
 import Feedback from "../model/feedback.js";
-
+import createNotification from "../utils/bellNotification.js";
 // create feedback
 const createFeedback = async (req, res) => {
   try {
@@ -10,6 +10,13 @@ const createFeedback = async (req, res) => {
       event,
       question,
     });
+
+    createNotification(
+      "New Feedback Form",
+      `A new feedback form has been posted.`,
+      "feedback",
+      feedback._id,
+    ).catch((err) => console.error("Background notification error:", err));
 
     res.status(201).json({
       message: "Feedback created successfully",

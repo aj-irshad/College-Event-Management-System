@@ -1,5 +1,13 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-const LoginForm = ({ formData, handleChange, handleSubmit }) => {
+
+const LoginForm = ({ formData, handleChange, handleSubmit, Eye, EyeOff }) => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="loginForm">
       <section className="heading">
@@ -22,15 +30,25 @@ const LoginForm = ({ formData, handleChange, handleSubmit }) => {
 
       <section className="loginPassword formGrp">
         <label htmlFor="loginPassword">Password</label>
-        <input
-          type="password"
-          name="password"
-          id="loginPassword"
-          value={formData.password}
-          onChange={handleChange}
-          placeholder="Enter your password"
-          required
-        />
+        <div className="passwordInputWrapper">
+          <input
+            type={showPassword ? "text" : "password"}
+            name="password"
+            id="loginPassword"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="Enter your password"
+            required
+          />
+          <button
+            type="button"
+            className="passwordToggleBtn"
+            onClick={togglePasswordVisibility}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
       </section>
       <button className="loginBtn">Login</button>
 

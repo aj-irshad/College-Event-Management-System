@@ -66,4 +66,20 @@ const getMyParticipation = async (req, res) => {
   }
 };
 
-export { participateInEvent, getMyParticipation };
+// ADMIN: FETCH ALL PARTICIPANTS WITH USER & EVENT DETAILS
+const getAllParticipantsAdmin = async (req, res) => {
+  try {
+    const participants = await Participant.find({})
+      .populate("user", "name email contact department")
+      .populate("event", "title event_type start_at venue price");
+
+    return res.status(200).json(participants);
+  } catch (err) {
+    console.error(err.message);
+    return res.status(500).json({
+      message: "Failed to fetch all participants roster",
+    });
+  }
+};
+
+export { participateInEvent, getMyParticipation, getAllParticipantsAdmin };

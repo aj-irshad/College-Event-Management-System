@@ -1,5 +1,5 @@
 import Blog from "../model/blogs.js";
-
+import createNotification from "../utils/bellNotification.js";
 const createBlog = async (req, res) => {
   try {
     const { title, description, eventDate } = req.body;
@@ -16,6 +16,13 @@ const createBlog = async (req, res) => {
       eventDate,
       blogImage: req.file.filename,
     });
+
+    createNotification(
+      "New Blog Published!",
+      `"${blog.title}" has been posted by the community.`,
+      "blog",
+      blog._id,
+    ).catch((err) => console.error("Background notification error:", err));
 
     return res.status(201).json({
       message: "Blog successfully created",

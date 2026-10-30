@@ -1,6 +1,17 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
-const SignupForm = ({ warning, formData, handleChange, handleSubmit }) => {
+const SignupForm = ({
+  warning,
+  formData,
+  handleChange,
+  handleSubmit,
+  Eye,
+  EyeOff,
+}) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -41,28 +52,52 @@ const SignupForm = ({ warning, formData, handleChange, handleSubmit }) => {
 
         <section className="formGrp">
           <label htmlFor="signupPassword">Password</label>
-          <input
-            type="password"
-            id="signupPassword"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="8-16 chars (A-z, 0-9, @#)"
-            required
-          />
+          <div className="passwordInputWrapper">
+            <input
+              type={showPassword ? "text" : "password"}
+              id="signupPassword"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="8-16 chars (A-z, 0-9, @#)"
+              required
+            />
+            <button
+              type="button"
+              className="passwordToggleBtn"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
         </section>
 
         <section className="formGrp">
           <label htmlFor="confirmPassword">Confirm Password</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            placeholder="Re-enter password"
-            required
-          />
+          <div className="passwordInputWrapper">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Re-enter password"
+              required
+            />
+            <button
+              type="button"
+              className="passwordToggleBtn"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              aria-label={
+                showConfirmPassword
+                  ? "Hide confirm password"
+                  : "Show confirm password"
+              }
+            >
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
         </section>
 
         <section className="formGrp">

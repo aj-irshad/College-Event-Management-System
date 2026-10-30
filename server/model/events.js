@@ -28,6 +28,11 @@ const eventSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    price: {
+      type: Number,
+      required: true,
+      default: 0, // Defaults to 0 for Free Admission events
+    },
     status: {
       type: String,
       enum: ["Ongoing", "Upcoming", "Completed"],

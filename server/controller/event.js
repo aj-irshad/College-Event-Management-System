@@ -6,13 +6,14 @@ import {
   updateEventStatus,
 } from "../services/eventStatusService.js";
 
-import sendEventNotification from "../utils/notification.js";
-import fetchAllEmails from "../utils/fetchUserEmails.js";
+import sendEventNotifications from "../utils/eventNotifications.js";
+import createNotification, {
+  maybeCreateEventExpiryReminder,
+} from "../utils/bellNotification.js";
 
 const getAllEvent = async (req, res) => {
   try {
-    // await updateEventStatuses();
-    const allEvents = await Event.find();
+    const allEvents = await Event.find().sort({ start_at: -1 });
 
     return res.status(200).json(allEvents);
   } catch (err) {
@@ -26,41 +27,40 @@ const getAllEvent = async (req, res) => {
 
 const createNewEvent = async (req, res) => {
   try {
-    const { title, description, event_type, start_at, end_at, venue } =
+    const { title, description, event_type, start_at, end_at, venue, price } =
       req.body;
-
-    const eventCollision = await Event.find({
-      start_at: { $lt: end_at },
-      end_at: { $gt: start_at },
-    });
-
-    if (eventCollision.length > 0) {
-      return res.status(409).json({
-        message: "This event overlaps with an existing event.",
-        eventCollision,
-      });
-    }
 
     const status = getEventStatus(start_at, end_at);
 
-    const newEvent = {
+    const newEventData = {
       title: title,
       description: description,
       event_type: event_type,
       venue: venue,
       start_at: start_at,
       end_at: end_at,
+      price: price !== undefined ? Number(price) : 0,
       status,
     };
 
-    const createdEvent = await Event.create(newEvent);
+    const createdEvent = await Event.create(newEventData);
+
     const io = getIO();
     io.emit("newEvent", createdEvent);
-    const emails = await fetchAllEmails();
 
-    // Send notifications
-    await Promise.all(
-      emails.map((email) => sendEventNotification(email, createdEvent)),
+    setImmediate(() => {
+      void sendEventNotifications(createdEvent);
+    });
+
+    createNotification(
+      "New Event Added!",
+      `A new event "${createdEvent.title}" has been published.`,
+      "event",
+      createdEvent._id,
+    ).catch((err) => console.error("Background notification error:", err));
+
+    maybeCreateEventExpiryReminder(createdEvent).catch((err) =>
+      console.error("Background expiry reminder error:", err),
     );
 
     return res.status(201).json({

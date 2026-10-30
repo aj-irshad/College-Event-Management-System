@@ -11,6 +11,7 @@ dotenv.config();
 
 import connection from "./connection.js";
 import startEventStatusJob from "./controller/eventStatusJob.js";
+import startExpiryReminderJob from "./controller/expiryReminderJob.js";
 import authRouter from "./routes/auth.js";
 import userRouter from "./routes/user.js";
 import eventRouter from "./routes/events.js";
@@ -18,6 +19,7 @@ import participantRouter from "./routes/participant.js";
 import blogRouter from "./routes/blog.js";
 import feedbackRouter from "./routes/feedback.js";
 import pollRouter from "./routes/polls.js";
+import notificationRouter from "./routes/notification.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -43,7 +45,9 @@ app.use(cookieParser());
 app.use(cors({ origin: VITE_URL, credentials: true }));
 
 // DB connection
-connection();
+connection().then(() => {
+  startExpiryReminderJob();
+});
 
 // check and update the status every minute
 // startEventStatusJob();
@@ -57,6 +61,7 @@ app.use("/blog", blogRouter);
 app.use("/feedback", feedbackRouter);
 app.use("/polls", pollRouter);
 app.use("/participant", participantRouter);
+app.use("/notification", notificationRouter);
 
 app.get("/{*splat}", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist/index.html"));

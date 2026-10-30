@@ -19,12 +19,10 @@ const BlogPage = () => {
       <main className="blog-page">
         <section className="blog-not-found">
           <h2>Blog not found</h2>
-
           <p>
             The blog you are looking for doesn't exist or is no longer
             available.
           </p>
-
           <Link to="/blogs" className="back-to-blogs">
             <ArrowLeft size={17} />
             Back to Blogs
@@ -43,16 +41,11 @@ const BlogPage = () => {
       </Link>
 
       {/* Blog Header */}
-      <header
-        className="blog-page-header"
-        style={{ display: "flex", justifyContent: "space-between" }}
-      >
+      <header className="blog-page-header">
         <div className="blog-page-date">
           <CalendarDays size={17} />
-
           <span>{formatDate(blog.eventDate)}</span>
         </div>
-
         <h1>{blog.title}</h1>
       </header>
 

@@ -8,4 +8,7 @@ const getMyParticipation = () => {
   return apiRequest.get("/participant/my-participation");
 };
 
-export { participateInEvent, getMyParticipation };
+const getAllParticipants = () => {
+  return apiRequest.get("/participant/admin/all");
+};
+export { participateInEvent, getMyParticipation, getAllParticipants };

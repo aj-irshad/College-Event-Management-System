@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import Event from "../model/events.js";
 
-dotenv.config({ path: "../.env" });
+dotenv.config({ path: "./.env" });
 
 const seedEvents = async () => {
   try {
@@ -14,18 +14,19 @@ const seedEvents = async () => {
         description:
           "A technical festival featuring coding competitions, workshops, and technology exhibitions.",
         event_type: "Technical",
-        start_at: new Date("2026-08-20T10:00:00"),
-        end_at: new Date("2026-08-20T16:00:00"),
+        start_at: new Date("2026-11-20T10:00:00"),
+        end_at: new Date("2026-11-20T16:00:00"),
         venue: "Main Auditorium",
         status: "Upcoming",
+        price: 500,
       },
       {
         title: "Web Development Workshop",
         description:
           "Hands-on workshop covering modern web development using React and Node.js.",
         event_type: "Workshop",
-        start_at: new Date("2026-08-22T11:00:00"),
-        end_at: new Date("2026-08-22T14:00:00"),
+        start_at: new Date("2026-11-22T11:00:00"),
+        end_at: new Date("2026-11-22T14:00:00"),
         venue: "Computer Lab 1",
         status: "Upcoming",
       },
@@ -34,18 +35,19 @@ const seedEvents = async () => {
         description:
           "A competitive hackathon where students build innovative solutions to real-world problems.",
         event_type: "Competition",
-        start_at: new Date("2026-08-25T09:00:00"),
-        end_at: new Date("2026-08-25T18:00:00"),
+        start_at: new Date("2026-11-25T09:00:00"),
+        end_at: new Date("2026-11-25T18:00:00"),
         venue: "Innovation Center",
         status: "Upcoming",
+        price: 1000,
       },
       {
         title: "AI and Machine Learning Seminar",
         description:
           "An introductory seminar discussing artificial intelligence, machine learning, and their applications.",
         event_type: "Seminar",
-        start_at: new Date("2026-08-28T13:00:00"),
-        end_at: new Date("2026-08-28T16:00:00"),
+        start_at: new Date("2026-11-28T13:00:00"),
+        end_at: new Date("2026-11-28T16:00:00"),
         venue: "Seminar Hall",
         status: "Upcoming",
       },
@@ -54,10 +56,11 @@ const seedEvents = async () => {
         description:
           "Annual college sports meet featuring football, basketball, volleyball, and athletics.",
         event_type: "Sports",
-        start_at: new Date("2026-08-30T08:00:00"),
-        end_at: new Date("2026-08-30T17:00:00"),
+        start_at: new Date("2026-11-30T08:00:00"),
+        end_at: new Date("2026-11-30T17:00:00"),
         venue: "College Ground",
         status: "Upcoming",
+        price: 200,
       },
     ];
 
