@@ -21,6 +21,7 @@ const CreateEvent = () => {
     title: "",
     description: "",
     event_type: "Conference",
+    department: "",
     venue: "",
     start_at: "",
     end_at: "",
@@ -98,6 +99,12 @@ const CreateEvent = () => {
         return;
       }
 
+      if (new Date(eventData.end_at) <= new Date(eventData.start_at)) {
+        setError("Event end date and time must be after the start date and time.");
+        setLoading(false);
+        return;
+      }
+
       if (eventData.event_type === "Other" && !customEventType.trim()) {
         setError("Please enter an event type.");
         setLoading(false);
@@ -115,6 +122,10 @@ const CreateEvent = () => {
 
       const finalEventData = {
         ...eventData,
+        // Convert the browser-local datetime input to an absolute UTC instant,
+        // matching the existing edit form's Date serialization.
+        start_at: new Date(eventData.start_at).toISOString(),
+        end_at: new Date(eventData.end_at).toISOString(),
         event_type:
           eventData.event_type === "Other"
             ? customEventType.trim()
@@ -127,7 +138,9 @@ const CreateEvent = () => {
       alert("Successfully created event");
       navigate("/upcoming-events");
     } catch (err) {
-      setError(err.message || "An unexpected error occurred.");
+      setError(
+        err.response?.data?.message || err.message || "An unexpected error occurred.",
+      );
     } finally {
       setLoading(false);
     }
@@ -225,6 +238,20 @@ const CreateEvent = () => {
             </div>
           </div>
 
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="department">Department (optional)</label>
+              <input
+                type="text"
+                id="department"
+                name="department"
+                placeholder="e.g. Computer Science"
+                value={eventData.department}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
           {/* Ticket Pricing (Free / Paid) */}
           <div className="form-row">
             <div className="form-group">
@@ -300,6 +327,7 @@ const CreateEvent = () => {
                 name="end_at"
                 value={eventData.end_at}
                 onChange={handleChange}
+                min={eventData.start_at || undefined}
                 required
               />
             </div>

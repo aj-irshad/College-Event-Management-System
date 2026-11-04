@@ -30,6 +30,11 @@ const fetchPollResult = async () => {
   return await apiRequest.get("/polls/results");
 };
 
+// Aggregate-only results endpoint for authenticated poll participants.
+const fetchPublicPollResults = async () => {
+  return apiRequest.get("/polls/public-results");
+};
+
 //  delete poll
 const deletePoll = async (pollId) => {
   return apiRequest.delete(`/polls/delete/${pollId}`);
@@ -45,6 +50,7 @@ export {
   submitPollVote,
   getUserVotes,
   fetchPollResult,
+  fetchPublicPollResults,
   deletePoll,
   updatePoll,
 };

@@ -19,6 +19,14 @@ const PollResultCard = ({ poll, onEdit, onDelete }) => {
           <span className="total-votes">
             {poll.totalVotes} {poll.totalVotes === 1 ? "Vote" : "Votes"}
           </span>
+          <div className={`poll-status-badge ${poll.status === "Completed" ? "is-completed" : "is-active"}`}>
+            {poll.status === "Completed" ? "Completed" : "Active"}
+          </div>
+          <p className="poll-expiry-display">
+            {poll.expiresAt
+              ? `Expires: ${new Date(poll.expiresAt).toLocaleString()}`
+              : "No expiry set (legacy poll)"}
+          </p>
         </div>
 
         {/* Actions */}

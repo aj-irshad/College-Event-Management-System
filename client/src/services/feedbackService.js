@@ -5,6 +5,14 @@ const createFeedback = (feedbackData) => {
   return apiRequest.post("feedback/create-feedback", feedbackData);
 };
 
+const fetchAdminFeedbackForms = () => apiRequest.get("/feedback/admin/forms");
+
+const fetchAdminFeedbackForm = (feedbackFormId) =>
+  apiRequest.get(`/feedback/admin/forms/${feedbackFormId}`);
+
+const updateFeedback = (feedbackFormId, feedbackData) =>
+  apiRequest.put(`/feedback/admin/forms/${feedbackFormId}`, feedbackData);
+
 // feedback form for user to submit
 const fetchFeedbackForm = () => {
   return apiRequest.get("feedback/fetch-feedbackForms");
@@ -28,6 +36,9 @@ const deleteFeedbackForm = (feedbackFormId) => {
 export {
   createFeedback,
   fetchFeedbackForm,
+  fetchAdminFeedbackForms,
+  fetchAdminFeedbackForm,
+  updateFeedback,
   submitFeedback,
   fetchAllFeedback,
   deleteFeedbackForm,

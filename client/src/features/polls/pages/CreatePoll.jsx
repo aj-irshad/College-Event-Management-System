@@ -3,9 +3,17 @@ import { createPoll } from "../../../services/pollService";
 import "../styles/createPoll.css";
 import { useNavigate } from "react-router-dom";
 
+const toLocalDateTimeInput = (date) => {
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return localDate.toISOString().slice(0, 16);
+};
+
+const toUtcIsoString = (value) => new Date(value).toISOString();
+
 const CreatePoll = () => {
   const [pollQuestion, setPollQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
+  const [expiresAt, setExpiresAt] = useState("");
 
   const navigate = useNavigate();
 
@@ -36,10 +44,17 @@ const CreatePoll = () => {
       return;
     }
 
+    const expiryDate = new Date(expiresAt);
+    if (!expiresAt || !Number.isFinite(expiryDate.getTime()) || expiryDate <= new Date()) {
+      alert("Please choose a valid future expiry date and time");
+      return;
+    }
+
     try {
       const pollData = {
         question: pollQuestion.trim(),
         options: cleanOptions,
+        expiresAt: toUtcIsoString(expiresAt),
       };
 
       const response = await createPoll(pollData);
@@ -63,6 +78,18 @@ const CreatePoll = () => {
         placeholder="Type your question here..."
         required
       />
+
+      <label className="poll-expiry-field" htmlFor="poll-expires-at">
+        Poll expiry date and time
+        <input
+          id="poll-expires-at"
+          type="datetime-local"
+          value={expiresAt}
+          min={toLocalDateTimeInput(new Date())}
+          onChange={(e) => setExpiresAt(e.target.value)}
+          required
+        />
+      </label>
 
       <p className="optionTitle">Options Here (Max: 5)</p>
 

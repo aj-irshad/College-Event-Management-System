@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { fetchPollResult, deletePoll } from "../../../services/pollService.js";
+import { useContext } from "react";
+import { deletePoll } from "../../../services/pollService.js";
 import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 
@@ -7,29 +7,12 @@ import PollBtn from "../components/PollBtn.jsx";
 
 import "../styles/adminPollResult.css";
 import PollResultCard from "../components/PollResultCard.jsx";
+import pollContext from "../../../context/pollContext.jsx";
 
 const AdminPoll = () => {
-  const [polls, setPolls] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+  const { pollResults: polls, pollResultsLoading: loading, removePoll } =
+    useContext(pollContext);
   const navigate = useNavigate();
-
-  // Fetch poll results
-  useEffect(() => {
-    const pollResult = async () => {
-      try {
-        const response = await fetchPollResult();
-
-        setPolls(response.data);
-      } catch (error) {
-        console.error("Error fetching poll results:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    pollResult();
-  }, []);
 
   // Delete poll
   const handleDelete = async (pollId) => {
@@ -41,9 +24,9 @@ const AdminPoll = () => {
 
     try {
       await deletePoll(pollId);
-
-      // Remove deleted poll from UI
-      setPolls((prevPolls) => prevPolls.filter((poll) => poll._id !== pollId));
+      // The socket event updates all sessions; this also updates the admin if
+      // its socket is disconnected after the REST deletion succeeds.
+      removePoll(pollId);
     } catch (error) {
       console.error("Error deleting poll:", error);
 

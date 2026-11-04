@@ -7,12 +7,22 @@ import PollBtn from "../components/PollBtn.jsx";
 
 import "../styles/editPoll.css";
 
+const toLocalDateTimeInput = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "";
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+};
+
 const EditPoll = () => {
   const { pollId } = useParams();
   const navigate = useNavigate();
 
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
+  const [expiresAt, setExpiresAt] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -26,6 +36,7 @@ const EditPoll = () => {
 
         setQuestion(poll.question);
         setOptions(poll.options);
+        setExpiresAt(toLocalDateTimeInput(poll.expiresAt));
       } catch (error) {
         console.error("Error fetching poll:", error);
 
@@ -93,12 +104,18 @@ const EditPoll = () => {
       return;
     }
 
+    if (!expiresAt || !Number.isFinite(new Date(expiresAt).getTime())) {
+      alert("Please enter a valid expiry date and time.");
+      return;
+    }
+
     try {
       console.log("Update polls 2");
       setSaving(true);
       await updatePoll(pollId, {
         question: trimmedQuestion,
         options: trimmedOptions,
+        expiresAt: new Date(expiresAt).toISOString(),
       });
 
       console.log("Update polls 3");
@@ -145,6 +162,30 @@ const EditPoll = () => {
               placeholder="Enter poll question"
               disabled={saving}
             />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="poll-expires-at">Poll expiry date and time</label>
+            <input
+              id="poll-expires-at"
+              type="datetime-local"
+              value={expiresAt}
+              onChange={(e) => setExpiresAt(e.target.value)}
+              required
+              disabled={saving}
+            />
+            <p className="poll-expiry-note">
+              {!expiresAt
+                ? "Legacy polls without an expiry stay open until an expiry is assigned."
+                : new Date(expiresAt).getTime() <= Date.now()
+                  ? "Saving this past expiry closes voting immediately."
+                  : "A future expiry keeps voting open until that date and time."}
+            </p>
+            <p className="poll-expiry-note" role="status">
+              Status after saving: {expiresAt && new Date(expiresAt).getTime() <= Date.now()
+                ? "Completed"
+                : "Active"}
+            </p>
           </div>
 
           {/* Options */}

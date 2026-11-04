@@ -1,6 +1,7 @@
 import { Search, Bell, Zap, Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import socket from "../api/socket";
 import {
   fetchNotifications,
   markNotificationsAsRead,
@@ -40,7 +41,7 @@ const Header = ({ user, onToggleMenu, isMobileMenuOpen }) => {
       setNotificationStatus("loading");
       try {
         const data = await fetchNotifications();
-        setNotifications(Array.isArray(data) ? data : []);
+        setNotifications(Array.isArray(data) ? data : data.notifications || []);
         setNotificationStatus("ready");
       } catch (error) {
         console.error("Failed to load notifications", error);
@@ -49,6 +50,20 @@ const Header = ({ user, onToggleMenu, isMobileMenuOpen }) => {
       }
     };
     getNotifications();
+  }, []);
+
+  useEffect(() => {
+    const onNew = (item) => setNotifications((prev) => [item, ...prev.filter((n) => n._id !== item._id)].slice(0, 100));
+    const onRead = ({ _id }) => setNotifications((prev) => prev.map((n) => n._id === _id ? { ...n, read: true } : n));
+    const onReadAll = () => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    socket.on("notification:new", onNew);
+    socket.on("notification:read", onRead);
+    socket.on("notification:read-all", onReadAll);
+    return () => {
+      socket.off("notification:new", onNew);
+      socket.off("notification:read", onRead);
+      socket.off("notification:read-all", onReadAll);
+    };
   }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;

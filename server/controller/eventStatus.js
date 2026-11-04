@@ -2,7 +2,7 @@ import { updateEventStatus } from "../services/eventStatusService.js";
 
 const syncEventStatus = async (req, res) => {
   try {
-    await updateEventStatuses();
+    await updateEventStatus();
 
     return res.status(200).json({
       message: "Event statuses updated successfully",

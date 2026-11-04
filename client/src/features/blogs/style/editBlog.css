@@ -128,6 +128,20 @@
   color: var(--text-secondary, #6b7280);
 }
 
+.blog-form-image-preview {
+  display: block;
+  width: min(100%, 520px);
+  max-height: 320px;
+  margin: 0 0 1.25rem;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.blog-form-error {
+  margin: 0 0 1rem;
+  color: #b91c1c;
+}
+
 /* Actions */
 .edit-blog-actions {
   display: flex;

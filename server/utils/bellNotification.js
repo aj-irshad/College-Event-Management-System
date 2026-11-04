@@ -1,77 +1,81 @@
 import Notification from "../model/notification.js";
+import Users from "../model/user.js";
+import { getIO } from "../socket.js";
 
 const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
-
 const isDuplicateKeyError = (error) => error?.code === 11000;
 
-const createNotification = async (title, message, type, linkId = null) => {
-  try {
-    return await Notification.create({
-      title,
-      message,
-      type,
-      linkId,
-      isExpiryReminder: false,
+export const createNotification = async (title, message, type, linkId) => {
+  const recipients = await Users.find({}).select("_id").lean();
+  if (!recipients.length) return [];
+  const ops = recipients.map(({ _id }) => ({
+    updateOne: {
+      filter: { recipient: _id, type, linkId },
+      update: { $setOnInsert: { recipient: _id, title, message, type, linkId, read: false, isExpiryReminder: false } },
+      upsert: true,
+    },
+  }));
+  await Notification.bulkWrite(ops, { ordered: false });
+  const records = await Notification.find({ type, linkId }).lean();
+  const io = getIO();
+  for (const item of records) {
+    io.to(`user:${item.recipient}`).emit("notification:new", {
+      _id: item._id, title: item.title, message: item.message, type: item.type,
+      linkId: item.linkId, read: item.read, createdAt: item.createdAt,
     });
-  } catch (error) {
-    console.error("Error creating notification:", error);
-    throw error;
   }
+  return records;
+};
+
+const emitReminder = (notification) => {
+  getIO().to(`user:${notification.recipient}`).emit("notification:new", {
+    _id: notification._id,
+    title: notification.title,
+    message: notification.message,
+    type: notification.type,
+    linkId: notification.linkId,
+    read: notification.read,
+    createdAt: notification.createdAt,
+  });
 };
 
 const createExpiryReminder = async (title, message, type, linkId) => {
-  if (!linkId) {
-    return null;
-  }
+  if (!linkId) return [];
 
-  const existing = await Notification.findOne({
-    type,
-    linkId,
-    isExpiryReminder: true,
-  });
-
-  if (existing) {
-    return existing;
-  }
-
-  try {
-    return await Notification.create({
-      title,
-      message,
-      type,
-      linkId,
-      isExpiryReminder: true,
-    });
-  } catch (error) {
-    if (isDuplicateKeyError(error)) {
-      return Notification.findOne({
+  const recipients = await Users.find({}).select("_id").lean();
+  const created = [];
+  for (const { _id: recipient } of recipients) {
+    try {
+      const notification = await Notification.create({
+        recipient,
+        title,
+        message,
         type,
         linkId,
+        read: false,
         isExpiryReminder: true,
       });
+      created.push(notification);
+      try {
+        emitReminder(notification);
+      } catch (error) {
+        console.error("Failed to emit expiry reminder:", error.message);
+      }
+    } catch (error) {
+      if (!isDuplicateKeyError(error)) throw error;
     }
-
-    console.error("Error creating expiry reminder:", error);
-    throw error;
   }
+  return created;
 };
 
 const isWithinExpiryReminderWindow = (expiresAt, now = new Date()) => {
   const expiry = new Date(expiresAt).getTime();
   const current = new Date(now).getTime();
-
-  if (!(expiry > current)) {
-    return false;
-  }
-
-  return expiry - current <= TWENTY_FOUR_HOURS_MS;
+  return expiry > current && expiry - current <= TWENTY_FOUR_HOURS_MS;
 };
 
 const maybeCreateEventExpiryReminder = async (event) => {
-  if (!event?.end_at || !isWithinExpiryReminderWindow(event.end_at)) {
-    return null;
-  }
-
+  if (!event?.end_at || !isWithinExpiryReminderWindow(event.end_at)) return null;
   return createExpiryReminder(
     "Event ending soon",
     `"${event.title}" will end in less than 24 hours.`,
@@ -86,5 +90,4 @@ export {
   maybeCreateEventExpiryReminder,
   TWENTY_FOUR_HOURS_MS,
 };
-
 export default createNotification;

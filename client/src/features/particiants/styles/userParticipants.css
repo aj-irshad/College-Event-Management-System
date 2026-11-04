@@ -83,6 +83,24 @@
   border-radius: 6px;
 }
 
+.event-status-badge,
+.participation-role-badge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.event-status-badge.upcoming { color: #1d4ed8; background: #eff6ff; }
+.event-status-badge.ongoing { color: #047857; background: #ecfdf5; }
+.event-status-badge.completed { color: #64748b; background: #f1f5f9; }
+.participation-role-badge { color: #4338ca; background: #eef2ff; }
+
 .event-time-cell {
   display: flex;
   flex-direction: column;
@@ -116,6 +134,19 @@
   background: #fef3c7;
   color: #b45309;
 }
+
+.approval-status-badge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.approval-status-badge.pending { color: #92400e; background: #fef3c7; }
+.approval-status-badge.approved { color: #047857; background: #d1fae5; }
+.approval-status-badge.not-approved { color: #b91c1c; background: #fee2e2; }
 
 /* Action Pass Button */
 .view-ticket-btn {

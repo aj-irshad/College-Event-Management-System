@@ -92,6 +92,13 @@
   cursor: not-allowed;
 }
 
+.poll-expiry-note {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 /* Options Header */
 
 .options-header {

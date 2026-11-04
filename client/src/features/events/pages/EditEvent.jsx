@@ -4,7 +4,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import eventContext from "../../../context/EventContext.jsx";
 import "../styles/editEvent.css";
 
-import { updateEvent } from "../../../services/eventService.js";
+import { getEventById, updateEvent } from "../../../services/eventService.js";
 
 const EditEvent = () => {
   const formatDateTimeLocal = (date) => {
@@ -19,7 +19,7 @@ const EditEvent = () => {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
-  const [editStatus, setEditStatus] = useState("");
+  const [editDepartment, setEditDepartment] = useState("");
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editEventType, setEditEventType] = useState("");
@@ -29,12 +29,29 @@ const EditEvent = () => {
   const [editPrice, setEditPrice] = useState(0);
   const [priceType, setPriceType] = useState("free");
 
-  const { events, setEvents } = useContext(eventContext);
+  const { events, setEvents, eventLoading } = useContext(eventContext);
 
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const event = events.find((event) => event._id.toString() === id);
+  const contextEvent = events.find((event) => event._id.toString() === id);
+  const [fetchedEvent, setFetchedEvent] = useState(null);
+  const event = contextEvent || fetchedEvent;
+
+  useEffect(() => {
+    if (contextEvent || eventLoading) return;
+    let active = true;
+    getEventById(id)
+      .then((response) => {
+        if (active) setFetchedEvent(response.data);
+      })
+      .catch(() => {
+        if (active) setFetchedEvent(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [contextEvent, eventLoading, id]);
 
   // Load existing event data into the form
   useEffect(() => {
@@ -45,7 +62,7 @@ const EditEvent = () => {
       setEditStartAt(formatDateTimeLocal(event.start_at));
       setEditEndAt(formatDateTimeLocal(event.end_at));
       setEditVenue(event.venue);
-      setEditStatus(event.status);
+      setEditDepartment(event.department || "");
 
       const eventPrice = event.price !== undefined ? event.price : 0;
       setEditPrice(eventPrice);
@@ -84,25 +101,25 @@ const EditEvent = () => {
       title: editTitle,
       description: editDescription,
       event_type: editEventType,
+      department: editDepartment,
       start_at: new Date(editStartAt),
       end_at: new Date(editEndAt),
       venue: editVenue,
-      status: editStatus,
       price: priceType === "free" ? 0 : Number(editPrice),
     };
 
     try {
       const response = await updateEvent(id, updatedEvent);
 
-      const newEventData = events.map((event) =>
-        event._id.toString() === id ? response.data.event : event,
+      setEvents((previous) =>
+        [...previous.filter((item) => item._id.toString() !== id), response.data.event]
+          .sort((a, b) => new Date(b.start_at) - new Date(a.start_at)),
       );
-      setEvents(newEventData);
 
       alert("Successfully updated event info.");
       navigate("/upcoming-events");
     } catch (err) {
-      console.error(`Error updating event: ${err.message}`);
+      alert(err.response?.data?.message || "Failed to update event.");
     }
   };
 
@@ -173,18 +190,13 @@ const EditEvent = () => {
               </>
             )}
 
-            <label htmlFor="eventStatus">Status:</label>
-            <select
-              id="eventStatus"
-              required
-              value={editStatus}
-              onChange={(e) => setEditStatus(e.target.value)}
-            >
-              <option value="">Select status</option>
-              <option value="Upcoming">Upcoming</option>
-              <option value="Ongoing">Ongoing</option>
-              <option value="Completed">Completed</option>
-            </select>
+            <label htmlFor="eventDepartment">Department (optional):</label>
+            <input
+              type="text"
+              id="eventDepartment"
+              value={editDepartment}
+              onChange={(e) => setEditDepartment(e.target.value)}
+            />
 
             <label htmlFor="startAt">Start Date & Time:</label>
             <input
@@ -221,7 +233,11 @@ const EditEvent = () => {
         <>
           <h2>Event not found</h2>
 
-          <p>Sorry, the event you are looking for does not exist.</p>
+          <p>
+            {eventLoading
+              ? "Loading event..."
+              : "Sorry, the event you are looking for does not exist."}
+          </p>
 
           <p>
             <Link to="/events">Go to Events</Link>

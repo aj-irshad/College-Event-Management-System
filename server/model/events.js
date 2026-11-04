@@ -15,6 +15,12 @@ const eventSchema = new mongoose.Schema(
     event_type: {
       type: String,
       required: true,
+      trim: true,
+    },
+    department: {
+      type: String,
+      trim: true,
+      default: "",
     },
     start_at: {
       type: Date,
@@ -31,6 +37,7 @@ const eventSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: true,
+      min: 0,
       default: 0, // Defaults to 0 for Free Admission events
     },
     status: {

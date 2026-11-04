@@ -9,6 +9,10 @@ const PollsFormSchema = new mongoose.Schema({
     type: [String],
     required: true,
   },
+  // Optional for compatibility with existing polls created before expiries.
+  expiresAt: {
+    type: Date,
+  },
 });
 
 const AdminPollsForm = mongoose.model("AdminPollsForm", PollsFormSchema);

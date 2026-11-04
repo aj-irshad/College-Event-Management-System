@@ -1,15 +1,100 @@
 import AdminPollsForm from "../model/adminPolls.js";
 import PollVote from "../model/UserVotes.js";
+import { getIO } from "../socket.js";
+import { refreshPollExpirySchedule } from "./pollExpiryJob.js";
 
 import createNotification from "../utils/bellNotification.js";
+
+const emitPollEvent = (eventName, payload) => {
+  try {
+    getIO().to("polls").emit(eventName, payload);
+  } catch (error) {
+    console.error(`Failed to emit ${eventName}:`, error.message);
+  }
+};
+
+const getPollStatus = (expiresAt, now = Date.now()) =>
+  expiresAt && new Date(expiresAt).getTime() <= now ? "Completed" : "Active";
+
+const getPublicPoll = (poll) => ({
+  _id: String(poll._id),
+  question: poll.question,
+  options: poll.options,
+  expiresAt: poll.expiresAt || null,
+  status: getPollStatus(poll.expiresAt),
+});
+
+const refreshExpirySchedule = () => {
+  void refreshPollExpirySchedule().catch((error) => {
+    console.error("Failed to refresh poll expiry schedule:", error.message);
+  });
+};
+
+const validateExpiry = (value, { requireFuture = true } = {}) => {
+  if (typeof value !== "string" || !value.trim()) {
+    return { error: "A poll expiry date and time are required" };
+  }
+  const expiresAt = new Date(value);
+  if (!Number.isFinite(expiresAt.getTime())) {
+    return { error: "Poll expiry must be a valid date and time" };
+  }
+  if (requireFuture && expiresAt.getTime() <= Date.now()) {
+    return { error: "Poll expiry must be in the future" };
+  }
+  return { expiresAt };
+};
+
+const buildPollResults = async () => {
+  const polls = await AdminPollsForm.find().lean();
+  const results = await PollVote.aggregate([
+    {
+      $group: {
+        _id: { poll: "$poll", option: "$selectedOption" },
+        votes: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const now = Date.now();
+  return polls.map((poll) => {
+    const pollResults = poll.options.map((option) => {
+      const result = results.find(
+        (item) =>
+          item._id.poll.toString() === poll._id.toString() &&
+          item._id.option === option,
+      );
+
+      return { option, votes: result ? result.votes : 0 };
+    });
+    const totalVotes = pollResults.reduce((total, item) => total + item.votes, 0);
+    const highestVotes =
+      totalVotes > 0 ? Math.max(...pollResults.map((item) => item.votes)) : 0;
+
+    return {
+      ...poll,
+      expiresAt: poll.expiresAt || null,
+      status: getPollStatus(poll.expiresAt, now),
+      results: pollResults,
+      totalVotes,
+      highestVotes,
+    };
+  });
+};
+
 // ADMIN CREATE POLL FORMS
 const createPolls = async (req, res) => {
   try {
     const { question, options } = req.body;
+    const { expiresAt, error } = validateExpiry(req.body?.expiresAt);
+    if (error) return res.status(400).json({ message: error });
     const newPoll = await AdminPollsForm.create({
       question,
       options,
+      expiresAt,
     });
+
+    refreshExpirySchedule();
+    emitPollEvent("polls:created", getPublicPoll(newPoll));
 
     createNotification(
       "New Campus Poll Active",
@@ -33,8 +118,15 @@ const createPolls = async (req, res) => {
 // USER FETCH POLL FORMS
 const fetchPollForm = async (req, res) => {
   try {
-    const polls = await AdminPollsForm.find();
-    res.status(200).json(polls);
+    const polls = await AdminPollsForm.find().sort({ _id: -1 }).lean();
+    const now = Date.now();
+    res.status(200).json(
+      polls.map((poll) => ({
+        ...poll,
+        expiresAt: poll.expiresAt || null,
+        status: getPollStatus(poll.expiresAt, now),
+      })),
+    );
   } catch (err) {
     console.error("Error fetching polls:", err.message);
     res.status(500).json({
@@ -67,6 +159,10 @@ const submitPollVote = async (req, res) => {
       });
     }
 
+    if (poll.expiresAt && new Date(poll.expiresAt).getTime() <= Date.now()) {
+      return res.status(410).json({ message: "This poll has expired" });
+    }
+
     // Check whether selected option actually belongs to this poll
     if (!poll.options.includes(selectedOption)) {
       return res.status(400).json({
@@ -86,12 +182,33 @@ const submitPollVote = async (req, res) => {
       });
     }
 
+    // Re-read expiry/options immediately before insert so an admin edit made
+    // during validation cannot leave a stale poll state open for voting.
+    const currentPoll = await AdminPollsForm.findById(pollId).select(
+      "options expiresAt",
+    );
+    if (!currentPoll) {
+      return res.status(404).json({ message: "Poll not found" });
+    }
+    if (
+      currentPoll.expiresAt &&
+      new Date(currentPoll.expiresAt).getTime() <= Date.now()
+    ) {
+      return res.status(410).json({ message: "This poll has expired" });
+    }
+    if (!currentPoll.options.includes(selectedOption)) {
+      return res.status(400).json({ message: "Invalid poll option" });
+    }
+
     // Create vote
     const vote = await PollVote.create({
       poll: pollId,
       user: userId,
       selectedOption,
     });
+
+    // The room receives only an identifier; voter identity is never broadcast.
+    emitPollEvent("polls:results-updated", { pollId: String(poll._id) });
 
     res.status(201).json({
       message: "Vote submitted successfully",
@@ -135,52 +252,7 @@ const getUserVotes = async (req, res) => {
 //GET POLL RESULT FOR ADMIN
 const getAllPollResults = async (req, res) => {
   try {
-    const polls = await AdminPollsForm.find().lean();
-
-    const results = await PollVote.aggregate([
-      {
-        $group: {
-          _id: {
-            poll: "$poll",
-            option: "$selectedOption",
-          },
-          votes: {
-            $sum: 1,
-          },
-        },
-      },
-    ]);
-
-    const pollsWithResults = polls.map((poll) => {
-      const pollResults = poll.options.map((option) => {
-        const result = results.find(
-          (item) =>
-            item._id.poll.toString() === poll._id.toString() &&
-            item._id.option === option,
-        );
-
-        return {
-          option,
-          votes: result ? result.votes : 0,
-        };
-      });
-
-      const totalVotes = pollResults.reduce(
-        (total, item) => total + item.votes,
-        0,
-      );
-
-      const highestVotes =
-        totalVotes > 0 ? Math.max(...pollResults.map((item) => item.votes)) : 0;
-
-      return {
-        ...poll,
-        results: pollResults,
-        totalVotes,
-        highestVotes,
-      };
-    });
-
+    const pollsWithResults = await buildPollResults();
     res.status(200).json(pollsWithResults);
   } catch (err) {
     console.error("Error fetching poll results:", err.message);
@@ -188,6 +260,28 @@ const getAllPollResults = async (req, res) => {
     res.status(500).json({
       message: "Failed to fetch poll results",
     });
+  }
+};
+
+// Authenticated users receive aggregate counts only, never individual votes.
+const getPublicPollResults = async (_req, res) => {
+  try {
+    const pollsWithResults = await buildPollResults();
+    res.status(200).json(
+      pollsWithResults.map((poll) => ({
+        _id: String(poll._id),
+        question: poll.question,
+        options: poll.options,
+        expiresAt: poll.expiresAt,
+        status: poll.status,
+        results: poll.results,
+        totalVotes: poll.totalVotes,
+        highestVotes: poll.highestVotes,
+      })),
+    );
+  } catch (err) {
+    console.error("Error fetching public poll results:", err.message);
+    res.status(500).json({ message: "Failed to fetch poll results" });
   }
 };
 
@@ -204,13 +298,19 @@ const deletePoll = async (req, res) => {
       });
     }
 
-    // Delete the poll
-    await AdminPollsForm.findByIdAndDelete(pollId);
+    // Delete the poll and immediately remove its timer from the schedule.
+    const deletedPoll = await AdminPollsForm.findByIdAndDelete(pollId);
+    if (!deletedPoll) {
+      return res.status(404).json({ message: "Poll not found" });
+    }
+    refreshExpirySchedule();
 
     // Delete all votes belonging to this poll
     await PollVote.deleteMany({
       poll: pollId,
     });
+
+    emitPollEvent("polls:deleted", { _id: String(poll._id) });
 
     res.status(200).json({
       message: "Poll deleted successfully",
@@ -236,6 +336,11 @@ const updatePoll = async (req, res) => {
       });
     }
 
+    const { expiresAt, error } = validateExpiry(req.body?.expiresAt, {
+      requireFuture: false,
+    });
+    if (error) return res.status(400).json({ message: error });
+
     const poll = await AdminPollsForm.findById(pollId);
 
     if (!poll) {
@@ -246,8 +351,12 @@ const updatePoll = async (req, res) => {
 
     poll.question = question;
     poll.options = options;
+    poll.expiresAt = expiresAt;
 
     await poll.save();
+
+    refreshExpirySchedule();
+    emitPollEvent("polls:updated", getPublicPoll(poll));
 
     res.status(200).json({
       message: "Poll updated successfully",
@@ -268,6 +377,7 @@ export {
   submitPollVote,
   getUserVotes,
   getAllPollResults,
+  getPublicPollResults,
   deletePoll,
   updatePoll,
 };

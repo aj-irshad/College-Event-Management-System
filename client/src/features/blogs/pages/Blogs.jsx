@@ -12,7 +12,7 @@ const Blogs = () => {
   const navigate = useNavigate();
 
   const { isAdmin } = useContext(authContext);
-  const { blogs } = useContext(blogContext);
+  const { blogs, blogLoading, blogError } = useContext(blogContext);
 
   return (
     <main className="blogs-page">
@@ -39,7 +39,11 @@ const Blogs = () => {
         )}
       </header>
 
-      {blogs.length > 0 ? (
+      {blogError && <p className="blog-form-error">{blogError}</p>}
+
+      {blogLoading ? (
+        <p role="status">Loading blog posts...</p>
+      ) : blogs.length > 0 ? (
         <section className="blogs-grid">
           {blogs.map((blog) => (
             <BlogList blog={blog} key={blog._id} isAdmin={isAdmin} />

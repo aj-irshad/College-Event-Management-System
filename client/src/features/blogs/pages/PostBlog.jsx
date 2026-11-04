@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { createBlog } from "../../../services/blogService";
@@ -12,36 +12,42 @@ const PostBlog = () => {
   const [postDescription, setPostDescription] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [blogImg, setBlogImg] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const { upsertBlog } = useContext(blogContext);
 
-  const { setBlogs } = useContext(blogContext);
+  useEffect(() => {
+    if (!blogImg) {
+      setPreviewUrl("");
+      return undefined;
+    }
+    const objectUrl = URL.createObjectURL(blogImg);
+    setPreviewUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [blogImg]);
+
   const handleBlogSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
+    setError("");
 
     const blogData = new FormData();
-
     blogData.append("title", postTitle);
     blogData.append("description", postDescription);
     blogData.append("eventDate", eventDate);
-
-    if (blogImg) {
-      blogData.append("blog-img", blogImg);
-    }
+    if (blogImg) blogData.append("blog-img", blogImg);
 
     try {
       const response = await createBlog(blogData);
-
-      alert(response.data.message);
-
-      setBlogs((prevBlogs) => [...prevBlogs, response.data.blog]);
-
-      // Optional: reset form after successful submission
-      setPostTitle("");
-      setPostDescription("");
-      setEventDate("");
-      setBlogImg(null);
+      upsertBlog(response.data.blog);
       navigate("/blogs");
-    } catch (error) {
-      console.error(error);
+    } catch (requestError) {
+      setError(
+        requestError.response?.data?.message || "Failed to publish blog post.",
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -50,56 +56,23 @@ const PostBlog = () => {
       <form onSubmit={handleBlogSubmit}>
         <section className="postBlog-form-grp">
           <label htmlFor="postTitle">Title:</label>
-
-          <input
-            autoFocus
-            type="text"
-            id="postTitle"
-            name="postTitle"
-            required
-            value={postTitle}
-            onChange={(e) => setPostTitle(e.target.value)}
-          />
+          <input autoFocus type="text" id="postTitle" required value={postTitle} onChange={(e) => setPostTitle(e.target.value)} />
         </section>
-
         <section className="postBlog-form-grp">
           <label htmlFor="postDescription">Description:</label>
-
-          <textarea
-            id="postDescription"
-            name="postDescription"
-            required
-            value={postDescription}
-            onChange={(e) => setPostDescription(e.target.value)}
-          />
+          <textarea id="postDescription" required value={postDescription} onChange={(e) => setPostDescription(e.target.value)} />
         </section>
-
         <section className="postBlog-form-grp">
           <label htmlFor="eventDate">Event Date:</label>
-
-          <input
-            type="date"
-            id="eventDate"
-            name="eventDate"
-            value={eventDate}
-            onChange={(e) => setEventDate(e.target.value)}
-          />
+          <input type="date" id="eventDate" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
         </section>
-
         <section className="postBlog-form-grp">
           <label htmlFor="blogImg">Image:</label>
-
-          <input
-            type="file"
-            id="blogImg"
-            name="blog-img"
-            accept="image/*"
-            required
-            onChange={(e) => setBlogImg(e.target.files[0])}
-          />
+          <input type="file" id="blogImg" name="blog-img" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/jpeg,image/png,image/webp,image/gif,image/avif" required onChange={(e) => setBlogImg(e.target.files?.[0] || null)} />
         </section>
-
-        <button type="submit">Submit</button>
+        {previewUrl && <img className="blog-form-image-preview" src={previewUrl} alt="Selected blog cover preview" />}
+        {error && <p className="blog-form-error" role="alert">{error}</p>}
+        <button type="submit" disabled={submitting}>{submitting ? "Publishing..." : "Submit"}</button>
       </form>
     </div>
   );

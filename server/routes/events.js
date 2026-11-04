@@ -2,6 +2,7 @@ import express from "express";
 import {
   createNewEvent,
   getAllEvent,
+  getEventById,
   deleteEvent,
   updateEvent,
 } from "../controller/event.js";
@@ -11,6 +12,7 @@ import adminMiddleware from "../middleware/adminMiddleware.js";
 const eventRouter = express.Router();
 
 eventRouter.get("/get-events", getAllEvent);
+eventRouter.get("/:eventId", getEventById);
 eventRouter.post("/new-event", authMiddleware, adminMiddleware, createNewEvent);
 eventRouter.delete(
   "/delete-event/:eventId",

@@ -6,6 +6,9 @@ import {
   getFeedback,
   submitFeedback,
   getAllFeedback,
+  getAdminFeedbackForms,
+  getAdminFeedbackForm,
+  updateFeedback,
   deleteFeedbackForm,
 } from "../controller/feedback.js";
 const feedbackRouter = express.Router();
@@ -16,6 +19,25 @@ feedbackRouter.post(
   authMiddleware,
   adminMiddleware,
   createFeedback,
+);
+
+feedbackRouter.get(
+  "/admin/forms",
+  authMiddleware,
+  adminMiddleware,
+  getAdminFeedbackForms,
+);
+feedbackRouter.get(
+  "/admin/forms/:feedbackFormId",
+  authMiddleware,
+  adminMiddleware,
+  getAdminFeedbackForm,
+);
+feedbackRouter.put(
+  "/admin/forms/:feedbackFormId",
+  authMiddleware,
+  adminMiddleware,
+  updateFeedback,
 );
 
 // FEEDBACK FORM FOR USER

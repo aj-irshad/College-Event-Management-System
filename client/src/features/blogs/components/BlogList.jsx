@@ -10,15 +10,15 @@ import blogContext from "../../../context/blogContext";
 import "../style/blogList.css";
 
 const BlogList = ({ blog, isAdmin }) => {
-  const { setBlogs } = useContext(blogContext);
+  const { removeBlog } = useContext(blogContext);
   const navigate = useNavigate();
 
   const handleDeleteBlog = async (blogId) => {
     try {
       await deleteBlog(blogId);
-      setBlogs((prevBlogs) => prevBlogs.filter((blog) => blog._id !== blogId));
+      removeBlog(blogId);
     } catch (err) {
-      console.error(`Error: ${err.message}`);
+      alert(err.response?.data?.message || "Failed to delete blog post.");
     }
   };
 
@@ -26,21 +26,24 @@ const BlogList = ({ blog, isAdmin }) => {
     <article className="blog-card">
       <Link to={`/blogs/${blog._id}`} className="blog-card-link">
         <div className="blog-image-wrapper">
-          <img
-            src={`${import.meta.env.VITE_BASE_URL}/uploads/blog/${blog.blogImage}`}
-            alt={blog.title}
-            className="blog-image"
-          />
+          {blog.blogImage && (
+            <img
+              src={`${import.meta.env.VITE_BASE_URL}/uploads/blog/${blog.blogImage}`}
+              alt={blog.title}
+              className="blog-image"
+            />
+          )}
         </div>
 
         <div className="blog-card-content">
           <div className="blog-date">
             <CalendarDays size={15} />
 
-            <span>{formatDate(blog.eventDate)}</span>
+            <span>Published {formatDate(blog.createdAt || blog.eventDate)}</span>
           </div>
 
           <h2 className="blog-title">{blog.title}</h2>
+          <p className="blog-author">By {blog.author || "EMS Admin"}</p>
 
           <p className="blog-description">
             {blog.description.length <= 100

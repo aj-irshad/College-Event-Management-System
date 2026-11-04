@@ -40,6 +40,32 @@
   overflow-wrap: anywhere;
 }
 
+.poll-user-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: -10px 0 18px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.poll-user-status {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.poll-user-status.is-active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.poll-user-status.is-completed {
+  background: #e2e8f0;
+  color: #475569;
+}
+
 /* Options */
 
 .options {
@@ -163,6 +189,67 @@
   font-size: 14px;
   font-weight: 500;
   text-align: center;
+}
+
+/* Aggregate results are refreshed through the authenticated Poll socket room. */
+.poll-live-results {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.poll-live-results h4 {
+  margin: 0 0 8px;
+  color: #334155;
+  font-size: 15px;
+}
+
+.poll-live-results > p {
+  margin: 0 0 10px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.poll-live-total {
+  font-weight: 600;
+}
+
+.poll-live-result {
+  margin-top: 11px;
+}
+
+.poll-live-result-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 5px;
+  color: #475569;
+  font-size: 13px;
+}
+
+.poll-live-result-label span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.poll-live-result-label span:last-child {
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+.poll-live-result-track {
+  width: 100%;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.poll-live-result-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #4f46e5;
+  transition: width 0.25s ease;
 }
 
 /* Loading */

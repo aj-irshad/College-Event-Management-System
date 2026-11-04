@@ -92,6 +92,21 @@
   overflow-wrap: anywhere;
 }
 
+.feedback-page-intro { margin: -1rem 0 1.5rem; color: #64748b; }
+.feedback-dynamic-question { display: grid; gap: 0.7rem; min-width: 0; margin: 0; padding: 0 0 1rem; border: 0; border-bottom: 1px solid #e2e8f0; }
+.feedback-dynamic-question legend { width: 100%; margin-bottom: 0.25rem; color: #334155; font-size: 0.98rem; font-weight: 650; line-height: 1.5; }
+.feedback-radio-option { display: flex; align-items: center; gap: 0.55rem; color: #475569; cursor: pointer; }
+.feedback-radio-option input { accent-color: #4f46e5; }
+.feedback-answer-control { width: 100%; min-height: 43px; padding: 0.7rem 0.75rem; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; color: #334155; font: inherit; }
+.feedback-answer-control:focus { outline: 2px solid #c7d2fe; border-color: #6366f1; background: #fff; }
+textarea.feedback-answer-control { min-height: 110px; resize: vertical; }
+.feedback-submit-button { min-height: 44px; padding: 0.7rem 1rem; border: 0; border-radius: 8px; background: #4f46e5; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.feedback-submit-button:disabled { opacity: 0.6; cursor: wait; }
+.feedback-submit-error, .feedback-page-error, .feedback-submit-success, .feedback-page-state { padding: 0.75rem 0.9rem; border-radius: 8px; }
+.feedback-submit-error, .feedback-page-error { color: #b91c1c; background: #fef2f2; }
+.feedback-submit-success { color: #047857; background: #ecfdf5; }
+.feedback-page-state { color: #64748b; text-align: center; }
+
 /* Rating */
 
 .rating {

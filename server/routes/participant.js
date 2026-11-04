@@ -4,6 +4,7 @@ import {
   participateInEvent,
   getMyParticipation,
   getAllParticipantsAdmin,
+  updateParticipationApproval,
 } from "../controller/participant.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -21,6 +22,12 @@ participantRouter.get(
   authMiddleware,
   adminMiddleware,
   getAllParticipantsAdmin,
+);
+participantRouter.patch(
+  "/admin/:id/approval",
+  authMiddleware,
+  adminMiddleware,
+  updateParticipationApproval,
 );
 
 export default participantRouter;

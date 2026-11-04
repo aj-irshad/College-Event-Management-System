@@ -57,6 +57,9 @@ const EventCards = ({ event, isAdmin, hasParticipated }) => {
             <Users size={14} aria-hidden="true" />
             {event.event_type}
           </span>
+          {event.department && (
+            <span className="eventCard-type">{event.department}</span>
+          )}
         </div>
 
         <h2 className="eventCard-title" title={event.title}>

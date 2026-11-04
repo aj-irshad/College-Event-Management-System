@@ -4,9 +4,10 @@ import {
   createBlog,
   deleteBlog,
   getBlogs,
+  getBlogById,
   updateBlog,
 } from "../controller/blog.js";
-import uploadImage from "../middleware/multerUpload.js";
+import { uploadBlogImage } from "../middleware/multerUpload.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import adminMiddleware from "../middleware/adminMiddleware.js";
 const blogRouter = express.Router();
@@ -14,12 +15,13 @@ const blogRouter = express.Router();
 blogRouter.post(
   "/create-blog",
   authMiddleware,
-  uploadImage("blog-img"),
   adminMiddleware,
+  uploadBlogImage,
   createBlog,
 );
 
 blogRouter.get("/get-blog", getBlogs);
+blogRouter.get("/get-blog/:id", getBlogById);
 
 blogRouter.delete("/delete-blog", authMiddleware, adminMiddleware, deleteBlog);
 
@@ -27,7 +29,7 @@ blogRouter.patch(
   "/update-blog/:id",
   authMiddleware,
   adminMiddleware,
-  uploadImage("blog-img"),
+  uploadBlogImage,
   updateBlog,
 );
 

@@ -31,17 +31,27 @@ const processExpiryReminders = async () => {
     }
   }
 
-  const feedbackNotExpiredAfter = new Date(now - FEEDBACK_TTL_MS);
-  const feedbackReminderDueBy = new Date(now - (FEEDBACK_TTL_MS - TWENTY_FOUR_HOURS_MS));
-
   const feedbackForms = await FeedbackForm.find({
-    createdAt: {
-      $gt: feedbackNotExpiredAfter,
-      $lte: feedbackReminderDueBy,
-    },
-  }).select("question createdAt");
+    isDeleted: { $ne: true },
+    $and: [
+      { $or: [{ isPublished: true }, { isPublished: { $exists: false } }] },
+      {
+        $or: [
+          { endsAt: { $gt: new Date(now), $lte: reminderHorizon } },
+          {
+            endsAt: { $exists: false },
+            createdAt: {
+              $gt: new Date(now - FEEDBACK_TTL_MS),
+              $lte: new Date(now - (FEEDBACK_TTL_MS - TWENTY_FOUR_HOURS_MS)),
+            },
+          },
+        ],
+      },
+    ],
+  }).populate("event", "status").select("question createdAt endsAt isPublished event");
 
   for (const form of feedbackForms) {
+    if (form.event?.status !== "Completed") continue;
     try {
       await createExpiryReminder(
         "Feedback form closing soon",

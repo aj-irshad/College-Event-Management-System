@@ -1,28 +1,35 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Star, User, CalendarDays, MessageSquare } from "lucide-react";
 
 import { fetchAllFeedback } from "../../../services/feedbackService";
+import socket from "../../../api/socket";
 import "../styles/adminFeedback.css";
 
 const AdminFeedback = () => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const getAllFeedback = async () => {
-      try {
-        const response = await fetchAllFeedback();
-        setFeedbacks(response.data.feedback);
-        console.log(response.data.feedback);
-      } catch (error) {
-        console.error("Error fetching feedback:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getAllFeedback();
+  const loadFeedback = useCallback(async () => {
+    try {
+      const response = await fetchAllFeedback();
+      setFeedbacks(response.data.feedback || []);
+    } catch (error) {
+      console.error("Error fetching feedback:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    const refresh = () => void loadFeedback();
+    refresh();
+    socket.on("feedback:responses-changed", refresh);
+    socket.on("connect", refresh);
+    return () => {
+      socket.off("feedback:responses-changed", refresh);
+      socket.off("connect", refresh);
+    };
+  }, [loadFeedback]);
 
   if (loading) {
     return (
@@ -61,11 +68,7 @@ const AdminFeedback = () => {
                   </div>
                 </div>
 
-                <div className="adminFeedbackRating">
-                  <Star size={18} fill="currentColor" />
-
-                  <span>{feedback.ratings}/5</span>
-                </div>
+                {feedback.ratings !== undefined && <div className="adminFeedbackRating"><Star size={18} fill="currentColor" /><span>{feedback.ratings}/5</span></div>}
               </div>
 
               <div className="adminFeedbackEvent">
@@ -74,11 +77,16 @@ const AdminFeedback = () => {
                 <span>{feedback.event?.title || "Unknown Event"}</span>
               </div>
 
-              <div className="adminFeedbackComment">
-                <MessageSquare size={18} />
-
-                <p>{feedback.comment}</p>
-              </div>
+              {feedback.answers?.length ? <div className="adminFeedbackAnswers">
+                {feedback.answers.map((answer) => {
+                  const question = feedback.feedbackForm?.questions?.find((item) => item.questionId === answer.questionId);
+                  const option = question?.options?.find((item) => item.optionId === answer.selectedOptionId);
+                  return <div className="adminFeedbackAnswer" key={answer.questionId}>
+                    <strong>{answer.questionText || question?.text || answer.questionId}</strong>
+                    <p>{answer.answerType === "textarea" ? answer.textAnswer : answer.selectedOptionText || option?.text || answer.selectedOptionId}</p>
+                  </div>;
+                })}
+              </div> : feedback.comment !== undefined && <div className="adminFeedbackComment"><MessageSquare size={18} /><p>{feedback.comment}</p></div>}
             </li>
           ))}
         </ul>

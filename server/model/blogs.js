@@ -12,6 +12,11 @@ const BlogSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    author: {
+      type: String,
+      trim: true,
+      default: "EMS Admin",
+    },
     eventDate: {
       type: Date,
     },

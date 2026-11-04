@@ -8,7 +8,19 @@ const getMyParticipation = () => {
   return apiRequest.get("/participant/my-participation");
 };
 
-const getAllParticipants = () => {
-  return apiRequest.get("/participant/admin/all");
+const getAllParticipants = (filters = {}) => {
+  const params = Object.fromEntries(
+    Object.entries(filters).filter(([, value]) => value !== "" && value !== "All"),
+  );
+  return apiRequest.get("/participant/admin/all", { params });
 };
-export { participateInEvent, getMyParticipation, getAllParticipants };
+
+const updateParticipationApproval = (id, approvalStatus) =>
+  apiRequest.patch(`/participant/admin/${id}/approval`, { approvalStatus });
+
+export {
+  participateInEvent,
+  getMyParticipation,
+  getAllParticipants,
+  updateParticipationApproval,
+};

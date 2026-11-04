@@ -19,6 +19,12 @@ const participantSchema = new mongoose.Schema(
       enum: ["Participant", "Volunteer", "Organizing Member"],
       required: true,
     },
+
+    approvalStatus: {
+      type: String,
+      enum: ["Pending", "Approved", "Not Approved"],
+      default: "Pending",
+    },
   },
   { timestamps: true },
 );

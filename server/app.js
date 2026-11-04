@@ -12,6 +12,7 @@ dotenv.config();
 import connection from "./connection.js";
 import startEventStatusJob from "./controller/eventStatusJob.js";
 import startExpiryReminderJob from "./controller/expiryReminderJob.js";
+import startPollExpiryJob from "./controller/pollExpiryJob.js";
 import authRouter from "./routes/auth.js";
 import userRouter from "./routes/user.js";
 import eventRouter from "./routes/events.js";
@@ -46,11 +47,11 @@ app.use(cors({ origin: VITE_URL, credentials: true }));
 
 // DB connection
 connection().then(() => {
+  startEventStatusJob();
   startExpiryReminderJob();
+  startPollExpiryJob();
 });
 
-// check and update the status every minute
-// startEventStatusJob();
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use(express.static(path.join(__dirname, "../client/dist")));
 

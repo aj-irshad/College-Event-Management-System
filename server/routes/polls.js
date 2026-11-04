@@ -3,6 +3,7 @@ import {
   createPolls,
   fetchPollForm,
   getAllPollResults,
+  getPublicPollResults,
   getUserVotes,
   submitPollVote,
   deletePoll,
@@ -19,6 +20,7 @@ pollRouter.get("/fetch-pollForms", authMiddleware, fetchPollForm);
 pollRouter.post("/user-vote", authMiddleware, submitPollVote);
 pollRouter.get("/votes", authMiddleware, getUserVotes);
 pollRouter.get("/results", authMiddleware, adminMiddleware, getAllPollResults);
+pollRouter.get("/public-results", authMiddleware, getPublicPollResults);
 pollRouter.delete(
   "/delete/:pollId",
   authMiddleware,

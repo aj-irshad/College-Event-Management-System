@@ -17,14 +17,27 @@ const FeedbackSchema = new mongoose.Schema(
       ref: "Users",
       required: true,
     },
-    comment: {
-      type: String,
-      required: true,
-    },
+    // Legacy response fields remain available for existing records/forms.
+    comment: { type: String },
     ratings: {
       type: Number,
       enum: [1, 2, 3, 4, 5],
-      required: true,
+    },
+    answers: {
+      type: [
+        new mongoose.Schema(
+          {
+            questionId: { type: String, required: true },
+            questionText: { type: String },
+            answerType: { type: String, enum: ["radio", "textarea", "dropdown"], required: true },
+            selectedOptionId: { type: String },
+            selectedOptionText: { type: String },
+            textAnswer: { type: String },
+          },
+          { _id: false },
+        ),
+      ],
+      default: undefined,
     },
   },
   { timestamps: true },

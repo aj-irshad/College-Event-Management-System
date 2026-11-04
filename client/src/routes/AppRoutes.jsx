@@ -43,6 +43,7 @@ import authContext from "../context/authContext";
 import ParticipateEvent from "../features/events/pages/ParticipateEvent";
 import SearchPage from "../components/pages/SearchPage";
 import UserParticipants from "../features/particiants/pages/UserParticipants";
+import AdminParticipants from "../features/particiants/pages/AdminParticipants";
 
 const AppRoutes = () => {
   const { user, isAdmin } = useContext(authContext);
@@ -84,7 +85,10 @@ const AppRoutes = () => {
           <Route path="feedback" element={<Feedback />} />
           <Route path="polls" element={<Polls />} />
           <Route path="/participate/:eventId" element={<ParticipateEvent />} />
-          <Route path="/participations" element={<UserParticipants />} />
+          <Route
+            path="/participations"
+            element={isAdmin ? <AdminParticipants /> : <UserParticipants />}
+          />
 
           {/*  ADMIN ROUTES  */}
           <Route element={<AdminRoute />}>
@@ -92,6 +96,8 @@ const AppRoutes = () => {
             <Route path="/edit-event/:id" element={<EditEvent />} />
             <Route path="/post-blog" element={<PostBlog />} />
             <Route path="/edit-blog/:id" element={<EditBlog />} />
+            <Route path="/feedback/create" element={<CreateFeedback />} />
+            <Route path="/feedback/forms/:formId/edit" element={<CreateFeedback />} />
             <Route path="/feedback/:eventId" element={<CreateFeedback />} />
             <Route path="/feedback-forms" element={<FeedbackForms />} />
             <Route path="/create-poll" element={<CreatePoll />} />
