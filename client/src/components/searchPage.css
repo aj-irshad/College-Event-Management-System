@@ -17,7 +17,7 @@
 .searchPageHeader h1 {
   margin: 0 0 8px;
   color: #1e293b;
-  font-size: 2rem;
+  font-size: var(--ems-font-page-title);
   font-weight: 700;
   line-height: 1.2;
 }
@@ -25,13 +25,33 @@
 .searchPageHeader p {
   margin: 0;
   color: #64748b;
-  font-size: 0.95rem;
+  font-size: var(--ems-font-description);
 }
 
 .searchQuery {
   color: #1e293b;
   font-weight: 600;
 }
+
+.searchFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.searchFilters button {
+  padding: 0.55rem 0.9rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.searchFilters button[aria-pressed="true"] { border-width: 2px; }
+.searchResultCard > span { display: inline-block; margin-bottom: 0.5rem; }
 
 /* Result Sections */
 
@@ -42,7 +62,7 @@
 .searchSectionTitle {
   margin: 0 0 15px;
   color: #1e293b;
-  font-size: 1.3rem;
+  font-size: var(--ems-font-section-heading);
   font-weight: 650;
 }
 
@@ -82,7 +102,7 @@
 .searchResultCard h3 {
   margin: 0 0 10px;
   color: #1e293b;
-  font-size: 1.1rem;
+  font-size: var(--ems-font-card-title);
   font-weight: 650;
   line-height: 1.4;
 }
@@ -90,7 +110,7 @@
 .searchResultCard p {
   margin: 0;
   color: #64748b;
-  font-size: 0.9rem;
+  font-size: var(--ems-font-description);
   line-height: 1.6;
 
   display: -webkit-box;
@@ -109,7 +129,7 @@
   border: 1px dashed #cbd5e1;
   border-radius: 10px;
   color: #64748b;
-  font-size: 0.9rem;
+  font-size: var(--ems-font-description);
 }
 
 /* Tablet */
@@ -136,7 +156,7 @@
   }
 
   .searchPageHeader h1 {
-    font-size: 1.7rem;
+    font-size: var(--ems-font-page-title);
   }
 
   .searchResults {
@@ -156,11 +176,11 @@
   }
 
   .searchPageHeader h1 {
-    font-size: 1.5rem;
+    font-size: var(--ems-font-page-title);
   }
 
   .searchPageHeader p {
-    font-size: 0.88rem;
+    font-size: var(--ems-font-description);
   }
 
   .searchSection {
@@ -169,7 +189,7 @@
 
   .searchSectionTitle {
     margin-bottom: 12px;
-    font-size: 1.15rem;
+    font-size: var(--ems-font-section-heading);
   }
 
   .searchResultCard {
@@ -177,11 +197,11 @@
   }
 
   .searchResultCard h3 {
-    font-size: 1rem;
+    font-size: var(--ems-font-card-title);
   }
 
   .searchResultCard p {
-    font-size: 0.85rem;
+    font-size: var(--ems-font-description);
   }
 
   .noResults {
@@ -197,7 +217,7 @@
   }
 
   .searchPageHeader h1 {
-    font-size: 1.35rem;
+    font-size: var(--ems-font-page-title);
   }
 
   .searchResultCard {

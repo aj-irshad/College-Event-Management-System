@@ -1,7 +1,8 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 
+import { EmptyState, PageHeader } from "../../../components/ModulePageUI";
 import blogContext from "../../../context/blogContext";
 import authContext from "../../../context/authContext";
 import BlogList from "../components/BlogList";
@@ -16,31 +17,15 @@ const Blogs = () => {
 
   return (
     <main className="blogs-page">
-      <header className="blogs-header">
-        <div className="blogs-header-content">
-          <h1 className="blogs-title" style={{ fontSize: "40px" }}>
-            Blog
-          </h1>
+      <PageHeader
+        title="Blog"
+        description="Discover the latest stories, updates, and events from our college community."
+        actionLabel={isAdmin ? "Create Blog" : undefined}
+        actionIcon={isAdmin ? <Plus size={18} /> : undefined}
+        onAction={isAdmin ? () => navigate("/post-blog") : undefined}
+      />
 
-          <p className="blogs-subtitle">
-            Discover the latest stories, updates, and events from our college
-            community.
-          </p>
-        </div>
-
-        {isAdmin && (
-          <button
-            className="create-blog-btn"
-            onClick={() => navigate("/post-blog")}
-          >
-            <Plus size={19} />
-            Create Blog
-          </button>
-        )}
-      </header>
-
-      {blogError && <p className="blog-form-error">{blogError}</p>}
-
+      {blogError && <p className="blog-form-error" role="alert">{blogError}</p>}
       {blogLoading ? (
         <p role="status">Loading blog posts...</p>
       ) : blogs.length > 0 ? (
@@ -49,27 +34,15 @@ const Blogs = () => {
             <BlogList blog={blog} key={blog._id} isAdmin={isAdmin} />
           ))}
         </section>
-      ) : (
-        <section className="empty-blog-state">
-          <div className="empty-blog-icon">✦</div>
-
-          <h2>No blogs available</h2>
-
-          <p>
-            There are no blog posts available at the moment. Check back later
-            for new stories and updates.
-          </p>
-
-          {isAdmin && (
-            <button
-              className="empty-create-btn"
-              onClick={() => navigate("/post-blog")}
-            >
-              <Plus size={18} />
-              Create Your First Blog
-            </button>
-          )}
-        </section>
+      ) : blogError ? null : (
+        <EmptyState
+          icon={FileText}
+          title="No blogs yet"
+          description="There are no blog posts available right now. Check back later for new stories and updates."
+          actionLabel={isAdmin ? "Create Blog" : undefined}
+          actionIcon={isAdmin ? <Plus size={18} /> : undefined}
+          onAction={isAdmin ? () => navigate("/post-blog") : undefined}
+        />
       )}
     </main>
   );

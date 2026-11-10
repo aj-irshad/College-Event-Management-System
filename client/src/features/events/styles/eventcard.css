@@ -33,7 +33,7 @@
 .eventPrice-badge {
   padding: 4px 12px;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: var(--ems-font-meta);
   font-weight: 600;
 }
 
@@ -94,7 +94,7 @@
   color: #5c5be5;
   background: #eef2ff;
   border-radius: 6px;
-  font-size: 0.725rem;
+  font-size: var(--ems-font-meta);
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -106,7 +106,7 @@
   margin: 0 0 0.5rem;
   overflow: hidden;
   color: #0f172a;
-  font-size: 1.1rem;
+  font-size: var(--ems-font-card-title);
   font-weight: 700;
   line-height: 1.4;
   -webkit-box-orient: vertical;
@@ -119,7 +119,7 @@
   margin: 0 0 1rem;
   overflow: hidden;
   color: #475569;
-  font-size: 0.85rem;
+  font-size: var(--ems-font-description);
   line-height: 1.5;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -140,7 +140,7 @@
   align-items: center;
   gap: 0.5rem;
   color: #64748b;
-  font-size: 0.78rem;
+  font-size: var(--ems-font-meta);
   font-weight: 500;
 }
 
@@ -178,7 +178,7 @@
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 10px;
-  font-size: 0.825rem;
+  font-size: var(--ems-font-button);
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;

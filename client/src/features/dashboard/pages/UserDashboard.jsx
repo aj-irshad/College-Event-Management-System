@@ -4,14 +4,14 @@ import {
   Vote,
   BookOpen,
   ArrowUpRight,
-  // CheckCircle2,
 } from "lucide-react";
 
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import eventContext from "../../../context/EventContext";
 import blogContext from "../../../context/blogContext";
+import pollContext from "../../../context/pollContext.jsx";
 
 import StaticCard from "../components/StaticCard";
 import EventTable from "../components/EventTable";
@@ -22,8 +22,17 @@ import "../styles/userDashboard.css";
 
 const UserDashboard = ({ user = { name: "User" } }) => {
   const navigate = useNavigate();
-  const { upcomingEvents, ongoingEvents } = useContext(eventContext);
-  const { totalBlogs } = useContext(blogContext);
+  const { events, upcomingEvents, ongoingEvents } = useContext(eventContext);
+  const { blogs, totalBlogs } = useContext(blogContext);
+  const { pollForm } = useContext(pollContext);
+  const activePolls = pollForm.filter((poll) => poll.status === "Active");
+  const recentItems = useMemo(() => [
+    ...events.map((item) => ({ id: item._id, type: "Event", title: item.title, date: item.createdAt || item.start_at, to: `/participate/${item._id}` })),
+    ...blogs.map((item) => ({ id: item._id, type: "Blog", title: item.title, date: item.createdAt, to: `/blogs/${item._id}` })),
+    ...pollForm.map((item) => ({ id: item._id, type: "Poll", title: item.question, date: item.createdAt, to: `/polls?poll=${item._id}` })),
+  ].filter((item) => Number.isFinite(new Date(item.date).getTime()))
+    .sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8),
+  [events, blogs, pollForm]);
 
   return (
     <div className="dashboard-wrapper">
@@ -58,7 +67,7 @@ const UserDashboard = ({ user = { name: "User" } }) => {
         {/* Active Polls */}
         <StaticCard
           icon={<Vote size={22} />}
-          count={0}
+          count={activePolls.length}
           cardName="Active Polls"
         />
 
@@ -70,9 +79,7 @@ const UserDashboard = ({ user = { name: "User" } }) => {
         />
       </section>
 
-      {/* Section 3: Main Dashboard Content */}
       <div className="dashboard-content-grid">
-        {/* Left Column: Upcoming Events */}
         <section className="content-card">
           <div className="card-header">
             <h2>Your Upcoming Events</h2>
@@ -88,51 +95,15 @@ const UserDashboard = ({ user = { name: "User" } }) => {
 
           <EventTable events={upcomingEvents} />
         </section>
-
-        {/* Right Column: Community Feed */}
-        {/* <section className="content-card">
+        <section className="content-card">
           <div className="card-header">
-            <h2>Community Feed</h2>
+            <h2>Recent Activity</h2>
           </div>
-
-          <ul className="activity-list">
-            <li className="activity-item">
-              <CheckCircle2 size={18} className="activity-icon text-purple" />
-
-              <div>
-                <p className="activity-title">
-                  New poll added: "Preferred Tech Stack for 2027?"
-                </p>
-
-                <span className="activity-time">2 hours ago</span>
-              </div>
-            </li>
-
-            <li className="activity-item">
-              <CheckCircle2 size={18} className="activity-icon text-blue" />
-
-              <div>
-                <p className="activity-title">
-                  Your ticket for "Tech Summit" was verified.
-                </p>
-
-                <span className="activity-time">Yesterday</span>
-              </div>
-            </li>
-
-            <li className="activity-item">
-              <CheckCircle2 size={18} className="activity-icon text-green" />
-
-              <div>
-                <p className="activity-title">
-                  New blog post: "Mastering React 19 Layouts"
-                </p>
-
-                <span className="activity-time">2 days ago</span>
-              </div>
-            </li>
-          </ul>
-        </section> */}
+          {recentItems.length ? <ul className="activity-list">{recentItems.map((item) => <li className="activity-item" key={`${item.type}-${item.id}`}>
+            <div><p className="activity-title">{item.type}: {item.title}</p><span className="activity-time">{new Date(item.date).toLocaleString()}</span></div>
+            <button type="button" className="text-btn" onClick={() => navigate(item.to)}>Open</button>
+          </li>)}</ul> : <p>No recent activity is available.</p>}
+        </section>
       </div>
     </div>
   );

@@ -20,6 +20,7 @@ const sortEvents = (events) =>
 export const EventProvider = ({ children }) => {
   const [events, setEvents] = useState([]);
   const [eventLoading, setEventLoading] = useState(true);
+  const [eventError, setEventError] = useState("");
   const { user } = useContext(authContext);
   const initialEventsLoadRef = useRef(null);
   const hasConnectedRef = useRef(false);
@@ -35,12 +36,14 @@ export const EventProvider = ({ children }) => {
         setEvents(sortEvents(response.data.filter((event) =>
           isEventAvailableToProfile(event, accessProfileRef.current),
         )));
+        setEventError("");
         debugLog("initial REST event state loaded", {
           count: response.data.length,
         });
       } catch (err) {
         console.error(err.message);
         setEvents([]);
+        setEventError("Failed to load events. Please try again later.");
       } finally {
         setEventLoading(false);
       }
@@ -59,12 +62,14 @@ export const EventProvider = ({ children }) => {
           setEvents(sortEvents(response.data.filter((event) =>
             isEventAvailableToProfile(event, accessProfileRef.current),
           )));
+          setEventError("");
           debugLog("REST event state synchronized", {
             count: response.data.length,
           });
         }
       } catch (err) {
         console.error("Failed to synchronize events:", err.message);
+        setEventError("Failed to refresh events.");
       }
     };
 
@@ -219,6 +224,7 @@ export const EventProvider = ({ children }) => {
         events,
         setEvents,
         eventLoading,
+        eventError,
         ongoingEvents,
         upcomingEvents,
         completedEvents,

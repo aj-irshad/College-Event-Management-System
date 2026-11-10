@@ -1,15 +1,20 @@
 import { useContext, useState, useEffect } from "react";
+import { BarChart3 } from "lucide-react";
+import { EmptyState } from "../../../components/ModulePageUI";
 import pollContext from "../../../context/pollContext";
 import { submitPollVote, getUserVotes } from "../../../services/pollService";
+import { useSearchParams } from "react-router-dom";
 import "../styles/userPoll.css";
 
 const UserPoll = () => {
-  const { pollForm, pollLoading, pollResults, pollResultsLoading } =
+  const { pollForm, pollLoading, pollError, pollResults, pollResultsLoading } =
     useContext(pollContext);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [selectedOptions, setSelectedOptions] = useState({});
   const [votedPolls, setVotedPolls] = useState({});
   const [clockNow, setClockNow] = useState(Date.now());
+  const [selectedPollId, setSelectedPollId] = useState(() => searchParams.get("poll") || "");
 
   useEffect(() => {
     const expiries = pollForm
@@ -101,18 +106,47 @@ const UserPoll = () => {
     return <p>Loading polls...</p>;
   }
 
-  // No polls
-  if (pollForm.length === 0) {
+  // Keep request failures separate from a genuinely empty result.
+  if (pollForm.length === 0 && pollError) {
     return (
       <div className="no-polls">
-        <h3>No polls available</h3>
+        <p role="alert">{pollError}</p>
       </div>
     );
   }
 
+  if (pollForm.length === 0) {
+    return <EmptyState icon={BarChart3} title="No polls yet" description="There are no polls available right now. Check back later for campus questions." />;
+  }
+
+  if (!selectedPollId) {
+    return (
+      <div className="userPollContainer">
+        <h1>Campus Polls</h1>
+        {pollError && <p role="alert">{pollError}</p>}
+        {pollForm.map((poll) => {
+          const expired = poll.status === "Completed" || (poll.expiresAt && new Date(poll.expiresAt).getTime() <= clockNow);
+          return <article className="userPollForm" key={poll._id}>
+            <h3 className="pollQuestion">{poll.question}</h3>
+            <p>{expired ? "Voting closed" : "Voting open"}{poll.expiresAt ? ` · ${expired ? "Expired" : "Expires"}: ${new Date(poll.expiresAt).toLocaleString()}` : " · No expiry set"}</p>
+            <p>{votedPolls[poll._id] ? "You have voted" : "You have not voted"}</p>
+            <button className="voteButton" type="button" onClick={() => { setSelectedPollId(poll._id); setSearchParams({ poll: poll._id }); }}>Open poll</button>
+          </article>;
+        })}
+      </div>
+    );
+  }
+
+  const selectedPoll = pollForm.find((poll) => poll._id === selectedPollId);
+  if (!selectedPoll) {
+    return <div className="userPollContainer"><p>This poll is no longer available.</p><button type="button" onClick={() => { setSelectedPollId(""); setSearchParams({}); }}>Back to polls</button></div>;
+  }
+
   return (
     <div className="userPollContainer">
-      {pollForm.map((form) => {
+      {pollError && <p role="alert">{pollError}</p>}
+      <button type="button" className="voteButton" onClick={() => { setSelectedPollId(""); setSearchParams({}); }}>Back to polls</button>
+      {[selectedPoll].map((form) => {
         const isVoted = votedPolls[form._id];
         const result = pollResults.find((poll) => poll._id === form._id);
         const isExpired =

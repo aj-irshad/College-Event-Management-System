@@ -4,7 +4,7 @@ import EventsPage from "../components/EventPage.jsx";
 import "../styles/upcomingEvent.css";
 
 const CompletedEvent = () => {
-  const { completedEvents } = useContext(eventContext);
+  const { completedEvents, eventLoading, eventError } = useContext(eventContext);
 
   return (
     <>
@@ -12,6 +12,8 @@ const CompletedEvent = () => {
         title="Completed Events"
         subtitle="Look back at the events that brought our campus together"
         events={completedEvents}
+        loading={eventLoading}
+        error={eventError}
       />
     </>
   );

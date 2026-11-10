@@ -35,6 +35,8 @@ const fetchPublicPollResults = async () => {
   return apiRequest.get("/polls/public-results");
 };
 
+const fetchPollVotesAdmin = (pollId) => apiRequest.get(`/polls/admin/${pollId}/votes`);
+
 //  delete poll
 const deletePoll = async (pollId) => {
   return apiRequest.delete(`/polls/delete/${pollId}`);
@@ -51,6 +53,7 @@ export {
   getUserVotes,
   fetchPollResult,
   fetchPublicPollResults,
+  fetchPollVotesAdmin,
   deletePoll,
   updatePoll,
 };

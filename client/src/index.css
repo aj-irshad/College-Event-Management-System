@@ -1,10 +1,5 @@
-*,
-*::before,
-*::after {
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-  font-family:
+:root {
+  --ems-font-family:
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
@@ -16,6 +11,32 @@
     "Open Sans",
     "Helvetica Neue",
     sans-serif;
+  --ems-font-page-title: clamp(1.5rem, 3vw, 2rem);
+  --ems-font-section-heading: 1.25rem;
+  --ems-font-card-title: 1.125rem;
+  --ems-font-body: 0.9375rem;
+  --ems-font-description: 0.875rem;
+  --ems-font-label: 0.875rem;
+  --ems-font-button: 0.875rem;
+  --ems-font-meta: 0.78rem;
+  --ems-font-compact: 0.75rem;
+  --ems-font-table-heading: 0.75rem;
+  --ems-font-table-content: 0.875rem;
+  --ems-weight-page-title: 700;
+  --ems-weight-section-heading: 650;
+  --ems-weight-card-title: 650;
+  --ems-line-title: 1.2;
+  --ems-line-heading: 1.35;
+  --ems-line-body: 1.55;
+}
+
+*,
+*::before,
+*::after {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: var(--ems-font-family);
 }
 
 html,
@@ -26,8 +47,50 @@ body {
   padding: 0;
   background-color: #f4f6fa;
   color: #0f172a;
+  font-size: var(--ems-font-body);
+  line-height: var(--ems-line-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1 {
+  font-size: var(--ems-font-page-title);
+  line-height: var(--ems-line-title);
+  font-weight: var(--ems-weight-page-title);
+}
+
+h2 {
+  font-size: var(--ems-font-section-heading);
+  line-height: var(--ems-line-heading);
+  font-weight: var(--ems-weight-section-heading);
+}
+
+h3 {
+  font-size: var(--ems-font-card-title);
+  line-height: var(--ems-line-heading);
+  font-weight: var(--ems-weight-card-title);
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+label {
+  font-size: var(--ems-font-label);
+}
+
+table th {
+  font-size: var(--ems-font-table-heading);
+  line-height: var(--ems-line-heading);
+}
+
+table td {
+  font-size: var(--ems-font-table-content);
+  line-height: var(--ems-line-body);
 }
 
 #root {

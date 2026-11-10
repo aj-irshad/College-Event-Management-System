@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useRef, useState, createContext } from "react";
+import { useCallback, useContext, useEffect, useRef, useState, createContext } from "react";
 
 import { fetchPollForm, fetchPublicPollResults } from "../services/pollService";
 import socket from "../api/socket";
+import authContext from "./authContext";
+import { isEventAvailableToProfile } from "../features/events/utils/eventTargeting.js";
 
 const pollContext = createContext({});
 
@@ -15,10 +17,13 @@ const upsertById = (items, item) => {
 };
 
 export const PollProvider = ({ children }) => {
+  const { user } = useContext(authContext);
   const [pollForm, setPollForm] = useState([]);
   const [pollResults, setPollResults] = useState([]);
   const [pollLoading, setPollLoading] = useState(true);
   const [pollResultsLoading, setPollResultsLoading] = useState(true);
+  const [pollError, setPollError] = useState("");
+  const [pollResultsError, setPollResultsError] = useState("");
   const pollRevisionRef = useRef(0);
   const resultsRevisionRef = useRef(0);
 
@@ -26,36 +31,35 @@ export const PollProvider = ({ children }) => {
     const revisionAtRequest = pollRevisionRef.current;
     try {
       const response = await fetchPollForm();
-      if (
-        pollRevisionRef.current === revisionAtRequest &&
-        Array.isArray(response.data)
-      ) {
-        setPollForm(response.data);
+      if (!Array.isArray(response.data)) throw new Error("Unexpected poll response");
+      if (pollRevisionRef.current === revisionAtRequest) {
+        setPollForm(response.data.filter((poll) => isEventAvailableToProfile(poll, user)));
+        setPollError("");
       }
     } catch (err) {
       console.error("Error fetching poll forms:", err.message);
-      if (pollRevisionRef.current === revisionAtRequest) setPollForm([]);
+      if (pollRevisionRef.current === revisionAtRequest) setPollError("Failed to load polls. Please try again later.");
     } finally {
       setPollLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const refreshPollResults = useCallback(async () => {
     const revisionAtRequest = resultsRevisionRef.current;
     try {
       const response = await fetchPublicPollResults();
-      if (
-        resultsRevisionRef.current === revisionAtRequest &&
-        Array.isArray(response.data)
-      ) {
-        setPollResults(response.data);
+      if (!Array.isArray(response.data)) throw new Error("Unexpected poll results response");
+      if (resultsRevisionRef.current === revisionAtRequest) {
+        setPollResults(response.data.filter((poll) => isEventAvailableToProfile(poll, user)));
+        setPollResultsError("");
       }
     } catch (err) {
       console.error("Error fetching poll results:", err.message);
+      if (resultsRevisionRef.current === revisionAtRequest) setPollResultsError("Failed to load poll results. Please try again later.");
     } finally {
       setPollResultsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const removePoll = useCallback((pollId) => {
     if (!pollId) return;
@@ -74,12 +78,24 @@ export const PollProvider = ({ children }) => {
     const handleCreated = (poll) => {
       if (!poll?._id) return;
       pollRevisionRef.current += 1;
+      if (!isEventAvailableToProfile(poll, user)) return;
       setPollForm((current) => upsertById(current, poll));
       resultsRevisionRef.current += 1;
       void refreshPollResults();
     };
 
-    const handleUpdated = handleCreated;
+    const handleUpdated = (poll) => {
+      if (!poll?._id) return;
+      pollRevisionRef.current += 1;
+      if (!isEventAvailableToProfile(poll, user)) {
+        setPollForm((current) => current.filter((item) => item._id !== poll._id));
+        setPollResults((current) => current.filter((item) => item._id !== poll._id));
+        return;
+      }
+      setPollForm((current) => upsertById(current, poll));
+      resultsRevisionRef.current += 1;
+      void refreshPollResults();
+    };
 
     const handleDeleted = ({ _id } = {}) => {
       if (!_id) return;
@@ -128,15 +144,17 @@ export const PollProvider = ({ children }) => {
       socket.off("polls:results-updated", handleResultsUpdated);
       socket.off("polls:expired", handleExpired);
     };
-  }, [refreshPolls, refreshPollResults]);
+  }, [refreshPolls, refreshPollResults, user]);
 
   return (
     <pollContext.Provider
       value={{
         pollForm,
         pollLoading,
+        pollError,
         pollResults,
         pollResultsLoading,
+        pollResultsError,
         refreshPolls,
         refreshPollResults,
         removePoll,

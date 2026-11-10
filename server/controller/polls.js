@@ -1,13 +1,15 @@
 import AdminPollsForm from "../model/adminPolls.js";
 import PollVote from "../model/UserVotes.js";
-import { getIO } from "../socket.js";
+import Users from "../model/user.js";
+import { emitPollToAudience } from "../socket.js";
 import { refreshPollExpirySchedule } from "./pollExpiryJob.js";
 
 import createNotification from "../utils/bellNotification.js";
+import { EVENT_DEPARTMENTS, EVENT_SEMESTERS, isEventAvailableToUser } from "../utils/eventTargeting.js";
 
-const emitPollEvent = (eventName, payload) => {
+const emitPollEvent = (eventName, payload, poll, previousPoll) => {
   try {
-    getIO().to("polls").emit(eventName, payload);
+    emitPollToAudience(eventName, payload, poll, previousPoll);
   } catch (error) {
     console.error(`Failed to emit ${eventName}:`, error.message);
   }
@@ -20,6 +22,7 @@ const getPublicPoll = (poll) => ({
   _id: String(poll._id),
   question: poll.question,
   options: poll.options,
+  audienceTargets: poll.audienceTargets || [],
   expiresAt: poll.expiresAt || null,
   status: getPollStatus(poll.expiresAt),
 });
@@ -28,6 +31,28 @@ const refreshExpirySchedule = () => {
   void refreshPollExpirySchedule().catch((error) => {
     console.error("Failed to refresh poll expiry schedule:", error.message);
   });
+};
+
+const validateAudienceTargets = (targets) => {
+  if (targets === undefined) return { value: [] };
+  if (!Array.isArray(targets)) return { error: "Audience targets must be a list" };
+  const departments = new Set();
+  for (const target of targets) {
+    if (!target || !EVENT_DEPARTMENTS.includes(target.department)) return { error: "Audience target contains an invalid department" };
+    if (departments.has(target.department)) return { error: "Audience target departments cannot be duplicated" };
+    departments.add(target.department);
+    if (!Array.isArray(target.semesters) || !target.semesters.length) return { error: "Select at least one semester for every targeted department" };
+    if (target.semesters.some((semester) => !EVENT_SEMESTERS.includes(semester)) || new Set(target.semesters).size !== target.semesters.length) {
+      return { error: "Audience target semesters must be valid and unique" };
+    }
+  }
+  return { value: targets };
+};
+
+const getEligiblePolls = async (polls, userId) => {
+  const user = await Users.findById(userId).select("role department semester").lean();
+  if (!user) return [];
+  return user.role === "admin" ? polls : polls.filter((poll) => isEventAvailableToUser(poll, user));
 };
 
 const validateExpiry = (value, { requireFuture = true } = {}) => {
@@ -85,22 +110,26 @@ const buildPollResults = async () => {
 const createPolls = async (req, res) => {
   try {
     const { question, options } = req.body;
+    const { value: audienceTargets, error: audienceError } = validateAudienceTargets(req.body?.audienceTargets);
+    if (audienceError) return res.status(400).json({ message: audienceError });
     const { expiresAt, error } = validateExpiry(req.body?.expiresAt);
     if (error) return res.status(400).json({ message: error });
     const newPoll = await AdminPollsForm.create({
       question,
       options,
       expiresAt,
+      audienceTargets,
     });
 
     refreshExpirySchedule();
-    emitPollEvent("polls:created", getPublicPoll(newPoll));
+    emitPollEvent("polls:created", getPublicPoll(newPoll), newPoll);
 
     createNotification(
       "New Campus Poll Active",
       `Cast your vote for: "${question}"`,
       "poll",
       newPoll._id,
+      { recipientIds: await getPollRecipientIds(newPoll) },
     ).catch((err) => console.error("Background notification error:", err));
 
     res.status(201).json({
@@ -118,7 +147,8 @@ const createPolls = async (req, res) => {
 // USER FETCH POLL FORMS
 const fetchPollForm = async (req, res) => {
   try {
-    const polls = await AdminPollsForm.find().sort({ _id: -1 }).lean();
+    const allPolls = await AdminPollsForm.find().sort({ _id: -1 }).lean();
+    const polls = await getEligiblePolls(allPolls, req.userId);
     const now = Date.now();
     res.status(200).json(
       polls.map((poll) => ({
@@ -159,6 +189,11 @@ const submitPollVote = async (req, res) => {
       });
     }
 
+    const [user] = await Promise.all([Users.findById(userId).select("role department semester").lean()]);
+    if (!user || !isEventAvailableToUser(poll, user)) {
+      return res.status(403).json({ message: "This poll is not available to your department and semester" });
+    }
+
     if (poll.expiresAt && new Date(poll.expiresAt).getTime() <= Date.now()) {
       return res.status(410).json({ message: "This poll has expired" });
     }
@@ -185,10 +220,13 @@ const submitPollVote = async (req, res) => {
     // Re-read expiry/options immediately before insert so an admin edit made
     // during validation cannot leave a stale poll state open for voting.
     const currentPoll = await AdminPollsForm.findById(pollId).select(
-      "options expiresAt",
+      "options expiresAt audienceTargets",
     );
     if (!currentPoll) {
       return res.status(404).json({ message: "Poll not found" });
+    }
+    if (!isEventAvailableToUser(currentPoll, user)) {
+      return res.status(403).json({ message: "This poll is not available to your department and semester" });
     }
     if (
       currentPoll.expiresAt &&
@@ -208,7 +246,7 @@ const submitPollVote = async (req, res) => {
     });
 
     // The room receives only an identifier; voter identity is never broadcast.
-    emitPollEvent("polls:results-updated", { pollId: String(poll._id) });
+    emitPollEvent("polls:results-updated", { pollId: String(poll._id) }, currentPoll);
 
     res.status(201).json({
       message: "Vote submitted successfully",
@@ -264,14 +302,15 @@ const getAllPollResults = async (req, res) => {
 };
 
 // Authenticated users receive aggregate counts only, never individual votes.
-const getPublicPollResults = async (_req, res) => {
+const getPublicPollResults = async (req, res) => {
   try {
-    const pollsWithResults = await buildPollResults();
+    const pollsWithResults = await getEligiblePolls(await buildPollResults(), req.userId);
     res.status(200).json(
       pollsWithResults.map((poll) => ({
         _id: String(poll._id),
         question: poll.question,
         options: poll.options,
+        audienceTargets: poll.audienceTargets || [],
         expiresAt: poll.expiresAt,
         status: poll.status,
         results: poll.results,
@@ -282,6 +321,28 @@ const getPublicPollResults = async (_req, res) => {
   } catch (err) {
     console.error("Error fetching public poll results:", err.message);
     res.status(500).json({ message: "Failed to fetch poll results" });
+  }
+};
+
+const getPollRecipientIds = async (poll) => {
+  const targeted = Array.isArray(poll.audienceTargets) && poll.audienceTargets.length > 0;
+  const users = await Users.find(targeted ? { role: "user" } : {}).select("_id role department semester").lean();
+  return users.filter((user) => isEventAvailableToUser(poll, user)).map(({ _id }) => _id);
+};
+
+const getPollVotesAdmin = async (req, res) => {
+  if (!/^[a-f\d]{24}$/i.test(req.params.pollId)) return res.status(400).json({ message: "Invalid poll ID" });
+  try {
+    const poll = await AdminPollsForm.findById(req.params.pollId).select("question options").lean();
+    if (!poll) return res.status(404).json({ message: "Poll not found" });
+    const votes = await PollVote.find({ poll: poll._id })
+      .populate("user", "name email department semester")
+      .sort({ createdAt: -1 })
+      .lean();
+    return res.status(200).json({ poll, votes });
+  } catch (error) {
+    console.error("Could not load poll voter records:", error.message);
+    return res.status(500).json({ message: "Could not load poll voter records" });
   }
 };
 
@@ -310,7 +371,7 @@ const deletePoll = async (req, res) => {
       poll: pollId,
     });
 
-    emitPollEvent("polls:deleted", { _id: String(poll._id) });
+    emitPollEvent("polls:deleted", { _id: String(poll._id) }, null, poll);
 
     res.status(200).json({
       message: "Poll deleted successfully",
@@ -349,14 +410,21 @@ const updatePoll = async (req, res) => {
       });
     }
 
+    const { value: audienceTargets, error: audienceError } = validateAudienceTargets(
+      req.body?.audienceTargets === undefined ? poll.audienceTargets || [] : req.body.audienceTargets,
+    );
+    if (audienceError) return res.status(400).json({ message: audienceError });
+
+    const previousPoll = poll.toObject();
     poll.question = question;
     poll.options = options;
     poll.expiresAt = expiresAt;
+    poll.audienceTargets = audienceTargets;
 
     await poll.save();
 
     refreshExpirySchedule();
-    emitPollEvent("polls:updated", getPublicPoll(poll));
+    emitPollEvent("polls:updated", getPublicPoll(poll), poll, previousPoll);
 
     res.status(200).json({
       message: "Poll updated successfully",
@@ -378,6 +446,7 @@ export {
   getUserVotes,
   getAllPollResults,
   getPublicPollResults,
+  getPollVotesAdmin,
   deletePoll,
   updatePoll,
 };

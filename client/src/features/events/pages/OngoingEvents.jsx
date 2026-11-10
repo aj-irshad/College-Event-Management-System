@@ -6,12 +6,14 @@ import "../styles/upcomingEvent.css";
 import EventsPage from "../components/EventPage.jsx";
 
 const OngoingEvents = () => {
-  const { ongoingEvents } = useContext(eventContext);
+  const { ongoingEvents, eventLoading, eventError } = useContext(eventContext);
 
   return (
     <>
       <EventsPage
         events={ongoingEvents}
+        loading={eventLoading}
+        error={eventError}
         title="Ongoing Events"
         subtitle="Experience what's happening in our campus"
       />

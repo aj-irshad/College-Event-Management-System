@@ -31,6 +31,7 @@ const Aside = ({ isAdmin, isOpen, onClose }) => {
       <nav className="sidebarNav">
         <NavLink
           to="/"
+          title={isAdmin ? "Dashboard" : "Home"}
           end
           onClick={onClose}
           className={({ isActive }) => (isActive ? "active" : "")}
@@ -39,44 +40,44 @@ const Aside = ({ isAdmin, isOpen, onClose }) => {
           <span>{isAdmin ? "Dashboard" : "Home"}</span>
         </NavLink>
 
-        <NavLink to="/upcoming-events" onClick={onClose}>
+        <NavLink to="/upcoming-events" title="Upcoming Events" onClick={onClose}>
           <CalendarDays size={18} />
           <span>Upcoming Events</span>
         </NavLink>
 
-        <NavLink to="/ongoing-events" onClick={onClose}>
+        <NavLink to="/ongoing-events" title="Ongoing Events" onClick={onClose}>
           <Clock size={18} />
           <span>Ongoing Events</span>
         </NavLink>
 
-        <NavLink to="/completed-events" onClick={onClose}>
+        <NavLink to="/completed-events" title="Completed Events" onClick={onClose}>
           <CheckCircle2 size={18} />
           <span>Completed Events</span>
         </NavLink>
 
-        <NavLink to="/participations" onClick={onClose}>
+        <NavLink to="/participations" title={isAdmin ? "Participants" : "Participations"} onClick={onClose}>
           <Users size={18} />
           <span>{isAdmin ? "Participants" : "Participations"}</span>
         </NavLink>
 
-        <NavLink to="/blogs" onClick={onClose}>
+        <NavLink to="/blogs" title="Blogs" onClick={onClose}>
           <BookOpen size={18} />
           <span>Blogs</span>
         </NavLink>
 
-        <NavLink to="/feedback" onClick={onClose}>
+        <NavLink to="/feedback" title={isAdmin ? "User Feedbacks" : "Feedback"} onClick={onClose}>
           <MessageSquareText size={18} />
           <span>{isAdmin ? "User Feedbacks" : "Feedback"}</span>
         </NavLink>
 
         {isAdmin && (
-          <NavLink to="/feedback-forms" onClick={onClose}>
+          <NavLink to="/feedback-forms" title="Feedback Forms" onClick={onClose}>
             <FileSpreadsheet size={18} />
             <span>Feedback Forms</span>
           </NavLink>
         )}
 
-        <NavLink to="/polls" onClick={onClose}>
+        <NavLink to="/polls" title="Polls" onClick={onClose}>
           <BarChart3 size={18} />
           <span>Polls</span>
         </NavLink>

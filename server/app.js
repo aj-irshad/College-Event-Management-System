@@ -13,6 +13,7 @@ import connection from "./connection.js";
 import startEventStatusJob from "./controller/eventStatusJob.js";
 import startExpiryReminderJob from "./controller/expiryReminderJob.js";
 import startPollExpiryJob from "./controller/pollExpiryJob.js";
+import startFeedbackPublicationJob from "./controller/feedbackPublicationJob.js";
 import authRouter from "./routes/auth.js";
 import userRouter from "./routes/user.js";
 import eventRouter from "./routes/events.js";
@@ -52,6 +53,7 @@ connection().then(() => {
   startEventStatusJob();
   startExpiryReminderJob();
   startPollExpiryJob();
+  startFeedbackPublicationJob();
 });
 
 const eventUploadDirectory = getUploadDirectory("events");

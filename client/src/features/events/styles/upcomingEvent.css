@@ -53,7 +53,7 @@
 .eventsPageHeading h1 {
   margin: 0 0 0.35rem;
   color: var(--event-text-title);
-  font-size: clamp(1.6rem, 2.5vw, 2.1rem);
+  font-size: var(--ems-font-page-title);
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.025em;
@@ -62,7 +62,7 @@
 .eventsPageHeading p {
   margin: 0;
   color: var(--event-text-body);
-  font-size: 0.9rem;
+  font-size: var(--ems-font-description);
   line-height: 1.5;
 }
 
@@ -74,6 +74,20 @@
   grid-template-columns: 1fr;
   gap: 1.25rem;
   box-sizing: border-box;
+}
+
+.events-page-error {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.events-page-state {
+  padding: 1rem;
+  color: var(--event-text-body);
+  text-align: center;
 }
 
 /* Event Card */
@@ -146,7 +160,7 @@
 .eventTitle {
   margin: 0;
   color: var(--event-text-title);
-  font-size: 1.2rem;
+  font-size: var(--ems-font-card-title);
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.015em;
@@ -158,7 +172,7 @@
 .eventDescription {
   margin: 0;
   color: var(--event-text-body);
-  font-size: 0.85rem;
+  font-size: var(--ems-font-description);
   line-height: 1.55;
 
   display: -webkit-box;
@@ -461,11 +475,11 @@
   }
 
   .eventsPageHeading h1 {
-    font-size: 1.6rem;
+    font-size: var(--ems-font-page-title);
   }
 
   .eventsPageHeading p {
-    font-size: 0.85rem;
+    font-size: var(--ems-font-description);
   }
 
   .eventStats {
@@ -506,11 +520,11 @@
   }
 
   .eventTitle {
-    font-size: 1.1rem;
+    font-size: var(--ems-font-card-title);
   }
 
   .eventDescription {
-    font-size: 0.82rem;
+    font-size: var(--ems-font-description);
   }
 
   .eventActions {

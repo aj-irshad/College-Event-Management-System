@@ -1,37 +1,39 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { CalendarDays, Plus } from "lucide-react";
 
-import EventBtn from "../components/EventBtn.jsx";
 import EventCards from "../components/EventCards";
 
 import authContext from "../../../context/authContext";
+import { EmptyState, PageHeader } from "../../../components/ModulePageUI";
 
 import "../styles/upcomingEvent.css";
 
-const EventsPage = ({ events = [], title, subtitle, participations = [] }) => {
+const EventsPage = ({ events = [], title, subtitle, participations = [], loading = false, error = "" }) => {
   const { isAdmin } = useContext(authContext);
   const navigate = useNavigate();
 
   return (
     <>
-      <section className="eventsPageHeader">
-        <article className="eventsPageHeading">
-          <h1>{title}</h1>
-          <p>{subtitle}</p>
-        </article>
+      <PageHeader
+        title={title}
+        description={subtitle}
+        actionLabel={isAdmin ? "Create Event" : undefined}
+        actionIcon={isAdmin ? <Plus size={18} /> : undefined}
+        onAction={isAdmin ? () => navigate("/create-event") : undefined}
+      />
 
-        {isAdmin && (
-          <EventBtn
-            text="Create Event"
-            onClick={() => navigate("/create-event")}
-            icon={<Plus size={18} />}
-            className="eventBtnCreate"
-          />
-        )}
-      </section>
-
-      <section className="upcomingEventsCards">
+      {error && <p className="events-page-error" role="alert">{error}</p>}
+      {loading ? <p role="status" className="events-page-state">Loading events…</p> : events.length === 0 ? error ? null : (
+        <EmptyState
+          icon={CalendarDays}
+          title="No events yet"
+          description="There are no events in this category right now. Check back later for campus updates."
+          actionLabel={isAdmin ? "Create Event" : undefined}
+          actionIcon={isAdmin ? <Plus size={18} /> : undefined}
+          onAction={isAdmin ? () => navigate("/create-event") : undefined}
+        />
+      ) : <section className="upcomingEventsCards">
         {events.map((event) => {
           const hasParticipated = participations.some(
             (participation) => participation.event?._id === event._id,
@@ -46,7 +48,7 @@ const EventsPage = ({ events = [], title, subtitle, participations = [] }) => {
             />
           );
         })}
-      </section>
+      </section>}
     </>
   );
 };

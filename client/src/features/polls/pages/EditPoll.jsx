@@ -4,6 +4,7 @@ import { Plus, Save, X } from "lucide-react";
 
 import { fetchPollResult, updatePoll } from "../../../services/pollService.js";
 import PollBtn from "../components/PollBtn.jsx";
+import EventAudienceTargets from "../../events/components/EventAudienceTargets.jsx";
 
 import "../styles/editPoll.css";
 
@@ -23,6 +24,7 @@ const EditPoll = () => {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
   const [expiresAt, setExpiresAt] = useState("");
+  const [audienceTargets, setAudienceTargets] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -37,6 +39,7 @@ const EditPoll = () => {
         setQuestion(poll.question);
         setOptions(poll.options);
         setExpiresAt(toLocalDateTimeInput(poll.expiresAt));
+        setAudienceTargets(Array.isArray(poll.audienceTargets) ? poll.audienceTargets : []);
       } catch (error) {
         console.error("Error fetching poll:", error);
 
@@ -80,6 +83,11 @@ const EditPoll = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (audienceTargets.some((target) => !target.semesters?.length)) {
+      alert("Select at least one semester for every targeted department.");
+      return;
+    }
+
     console.log("Update polls 1");
 
     const trimmedQuestion = question.trim();
@@ -116,6 +124,7 @@ const EditPoll = () => {
         question: trimmedQuestion,
         options: trimmedOptions,
         expiresAt: new Date(expiresAt).toISOString(),
+        audienceTargets,
       });
 
       console.log("Update polls 3");
@@ -163,6 +172,8 @@ const EditPoll = () => {
               disabled={saving}
             />
           </div>
+
+          <EventAudienceTargets value={audienceTargets} onChange={setAudienceTargets} />
 
           <div className="form-group">
             <label htmlFor="poll-expires-at">Poll expiry date and time</label>

@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import eventContext from "../../context/EventContext";
@@ -11,6 +11,7 @@ const SearchPage = () => {
   const navigate = useNavigate();
 
   const query = searchParams.get("q")?.toLowerCase() || "";
+  const [filter, setFilter] = useState("All");
 
   const { events } = useContext(eventContext);
   const { blogs } = useContext(blogContext);
@@ -29,6 +30,11 @@ const SearchPage = () => {
     );
   }, [blogs, query]);
 
+  const results = [
+    ...(filter !== "Blogs" ? eventResults.map((event) => ({ ...event, kind: "event" })) : []),
+    ...(filter !== "Events" ? blogResults.map((blog) => ({ ...blog, kind: "blog" })) : []),
+  ];
+
   return (
     <section className="searchPage">
       {/* Search Header */}
@@ -40,51 +46,37 @@ const SearchPage = () => {
         </p>
       </header>
 
-      {/* Event Results */}
-      <section className="searchSection">
-        <h2 className="searchSectionTitle">Events</h2>
+      <nav className="searchFilters" aria-label="Filter search results">
+        {["All", "Events", "Blogs"].map((option) => (
+          <button key={option} type="button" aria-pressed={filter === option} onClick={() => setFilter(option)}>
+            {option}
+          </button>
+        ))}
+      </nav>
 
-        {eventResults.length > 0 ? (
-          <div className="searchResults">
-            {eventResults.map((event) => (
-              <article
-                key={event._id}
-                className="searchResultCard"
-                onClick={() => navigate("/upcoming-events")}
-              >
-                <h3>{event.title}</h3>
-
-                <p>{event.description}</p>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="noResults">No events found.</p>
-        )}
-      </section>
-
-      {/* Blog Results */}
-      <section className="searchSection">
-        <h2 className="searchSectionTitle">Blogs</h2>
-
-        {blogResults.length > 0 ? (
-          <div className="searchResults">
-            {blogResults.map((blog) => (
-              <article
-                key={blog._id}
-                className="searchResultCard"
-                onClick={() => navigate(`/blogs/${blog._id}`)}
-              >
-                <h3>{blog.title}</h3>
-
-                <p>{blog.description}</p>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="noResults">No blogs found.</p>
-        )}
-      </section>
+      {!query ? <p className="noResults">Enter a search term to find events and blogs.</p> : results.length ? (
+        <section className="searchResults">
+          {results.map((item) => (
+            <article
+              key={`${item.kind}-${item._id}`}
+              className="searchResultCard"
+              role="link"
+              tabIndex={0}
+              onClick={() => navigate(item.kind === "event" ? `/participate/${item._id}` : `/blogs/${item._id}`)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  navigate(item.kind === "event" ? `/participate/${item._id}` : `/blogs/${item._id}`);
+                }
+              }}
+            >
+              <span>{item.kind === "event" ? "Event" : "Blog"}</span>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </article>
+          ))}
+        </section>
+      ) : <p className="noResults">No matching {filter === "All" ? "events or blogs" : filter.toLowerCase()} found.</p>}
     </section>
   );
 };

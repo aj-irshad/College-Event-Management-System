@@ -2,7 +2,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import PollBtn from "./PollBtn.jsx";
 import PollResultOption from "./PollResultOption.jsx";
 
-const PollResultCard = ({ poll, onEdit, onDelete }) => {
+const PollResultCard = ({ poll, onEdit, onDelete, onViewVotes }) => {
   // Find winner
   const winner =
     poll.highestVotes > 0
@@ -27,10 +27,16 @@ const PollResultCard = ({ poll, onEdit, onDelete }) => {
               ? `Expires: ${new Date(poll.expiresAt).toLocaleString()}`
               : "No expiry set (legacy poll)"}
           </p>
+          <p className="poll-expiry-display">
+            {poll.audienceTargets?.length
+              ? poll.audienceTargets.map((target) => `${target.department}: ${(target.semesters || []).join(", ")}`).join(" · ")
+              : "Available to all students"}
+          </p>
         </div>
 
         {/* Actions */}
         <div className="poll-actions">
+          <PollBtn text="View voters" onClick={onViewVotes} />
           <PollBtn
             text="Edit"
             onClick={() => onEdit(poll._id)}

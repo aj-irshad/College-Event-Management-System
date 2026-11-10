@@ -8,6 +8,7 @@ import {
   getAllFeedback,
   getAdminFeedbackForms,
   getAdminFeedbackForm,
+  getAdminFeedbackResponses,
   updateFeedback,
   deleteFeedbackForm,
 } from "../controller/feedback.js";
@@ -32,6 +33,12 @@ feedbackRouter.get(
   authMiddleware,
   adminMiddleware,
   getAdminFeedbackForm,
+);
+feedbackRouter.get(
+  "/admin/forms/:feedbackFormId/responses",
+  authMiddleware,
+  adminMiddleware,
+  getAdminFeedbackResponses,
 );
 feedbackRouter.put(
   "/admin/forms/:feedbackFormId",

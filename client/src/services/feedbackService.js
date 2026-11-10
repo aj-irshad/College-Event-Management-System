@@ -10,6 +10,9 @@ const fetchAdminFeedbackForms = () => apiRequest.get("/feedback/admin/forms");
 const fetchAdminFeedbackForm = (feedbackFormId) =>
   apiRequest.get(`/feedback/admin/forms/${feedbackFormId}`);
 
+const fetchAdminFeedbackResponses = (feedbackFormId) =>
+  apiRequest.get(`/feedback/admin/forms/${feedbackFormId}/responses`);
+
 const updateFeedback = (feedbackFormId, feedbackData) =>
   apiRequest.put(`/feedback/admin/forms/${feedbackFormId}`, feedbackData);
 
@@ -38,6 +41,7 @@ export {
   fetchFeedbackForm,
   fetchAdminFeedbackForms,
   fetchAdminFeedbackForm,
+  fetchAdminFeedbackResponses,
   updateFeedback,
   submitFeedback,
   fetchAllFeedback,

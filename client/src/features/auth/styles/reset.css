@@ -33,13 +33,14 @@
 }
 
 .createPassword h1 {
-  font-size: clamp(26px, 4vw, 32px);
+  font-size: var(--ems-font-page-title);
+  line-height: var(--ems-line-title);
   font-weight: 700;
   margin-bottom: 12px;
 }
 
 .createPassword p {
-  font-size: clamp(14px, 2vw, 17px);
+  font-size: var(--ems-font-description);
   opacity: 0.9;
 }
 
@@ -59,12 +60,13 @@
 }
 
 .heading h2 {
-  font-size: clamp(22px, 4vw, 32px);
+  font-size: var(--ems-font-section-heading);
+  line-height: var(--ems-line-heading);
   margin-bottom: 5px;
 }
 
 .heading p {
-  font-size: clamp(16px, 3vw, 18px);
+  font-size: var(--ems-font-description);
   color: black;
   opacity: 0.3;
   font-weight: 500;
@@ -77,11 +79,11 @@
 }
 
 .formGrp label {
-  font-size: clamp(14px, 4vw, 20px);
+  font-size: var(--ems-font-label);
 }
 
 .formGrp input {
-  font-size: clamp(14px, 4vw, 20px);
+  font-size: var(--ems-font-body);
   height: 2.8rem;
   border-radius: 8px;
   padding: 0 15px;
@@ -102,7 +104,7 @@
 
 .warning {
   color: red;
-  font-size: clamp(14px, 4vw, 20px);
+  font-size: var(--ems-font-description);
   margin-bottom: 15px;
   font-weight: 600;
   opacity: 0.8;
@@ -128,7 +130,7 @@
   padding: 14px 0;
   border-radius: 8px;
   border: none;
-  font-size: clamp(15px, 2.5vw, 17px);
+  font-size: var(--ems-font-button);
   font-weight: 600;
   color: white;
   width: 100%;
@@ -140,7 +142,7 @@
 .btnSection .loginLink {
   display: block;
   text-align: center;
-  font-size: clamp(13px, 2.5vw, 15px);
+  font-size: var(--ems-font-description);
   color: rgb(101, 101, 246);
   text-decoration: none;
   font-weight: 600;

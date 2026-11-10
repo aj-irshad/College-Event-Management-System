@@ -35,9 +35,9 @@ const CreateFeedback = () => {
     title: "",
     description: "",
     event: eventId || "",
-    startsAt: toLocalDateTime(new Date()),
+    startsAt: toLocalDateTime(new Date(Date.now() + 5 * 60 * 1000)),
     endsAt: toLocalDateTime(new Date(Date.now() + 48 * 60 * 60 * 1000)),
-    isPublished: true,
+    isPublished: false,
     questions: [newQuestion()],
   }));
   const [loading, setLoading] = useState(editing);
@@ -170,7 +170,7 @@ const CreateFeedback = () => {
           {completedEvents.map((item) => <option key={item._id} value={item._id}>{item.title}</option>)}
         </select></label>
         <div className="feedback-date-fields">
-          <label>Opens at<input type="datetime-local" value={form.startsAt} onChange={(event) => setForm((current) => ({ ...current, startsAt: event.target.value }))} /></label>
+          <label>Publish and open at<input type="datetime-local" value={form.startsAt} onChange={(event) => setForm((current) => ({ ...current, startsAt: event.target.value }))} /><small>Until this time, the form remains a draft and is unavailable to students.</small></label>
           <label>Closes at<input type="datetime-local" value={form.endsAt} onChange={(event) => setForm((current) => ({ ...current, endsAt: event.target.value }))} /></label>
         </div>
       </section>

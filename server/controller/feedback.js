@@ -1,8 +1,10 @@
 import FeedbackForm from "../model/feedbackAdmin.js";
 import Feedback from "../model/feedback.js";
 import Event from "../model/events.js";
+import Users from "../model/user.js";
 import createNotification from "../utils/bellNotification.js";
 import { getIO } from "../socket.js";
+import { refreshFeedbackPublicationSchedule } from "./feedbackPublicationJob.js";
 
 const FEEDBACK_TTL_MS = 48 * 60 * 60 * 1000;
 const MAX_QUESTIONS = 50;
@@ -99,6 +101,17 @@ const emitPublicChange = (eventName, payload) => {
   }
 };
 
+const notifyFeedbackStudents = async (formId) => {
+  const recipients = await Users.find({ role: "user" }).select("_id").lean();
+  await createNotification(
+    "New Feedback Form",
+    "A new feedback form has been posted.",
+    "feedback",
+    formId,
+    { recipientIds: recipients.map(({ _id }) => _id) },
+  );
+};
+
 const validateQuestions = (input) => {
   if (!Array.isArray(input) || input.length < 1 || input.length > MAX_QUESTIONS) {
     return { error: `A feedback form must contain 1 to ${MAX_QUESTIONS} questions` };
@@ -180,10 +193,10 @@ const validateFormData = (body, { existing, eventId, createdAt } = {}) => {
   if (questionResult.error) return questionResult;
 
   const baseTime = createdAt || new Date();
-  const rawStartsAt = body.startsAt === undefined ? (existing ? formView(existing).startsAt : baseTime) : body.startsAt;
+  const rawStartsAt = body.startsAt === undefined ? (existing ? formView(existing).startsAt : null) : body.startsAt;
   const rawEndsAt = body.endsAt === undefined ? (existing ? formView(existing).endsAt : new Date(baseTime.getTime() + FEEDBACK_TTL_MS)) : body.endsAt;
   if (rawStartsAt === null || rawStartsAt === "" || rawEndsAt === null || rawEndsAt === "") {
-    return { error: "Feedback form start and end dates are required" };
+    return { error: "A scheduled publication time and feedback form end time are required" };
   }
   const startsAt = new Date(rawStartsAt);
   const endsAt = new Date(rawEndsAt);
@@ -196,9 +209,12 @@ const validateFormData = (body, { existing, eventId, createdAt } = {}) => {
   }
 
   const isPublished = body.isPublished === undefined
-    ? (existing ? existing.isPublished !== false : true)
+    ? (existing ? existing.isPublished !== false : false)
     : body.isPublished;
   if (typeof isPublished !== "boolean") return { error: "Published status must be true or false" };
+  if (!isPublished && startsAt.getTime() <= Date.now()) {
+    return { error: "Choose a future publication time for a draft" };
+  }
   if (isPublished && startsAt.getTime() > Date.now()) {
     return { error: "Save future-dated forms as drafts; they can be published when their start time arrives" };
   }
@@ -324,9 +340,12 @@ const createFeedback = async (req, res) => {
     const view = formView(populated);
 
     emitAdminChange("created", form._id);
+    void refreshFeedbackPublicationSchedule().catch((scheduleError) => {
+      console.error("Failed to refresh feedback publication schedule:", scheduleError.message);
+    });
     if (isEligible(view)) {
       emitPublicChange("feedback:created", view);
-      createNotification("New Feedback Form", "A new feedback form has been posted.", "feedback", form._id)
+      notifyFeedbackStudents(form._id)
         .catch((notificationError) => console.error("Feedback notification error:", notificationError.message));
     }
 
@@ -341,30 +360,40 @@ const createFeedback = async (req, res) => {
 const getFeedback = async (req, res) => {
   try {
     const [submitted, forms] = await Promise.all([
-      Feedback.find({ user: req.userId }).select("feedbackForm event").lean(),
+      Feedback.find({ user: req.userId }).select("feedbackForm event").lean().catch((error) => {
+        error.feedbackQuery = "submitted response lookup";
+        throw error;
+      }),
       FeedbackForm.find({ isDeleted: { $ne: true }, isPublished: { $ne: false } })
         .populate("event", "title event_type department status start_at end_at")
-        .sort({ createdAt: -1 }),
+        .sort({ createdAt: -1 }).catch((error) => {
+          error.feedbackQuery = "published form lookup";
+          throw error;
+        }),
     ]);
     const submittedIds = new Set(submitted.map((item) => String(item.feedbackForm)));
     const submittedEventIds = new Set(submitted.map((item) => String(item.event)));
-    const visibleEvents = new Set();
-    const feedback = forms.flatMap((form) => {
-      const eventId = String(form.event?._id);
-      if (
-        !submittedIds.has(String(form._id)) &&
-        !submittedEventIds.has(eventId) &&
-        !visibleEvents.has(eventId) &&
-        isEligible(form)
-      ) {
-        visibleEvents.add(eventId);
-        return [formView(form)];
-      }
-      return [];
-    });
+    let eligibleForms;
+    try {
+      // Array#filter passes (form, index, array); pass only the form so
+      // isEligible uses its default Date instead of the numeric index.
+      eligibleForms = forms.filter((form) => isEligible(form));
+    } catch (error) {
+      error.feedbackQuery = "feedback form eligibility evaluation";
+      throw error;
+    }
+    const feedback = eligibleForms.map((form) => ({
+      ...formView(form),
+      hasSubmitted: submittedIds.has(String(form._id)) || submittedEventIds.has(String(form.event?._id)),
+    }));
     return res.status(200).json({ feedback });
   } catch (error) {
-    console.error("Failed to fetch eligible feedback forms:", error.message);
+    console.error("Failed to fetch eligible feedback forms:", {
+      query: error.feedbackQuery || "unknown feedback query",
+      name: error.name,
+      code: error.code,
+      message: error.message,
+    });
     return res.status(500).json({ message: "Failed to fetch feedback" });
   }
 };
@@ -374,7 +403,16 @@ const getAdminFeedbackForms = async (req, res) => {
     const forms = await FeedbackForm.find({ isDeleted: { $ne: true } })
       .populate("event", "title event_type department status start_at end_at")
       .sort({ createdAt: -1 });
-    return res.status(200).json({ feedback: forms.map(formView) });
+    const feedback = await Promise.all(forms.map(async (form) => ({
+      ...formView(form),
+      responseCount: await Feedback.countDocuments({
+        $or: [
+          { feedbackForm: form._id },
+          { feedbackForm: { $exists: false }, event: form.event?._id || form.event },
+        ],
+      }),
+    })));
+    return res.status(200).json({ feedback });
   } catch (error) {
     console.error("Failed to fetch admin feedback forms:", error.message);
     return res.status(500).json({ message: "Failed to fetch feedback forms" });
@@ -387,11 +425,73 @@ const getAdminFeedbackForm = async (req, res) => {
     const form = await FeedbackForm.findOne({ _id: req.params.feedbackFormId, isDeleted: { $ne: true } })
       .populate("event", "title event_type department status start_at end_at");
     if (!form) return res.status(404).json({ message: "Feedback form not found" });
-    const responseCount = await Feedback.countDocuments({ feedbackForm: form._id });
+    const responseCount = await Feedback.countDocuments({
+      $or: [
+        { feedbackForm: form._id },
+        { feedbackForm: { $exists: false }, event: form.event?._id || form.event },
+      ],
+    });
     return res.status(200).json({ feedback: formView(form), responseCount });
   } catch (error) {
     console.error("Failed to fetch feedback form:", error.message);
     return res.status(500).json({ message: "Failed to fetch feedback form" });
+  }
+};
+
+const getAdminFeedbackResponses = async (req, res) => {
+  const { feedbackFormId } = req.params;
+  if (!isValidId(feedbackFormId)) return res.status(400).json({ message: "Invalid feedback form ID" });
+  try {
+    const form = await FeedbackForm.findOne({ _id: feedbackFormId, isDeleted: { $ne: true } })
+      .populate("event", "title event_type department status start_at end_at");
+    if (!form) return res.status(404).json({ message: "Feedback form not found" });
+    const [responses, responseCount] = await Promise.all([
+      Feedback.find({
+        $or: [
+          { feedbackForm: form._id },
+          { feedbackForm: { $exists: false }, event: form.event?._id || form.event },
+        ],
+      })
+        .populate("user", "name email department semester")
+        .sort({ createdAt: -1 })
+        .lean(),
+      Feedback.countDocuments({
+        $or: [
+          { feedbackForm: form._id },
+          { feedbackForm: { $exists: false }, event: form.event?._id || form.event },
+        ],
+      }),
+    ]);
+    return res.status(200).json({
+      feedback: formView(form),
+      responseCount,
+      responses: responses.map((response) => ({
+        ...response,
+        answers: (response.answers?.length ? response.answers : [
+          ...(response.ratings !== undefined ? [{
+            questionId: "legacy-rating",
+            answerType: "radio",
+            selectedOptionId: `rating-${response.ratings}`,
+          }] : []),
+          ...(response.comment !== undefined ? [{
+            questionId: "legacy-comment",
+            answerType: "textarea",
+            textAnswer: response.comment,
+          }] : []),
+        ]).map((answer) => {
+          const question = getQuestions(form).find((item) => item.questionId === answer.questionId);
+          const option = question?.options.find((item) => item.optionId === answer.selectedOptionId);
+          return {
+            ...answer,
+            questionText: answer.questionText || question?.text || answer.questionId,
+            selectedOptionText: answer.selectedOptionText || option?.text,
+          };
+        }),
+      })),
+    });
+  } catch (error) {
+    console.error("Failed to fetch feedback responses:", error.message);
+    return res.status(500).json({ message: "Failed to fetch feedback responses" });
   }
 };
 
@@ -418,7 +518,12 @@ const updateFeedback = async (req, res) => {
     });
     if (error) return res.status(400).json({ message: error });
 
-    const responseCount = await Feedback.countDocuments({ feedbackForm: form._id });
+    const responseCount = await Feedback.countDocuments({
+      $or: [
+        { feedbackForm: form._id },
+        { feedbackForm: { $exists: false }, event: form.event },
+      ],
+    });
     if (responseCount > 0) {
       if (String(form.event) !== String(eventId)) {
         return res.status(409).json({ message: "The event cannot be changed after responses have been submitted" });
@@ -436,10 +541,13 @@ const updateFeedback = async (req, res) => {
     const eligible = isEligible(view);
 
     emitAdminChange("updated", form._id);
+    void refreshFeedbackPublicationSchedule().catch((scheduleError) => {
+      console.error("Failed to refresh feedback publication schedule:", scheduleError.message);
+    });
     if (eligible) emitPublicChange(wasEligible ? "feedback:updated" : "feedback:created", view);
     else if (wasEligible) emitPublicChange("feedback:deleted", { _id: String(form._id) });
     if (eligible && !wasEligible) {
-      createNotification("New Feedback Form", "A new feedback form has been posted.", "feedback", form._id)
+      notifyFeedbackStudents(form._id)
         .catch((notificationError) => console.error("Feedback notification error:", notificationError.message));
     }
 
@@ -536,6 +644,9 @@ const deleteFeedbackForm = async (req, res) => {
     await form.save();
 
     emitAdminChange("deleted", form._id);
+    void refreshFeedbackPublicationSchedule().catch((scheduleError) => {
+      console.error("Failed to refresh feedback publication schedule:", scheduleError.message);
+    });
     if (wasEligible) emitPublicChange("feedback:deleted", { _id: String(form._id) });
     return res.status(200).json({ message: "Feedback form archived; existing responses were preserved" });
   } catch (error) {
@@ -551,6 +662,7 @@ export {
   getAllFeedback,
   getAdminFeedbackForms,
   getAdminFeedbackForm,
+  getAdminFeedbackResponses,
   updateFeedback,
   deleteFeedbackForm,
 };

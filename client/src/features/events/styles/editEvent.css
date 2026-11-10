@@ -13,7 +13,7 @@
 .editEvent h2 {
   margin-bottom: 1.5rem;
   color: var(--text-color, #1f2937);
-  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-size: var(--ems-font-page-title);
   text-align: center;
 }
 
@@ -25,7 +25,7 @@
 
 .editEventForm label {
   margin-top: 0.5rem;
-  font-size: 0.95rem;
+  font-size: var(--ems-font-label);
   font-weight: 600;
   color: var(--text-color, #374151);
 }

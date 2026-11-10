@@ -32,16 +32,16 @@
 
 .blogs-title {
   margin: 0;
-  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-size: var(--ems-font-page-title);
   font-weight: 800;
-  line-height: 1.1;
+  line-height: var(--ems-line-title);
   color: var(--text-primary, #111827);
 }
 
 .blogs-subtitle {
   max-width: 600px;
   margin: 0.8rem 0 0;
-  font-size: 1rem;
+  font-size: var(--ems-font-description);
   line-height: 1.6;
   color: var(--text-secondary, #6b7280);
 }
@@ -142,7 +142,7 @@
 .empty-blog-state h2 {
   margin: 0;
 
-  font-size: 1.25rem;
+  font-size: var(--ems-font-section-heading);
   font-weight: 700;
 
   color: var(--text-primary, #111827);
@@ -152,7 +152,7 @@
   max-width: 450px;
   margin: 0.6rem 0 1.5rem;
 
-  font-size: 0.95rem;
+  font-size: var(--ems-font-description);
   line-height: 1.6;
 
   color: var(--text-secondary, #6b7280);
@@ -170,7 +170,7 @@
   border: none;
   border-radius: 9px;
 
-  font-size: 0.9rem;
+  font-size: var(--ems-font-button);
   font-weight: 600;
 
   color: #ffffff;
@@ -219,7 +219,7 @@
   }
 
   .blogs-subtitle {
-    font-size: 0.95rem;
+    font-size: var(--ems-font-description);
   }
 
   .create-blog-btn {
@@ -239,11 +239,11 @@
   }
 
   .blogs-title {
-    font-size: 2rem;
+    font-size: var(--ems-font-page-title);
   }
 
   .blogs-subtitle {
-    font-size: 0.9rem;
+    font-size: var(--ems-font-description);
   }
 
   .empty-blog-state {
@@ -252,7 +252,7 @@
   }
 
   .empty-blog-state p {
-    font-size: 0.9rem;
+    font-size: var(--ems-font-description);
   }
 
   .empty-create-btn {

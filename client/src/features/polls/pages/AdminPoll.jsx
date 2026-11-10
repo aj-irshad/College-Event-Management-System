@@ -1,18 +1,34 @@
 import { useContext } from "react";
 import { deletePoll } from "../../../services/pollService.js";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { BarChart3, Plus } from "lucide-react";
 
 import PollBtn from "../components/PollBtn.jsx";
 
 import "../styles/adminPollResult.css";
 import PollResultCard from "../components/PollResultCard.jsx";
 import pollContext from "../../../context/pollContext.jsx";
+import { EmptyState } from "../../../components/ModulePageUI";
+import { fetchPollVotesAdmin } from "../../../services/pollService.js";
+import { useState } from "react";
 
 const AdminPoll = () => {
-  const { pollResults: polls, pollResultsLoading: loading, removePoll } =
+  const { pollResults: polls, pollResultsLoading: resultsLoading, pollLoading, pollError, pollResultsError, removePoll } =
     useContext(pollContext);
+  const loading = resultsLoading || pollLoading;
   const navigate = useNavigate();
+  const [voteDetails, setVoteDetails] = useState(null);
+  const [voteError, setVoteError] = useState("");
+
+  const showVotes = async (pollId) => {
+    try {
+      const { data } = await fetchPollVotesAdmin(pollId);
+      setVoteDetails(data);
+      setVoteError("");
+    } catch (error) {
+      setVoteError(error.response?.data?.message || "Could not load voter records.");
+    }
+  };
 
   // Delete poll
   const handleDelete = async (pollId) => {
@@ -56,11 +72,17 @@ const AdminPoll = () => {
         />
       </div>
 
+      {(pollError || pollResultsError) && <p role="alert">{pollError || pollResultsError}</p>}
       {/* No polls */}
       {polls.length === 0 ? (
-        <div className="no-polls">
-          <h3>No polls available</h3>
-        </div>
+        pollError || pollResultsError ? null : <EmptyState
+          icon={BarChart3}
+          title="No polls yet"
+          description="Create a poll to collect responses from the campus community."
+          actionLabel="Create Poll"
+          actionIcon={<Plus size={18} />}
+          onAction={() => navigate("/create-poll")}
+        />
       ) : (
         <div className="poll-results-container">
           {polls.map((poll) => (
@@ -69,10 +91,19 @@ const AdminPoll = () => {
               poll={poll}
               onEdit={() => navigate(`/edit-poll/${poll._id}`)}
               onDelete={handleDelete}
+              onViewVotes={() => void showVotes(poll._id)}
             />
           ))}
         </div>
       )}
+      {voteError && <p role="alert">{voteError}</p>}
+      {voteDetails && <section className="poll-voter-details">
+        <h2>{voteDetails.poll.question} · Voter responses</h2>
+        <button type="button" onClick={() => setVoteDetails(null)}>Close voter list</button>
+        <div className="poll-voter-table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Department</th><th>Semester</th><th>Selected option</th><th>Voted at</th></tr></thead>
+          <tbody>{voteDetails.votes.map((vote) => <tr key={vote._id}><td>{vote.user?.name || "Unknown"}</td><td>{vote.user?.email || "—"}</td><td>{vote.user?.department || "—"}</td><td>{vote.user?.semester || "—"}</td><td>{vote.selectedOption}</td><td>{new Date(vote.createdAt).toLocaleString()}</td></tr>)}</tbody>
+        </table></div>
+      </section>}
     </div>
   );
 };

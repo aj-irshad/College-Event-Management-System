@@ -26,6 +26,7 @@ import EditPoll from "../features/polls/pages/EditPoll";
 import PostBlog from "../features/blogs/pages/PostBlog";
 import CreateFeedback from "../features/feedback/pages/CreateFeedback";
 import FeedbackForms from "../features/feedback/pages/FeedbackForm";
+import AdminFeedbackResponses from "../features/feedback/pages/AdminFeedbackResponses";
 
 // Dashboard
 import AdminDashboard from "../features/dashboard/pages/AdminDashboard";
@@ -91,6 +92,7 @@ const AppRoutes = () => {
           <Route path="blogs" element={<Blogs />} />
           <Route path="blogs/:id" element={<BlogPage />} />
           <Route path="feedback" element={<Feedback />} />
+          <Route path="feedback/forms/:formId" element={<Feedback />} />
           <Route path="polls" element={<Polls />} />
           <Route path="/participate/:eventId" element={<ParticipateEvent />} />
           <Route
@@ -110,6 +112,7 @@ const AppRoutes = () => {
             <Route path="/feedback/forms/:formId/edit" element={<CreateFeedback />} />
             <Route path="/feedback/:eventId" element={<CreateFeedback />} />
             <Route path="/feedback-forms" element={<FeedbackForms />} />
+            <Route path="/feedback-forms/:formId" element={<AdminFeedbackResponses />} />
             <Route path="/create-poll" element={<CreatePoll />} />
             <Route path="/edit-poll/:pollId" element={<EditPoll />} />
           </Route>

@@ -19,6 +19,16 @@ const setUserProfile = async (req, res) => {
   });
 };
 
+const getStudentCountAdmin = async (_req, res) => {
+  try {
+    const totalStudents = await Users.countDocuments({ role: "user" });
+    return res.status(200).json({ totalStudents });
+  } catch (error) {
+    console.error("Could not load student count:", error.message);
+    return res.status(500).json({ message: "Could not load student count" });
+  }
+};
+
 /* const resetPassword = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -53,4 +63,4 @@ const setUserProfile = async (req, res) => {
   }
 };
  */
-export { setUserProfile };
+export { setUserProfile, getStudentCountAdmin };

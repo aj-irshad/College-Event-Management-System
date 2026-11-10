@@ -11,9 +11,9 @@
 .feedbackPage h1 {
   margin: 0 0 25px;
   color: #1e293b;
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-size: var(--ems-font-page-title);
   font-weight: 700;
-  line-height: 1.3;
+  line-height: var(--ems-line-title);
 }
 
 /* Feedback Cards Container */
@@ -23,6 +23,16 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   width: 100%;
+}
+
+.feedback-listing {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 20px;
+}
+
+.feedback-listing .feedbackCard > p {
+  margin: 0;
 }
 
 /* Feedback Card */
@@ -67,7 +77,7 @@
 .feedbackCardHeader h2 {
   margin: 0;
   color: #1e293b;
-  font-size: 1.2rem;
+  font-size: var(--ems-font-card-title);
   font-weight: 650;
   line-height: 1.4;
   overflow-wrap: anywhere;
@@ -86,7 +96,7 @@
 .feedbackQuestion {
   margin: 0;
   color: #334155;
-  font-size: 1rem;
+  font-size: var(--ems-font-body);
   font-weight: 500;
   line-height: 1.5;
   overflow-wrap: anywhere;
@@ -94,13 +104,13 @@
 
 .feedback-page-intro { margin: -1rem 0 1.5rem; color: #64748b; }
 .feedback-dynamic-question { display: grid; gap: 0.7rem; min-width: 0; margin: 0; padding: 0 0 1rem; border: 0; border-bottom: 1px solid #e2e8f0; }
-.feedback-dynamic-question legend { width: 100%; margin-bottom: 0.25rem; color: #334155; font-size: 0.98rem; font-weight: 650; line-height: 1.5; }
+.feedback-dynamic-question legend { width: 100%; margin-bottom: 0.25rem; color: #334155; font-size: var(--ems-font-body); font-weight: 650; line-height: var(--ems-line-body); }
 .feedback-radio-option { display: flex; align-items: center; gap: 0.55rem; color: #475569; cursor: pointer; }
 .feedback-radio-option input { accent-color: #4f46e5; }
-.feedback-answer-control { width: 100%; min-height: 43px; padding: 0.7rem 0.75rem; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; color: #334155; font: inherit; }
+.feedback-answer-control { width: 100%; min-height: 43px; padding: 0.7rem 0.75rem; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; color: #334155; font: inherit; font-size: var(--ems-font-body); }
 .feedback-answer-control:focus { outline: 2px solid #c7d2fe; border-color: #6366f1; background: #fff; }
 textarea.feedback-answer-control { min-height: 110px; resize: vertical; }
-.feedback-submit-button { min-height: 44px; padding: 0.7rem 1rem; border: 0; border-radius: 8px; background: #4f46e5; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.feedback-submit-button { min-height: 44px; padding: 0.7rem 1rem; border: 0; border-radius: 8px; background: #4f46e5; color: #fff; font: inherit; font-size: var(--ems-font-button); font-weight: 700; cursor: pointer; }
 .feedback-submit-button:disabled { opacity: 0.6; cursor: wait; }
 .feedback-submit-error, .feedback-page-error, .feedback-submit-success, .feedback-page-state { padding: 0.75rem 0.9rem; border-radius: 8px; }
 .feedback-submit-error, .feedback-page-error { color: #b91c1c; background: #fef2f2; }
@@ -118,7 +128,7 @@ textarea.feedback-answer-control { min-height: 110px; resize: vertical; }
 .rating label,
 .comment label {
   color: #334155;
-  font-size: 0.9rem;
+  font-size: var(--ems-font-label);
   font-weight: 600;
 }
 
@@ -135,7 +145,7 @@ textarea.feedback-answer-control { min-height: 110px; resize: vertical; }
   background: #f8fafc;
   color: #334155;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: var(--ems-font-body);
   cursor: pointer;
   transition:
     border-color 0.2s ease,
@@ -173,7 +183,7 @@ textarea.feedback-answer-control { min-height: 110px; resize: vertical; }
   background: #f8fafc;
   color: #334155;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: var(--ems-font-body);
   line-height: 1.5;
   transition:
     border-color 0.2s ease,
@@ -213,7 +223,7 @@ textarea.feedback-answer-control { min-height: 110px; resize: vertical; }
   background: #4f46e5;
   color: #ffffff;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: var(--ems-font-button);
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -266,7 +276,7 @@ textarea.feedback-answer-control { min-height: 110px; resize: vertical; }
 .empty-admin-feedback h2 {
   margin: 0;
   color: #334155;
-  font-size: 1.15rem;
+  font-size: var(--ems-font-section-heading);
   font-weight: 600;
 }
 
@@ -329,7 +339,7 @@ textarea.feedback-answer-control { min-height: 110px; resize: vertical; }
 
   .feedbackPage h1 {
     margin-bottom: 18px;
-    font-size: 1.6rem;
+    font-size: var(--ems-font-page-title);
   }
 
   .feedbackContainer {
@@ -347,11 +357,11 @@ textarea.feedback-answer-control { min-height: 110px; resize: vertical; }
   }
 
   .feedbackCardHeader span {
-    font-size: 0.8rem;
+    font-size: var(--ems-font-meta);
   }
 
   .feedbackCardHeader h2 {
-    font-size: 1.05rem;
+    font-size: var(--ems-font-card-title);
   }
 
   .feedbackCardBody {
@@ -359,27 +369,27 @@ textarea.feedback-answer-control { min-height: 110px; resize: vertical; }
   }
 
   .feedbackQuestion {
-    font-size: 0.95rem;
+    font-size: var(--ems-font-body);
   }
 
   .rating label,
   .comment label {
-    font-size: 0.85rem;
+    font-size: var(--ems-font-label);
   }
 
   .rating select {
     min-height: 40px;
-    font-size: 0.9rem;
+    font-size: var(--ems-font-body);
   }
 
   .comment textarea {
     min-height: 100px;
-    font-size: 0.9rem;
+    font-size: var(--ems-font-body);
   }
 
   .feedbackCardFooter button {
     min-height: 41px;
-    font-size: 0.9rem;
+    font-size: var(--ems-font-button);
   }
 
   .empty-admin-feedback {
@@ -395,7 +405,7 @@ textarea.feedback-answer-control { min-height: 110px; resize: vertical; }
   }
 
   .feedbackPage h1 {
-    font-size: 1.45rem;
+    font-size: var(--ems-font-page-title);
   }
 
   .feedbackCard {
@@ -404,28 +414,28 @@ textarea.feedback-answer-control { min-height: 110px; resize: vertical; }
   }
 
   .feedbackCardHeader h2 {
-    font-size: 1rem;
+    font-size: var(--ems-font-card-title);
   }
 
   .feedbackQuestion {
-    font-size: 0.9rem;
+    font-size: var(--ems-font-body);
   }
 
   .rating select {
     min-height: 38px;
     padding: 8px 9px;
-    font-size: 0.85rem;
+    font-size: var(--ems-font-body);
   }
 
   .comment textarea {
     min-height: 90px;
     padding: 9px 10px;
-    font-size: 0.85rem;
+    font-size: var(--ems-font-body);
   }
 
   .feedbackCardFooter button {
     min-height: 39px;
-    font-size: 0.85rem;
+    font-size: var(--ems-font-button);
   }
 
   .empty-admin-feedback {
@@ -451,23 +461,23 @@ textarea.feedback-answer-control { min-height: 110px; resize: vertical; }
   }
 
   .feedbackPage h1 {
-    font-size: 1.35rem;
+    font-size: var(--ems-font-page-title);
   }
 
   .feedbackCardHeader span {
-    font-size: 0.75rem;
+    font-size: var(--ems-font-meta);
   }
 
   .feedbackCardHeader h2 {
-    font-size: 0.95rem;
+    font-size: var(--ems-font-card-title);
   }
 
   .feedbackQuestion {
-    font-size: 0.85rem;
+    font-size: var(--ems-font-body);
   }
 
   .rating label,
   .comment label {
-    font-size: 0.8rem;
+    font-size: var(--ems-font-label);
   }
 }

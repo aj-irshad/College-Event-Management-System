@@ -7,7 +7,7 @@ import EventsPage from "../components/EventPage.jsx";
 import "../styles/upcomingEvent.css";
 
 const UpcomingEvents = () => {
-  const { upcomingEvents } = useContext(eventContext);
+  const { upcomingEvents, eventLoading, eventError } = useContext(eventContext);
 
   const [participations, setParticipations] = useState([]);
 
@@ -28,6 +28,8 @@ const UpcomingEvents = () => {
   return (
     <EventsPage
       events={upcomingEvents}
+      loading={eventLoading}
+      error={eventError}
       title="Upcoming Events"
       subtitle="Check out the events coming soon"
       participations={participations}

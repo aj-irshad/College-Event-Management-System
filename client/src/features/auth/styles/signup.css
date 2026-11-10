@@ -47,13 +47,14 @@
 }
 
 .SignupMain .welcome h1 {
-  font-size: clamp(22px, 3.5vw, 28px);
+  font-size: var(--ems-font-page-title);
+  line-height: var(--ems-line-title);
   font-weight: 700;
   margin-bottom: 10px;
 }
 
 .SignupMain .welcome p {
-  font-size: clamp(13px, 2vw, 15px);
+  font-size: var(--ems-font-description);
   opacity: 0.9;
   line-height: 1.5;
 }
@@ -76,14 +77,15 @@
 
 .signup-form .heading h1 {
   color: rgb(101, 101, 250);
-  font-size: clamp(22px, 3.5vw, 28px);
+  font-size: var(--ems-font-page-title);
+  line-height: var(--ems-line-title);
   font-weight: 700;
   margin-bottom: 4px;
 }
 
 .signup-form .heading p {
   color: #6c757d;
-  font-size: clamp(13px, 2vw, 15px);
+  font-size: var(--ems-font-description);
 }
 
 /* Input Fields Grid (2 columns) */
@@ -106,13 +108,13 @@
 .signup-form .formGrp label {
   color: #495057;
   font-weight: 600;
-  font-size: clamp(12px, 2.5vw, 14px);
+  font-size: var(--ems-font-label);
   margin-bottom: 0.25rem;
 }
 
 .signup-form .formGrp input,
 .signup-form .formGrp select {
-  font-size: clamp(13px, 2.5vw, 15px);
+  font-size: var(--ems-font-body);
   height: 2.6rem;
   border-radius: 8px;
   padding: 0 12px;
@@ -144,7 +146,7 @@
   background-color: #fef2f2;
   border: 1px solid #fecaca;
   color: #e11d48;
-  font-size: 0.85rem;
+  font-size: var(--ems-font-description);
   padding: 8px 12px;
   border-radius: 6px;
   text-align: center;
@@ -153,7 +155,7 @@
 
 /* Submit Button */
 .signupBtn {
-  font-size: clamp(15px, 2.5vw, 17px);
+  font-size: var(--ems-font-button);
   padding: 12px 0;
   border: none;
   border-radius: 8px;
@@ -184,7 +186,7 @@
 /* Bottom Link */
 .signup-form .loginLink {
   text-align: center;
-  font-size: clamp(13px, 2.5vw, 14px);
+  font-size: var(--ems-font-description);
   color: #718096;
 }
 

@@ -9,13 +9,7 @@
     "aside main";
   background-color: #f8fafc;
   color: #0f172a;
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  font-family: var(--ems-font-family);
   position: relative;
   overflow: hidden; /* CRITICAL: Stops the entire window from scrolling */
 }

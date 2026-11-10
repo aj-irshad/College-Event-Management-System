@@ -1,20 +1,36 @@
 import { useCallback, useEffect, useState } from "react";
-import { Star, User, CalendarDays, MessageSquare } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Star, User, CalendarDays, MessageSquare, Plus } from "lucide-react";
 
 import { fetchAllFeedback } from "../../../services/feedbackService";
 import socket from "../../../api/socket";
+import { EmptyState, PageHeader } from "../../../components/ModulePageUI";
 import "../styles/adminFeedback.css";
 
 const AdminFeedback = () => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const pageHeader = (
+    <PageHeader
+      title="Feedback"
+      description="View feedback submitted by users for college events."
+      actionLabel="Create feedback"
+      actionIcon={<Plus size={18} />}
+      onAction={() => navigate("/feedback/create")}
+    />
+  );
 
   const loadFeedback = useCallback(async () => {
     try {
       const response = await fetchAllFeedback();
       setFeedbacks(response.data.feedback || []);
+      setError("");
     } catch (error) {
       console.error("Error fetching feedback:", error);
+      setError("Failed to load feedback responses. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -34,6 +50,7 @@ const AdminFeedback = () => {
   if (loading) {
     return (
       <section className="adminFeedbackPage">
+        {pageHeader}
         <p className="feedbackLoading">Loading feedback...</p>
       </section>
     );
@@ -41,17 +58,8 @@ const AdminFeedback = () => {
 
   return (
     <section className="adminFeedbackPage">
-      <header className="adminFeedbackHeader">
-        <div>
-          <p className="adminFeedbackEyebrow">User Responses</p>
-
-          <h1 className="adminFeedbackTitle">Feedback</h1>
-
-          <p className="adminFeedbackSubtitle">
-            View feedback submitted by users for college events.
-          </p>
-        </div>
-      </header>
+      {pageHeader}
+      {error && <p role="alert" className="feedback-page-error">{error}</p>}
 
       {feedbacks.length > 0 ? (
         <ul className="adminFeedbackList">
@@ -77,6 +85,8 @@ const AdminFeedback = () => {
                 <span>{feedback.event?.title || "Unknown Event"}</span>
               </div>
 
+              {feedback.feedbackForm?._id && <Link to={`/feedback-forms/${feedback.feedbackForm._id}`}>Open form responses</Link>}
+
               {feedback.answers?.length ? <div className="adminFeedbackAnswers">
                 {feedback.answers.map((answer) => {
                   const question = feedback.feedbackForm?.questions?.find((item) => item.questionId === answer.questionId);
@@ -90,14 +100,15 @@ const AdminFeedback = () => {
             </li>
           ))}
         </ul>
-      ) : (
-        <section className="empty-admin-feedback">
-          <div className="empty-admin-feedback-icon">✦</div>
-
-          <h2>No feedback yet</h2>
-
-          <p>Users have not submitted any feedback yet.</p>
-        </section>
+      ) : error ? null : (
+        <EmptyState
+          icon={MessageSquare}
+          title="No feedback yet"
+          description="Users have not submitted feedback for completed events yet."
+          actionLabel="Create feedback"
+          actionIcon={<Plus size={18} />}
+          onAction={() => navigate("/feedback/create")}
+        />
       )}
     </section>
   );

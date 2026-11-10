@@ -1,3 +1,5 @@
+import "../styles/eventAudienceTargets.css";
+
 const DEPARTMENTS = [
   "B. Tech in CS & AI",
   "B. Tech in IT",

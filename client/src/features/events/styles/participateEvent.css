@@ -21,7 +21,7 @@
 .participateHeader h1 {
   margin: 0 0 8px;
   color: #1e293b;
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-size: var(--ems-font-page-title);
   font-weight: 700;
   line-height: 1.3;
 }
@@ -224,7 +224,7 @@
   }
 
   .participateHeader h1 {
-    font-size: 1.7rem;
+    font-size: var(--ems-font-page-title);
   }
 }
 
@@ -239,7 +239,7 @@
   }
 
   .participateHeader h1 {
-    font-size: 1.5rem;
+    font-size: var(--ems-font-page-title);
   }
 
   .participateHeader p {
@@ -288,7 +288,7 @@
   }
 
   .participateHeader h1 {
-    font-size: 1.4rem;
+    font-size: var(--ems-font-page-title);
   }
 
   .participateHeader p {
@@ -323,7 +323,7 @@
   }
 
   .participateHeader h1 {
-    font-size: 1.3rem;
+    font-size: var(--ems-font-page-title);
   }
 
   .participateHeader p {

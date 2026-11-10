@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import AdminPollsForm from "../model/adminPolls.js";
-import { getIO } from "../socket.js";
+import { emitPollExpiryToAudience } from "../socket.js";
 
 const MAX_TIMER_DELAY = 2 ** 31 - 1;
 
@@ -22,7 +22,7 @@ const emitExpiredPolls = async () => {
   const expiredPolls = await AdminPollsForm.find({
     expiresAt: { $type: "date", $lte: now },
   })
-    .select("_id expiresAt")
+    .select("_id expiresAt audienceTargets")
     .lean();
 
   for (const poll of expiredPolls) {
@@ -30,7 +30,7 @@ const emitExpiredPolls = async () => {
     if (announcedExpiries.has(expiryKey)) continue;
     announcedExpiries.add(expiryKey);
     try {
-      getIO().to("polls").emit("polls:expired", { pollId: String(poll._id) });
+      emitPollExpiryToAudience(poll);
     } catch (error) {
       console.error("Failed to emit poll expiry:", error.message);
     }

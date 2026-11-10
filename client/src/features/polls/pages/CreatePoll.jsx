@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createPoll } from "../../../services/pollService";
 import "../styles/createPoll.css";
 import { useNavigate } from "react-router-dom";
+import EventAudienceTargets from "../../events/components/EventAudienceTargets.jsx";
 
 const toLocalDateTimeInput = (date) => {
   const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
@@ -14,6 +15,7 @@ const CreatePoll = () => {
   const [pollQuestion, setPollQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
   const [expiresAt, setExpiresAt] = useState("");
+  const [audienceTargets, setAudienceTargets] = useState([]);
 
   const navigate = useNavigate();
 
@@ -31,6 +33,11 @@ const CreatePoll = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (audienceTargets.some((target) => !target.semesters?.length)) {
+      alert("Select at least one semester for every targeted department.");
+      return;
+    }
 
     const cleanOptions = options.map((option) => option.trim());
 
@@ -55,6 +62,7 @@ const CreatePoll = () => {
         question: pollQuestion.trim(),
         options: cleanOptions,
         expiresAt: toUtcIsoString(expiresAt),
+        audienceTargets,
       };
 
       const response = await createPoll(pollData);
@@ -78,6 +86,8 @@ const CreatePoll = () => {
         placeholder="Type your question here..."
         required
       />
+
+      <EventAudienceTargets value={audienceTargets} onChange={setAudienceTargets} />
 
       <label className="poll-expiry-field" htmlFor="poll-expires-at">
         Poll expiry date and time

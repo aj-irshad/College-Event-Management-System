@@ -17,14 +17,14 @@
 .admin-header h1 {
   margin: 0 0 0.35rem 0;
   color: #0f172a;
-  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-size: var(--ems-font-page-title);
   font-weight: 800;
 }
 
 .admin-header p {
   margin: 0;
   color: #64748b;
-  font-size: 0.925rem;
+  font-size: var(--ems-font-description);
 }
 
 .participant-count-pill {
@@ -35,7 +35,7 @@
   background: #eef2ff;
   color: #4f46e5;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: var(--ems-font-button);
   border-radius: 10px;
 }
 
@@ -47,10 +47,10 @@
   border-radius: 14px;
 }
 .pending-payment-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 0.8rem; }
-.pending-payment-heading h2 { margin: 0 0 0.3rem; color: #78350f; font-size: 1.05rem; }
-.pending-payment-heading p { margin: 0; color: #92400e; font-size: 0.86rem; }
-.pending-payment-review-link { display: inline-flex; align-items: center; justify-content: center; padding: 0.45rem 0.7rem; border-radius: 7px; background: #4f46e5; color: white; font-size: 0.8rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
-.pending-payment-empty { margin: 0; color: #64748b; font-size: 0.88rem; }
+.pending-payment-heading h2 { margin: 0 0 0.3rem; color: #78350f; font-size: var(--ems-font-section-heading); }
+.pending-payment-heading p { margin: 0; color: #92400e; font-size: var(--ems-font-description); }
+.pending-payment-review-link { display: inline-flex; align-items: center; justify-content: center; padding: 0.45rem 0.7rem; border-radius: 7px; background: #4f46e5; color: white; font-size: var(--ems-font-button); font-weight: 700; text-decoration: none; white-space: nowrap; }
+.pending-payment-empty { margin: 0; color: #64748b; font-size: var(--ems-font-description); }
 .payment-badge.pending { color: #92400e; background: #fef3c7; }
 
 .participant-filters {
@@ -65,7 +65,7 @@
   border-radius: 14px;
 }
 
-.participant-filters label { display: grid; gap: 0.35rem; color: #475569; font-size: 0.78rem; font-weight: 650; }
+.participant-filters label { display: grid; gap: 0.35rem; color: #475569; font-size: var(--ems-font-label); font-weight: 650; }
 .participant-filters select,
 .participant-search input {
   min-width: 0;
@@ -82,12 +82,12 @@
 .participant-reset-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; min-height: 40px; padding: 0 0.8rem; color: #475569; background: white; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; cursor: pointer; }
 .participant-reset-btn:hover { background: #f1f5f9; }
 .participant-roster-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin: 0.8rem 0; }
-.participant-roster-heading h2 { margin: 0; color: #0f172a; font-size: 1.1rem; }
-.participant-roster-heading span { color: #64748b; font-size: 0.85rem; }
+.participant-roster-heading h2 { margin: 0; color: #0f172a; font-size: var(--ems-font-section-heading); }
+.participant-roster-heading span { color: #64748b; font-size: var(--ems-font-meta); }
 .participant-error, .participant-state { margin: 1rem 0; padding: 1.3rem; color: #64748b; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; text-align: center; }
 .participant-error { color: #b91c1c; }
 .participant-success { margin: 1rem 0; padding: 0.85rem 1rem; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; }
-.event-status-badge { display: inline-flex; padding: 0.28rem 0.55rem; border-radius: 999px; background: #f1f5f9; color: #475569; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.event-status-badge { display: inline-flex; padding: 0.28rem 0.55rem; border-radius: 999px; background: #f1f5f9; color: #475569; font-size: var(--ems-font-meta); font-weight: 700; white-space: nowrap; }
 .event-status-badge.upcoming { color: #1d4ed8; background: #eff6ff; }
 .event-status-badge.ongoing { color: #047857; background: #ecfdf5; }
 .event-status-badge.completed { color: #64748b; background: #f1f5f9; }
@@ -111,7 +111,7 @@
   padding: 1.15rem 1.5rem;
   background: #f8fafc;
   color: #475569;
-  font-size: 0.75rem;
+  font-size: var(--ems-font-table-heading);
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -122,7 +122,7 @@
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
-  font-size: 0.875rem;
+  font-size: var(--ems-font-table-content);
 }
 
 .admin-table tr:last-child td {
@@ -142,7 +142,7 @@
 
 .user-identity small {
   color: #64748b;
-  font-size: 0.78rem;
+  font-size: var(--ems-font-meta);
 }
 
 .contact-info,
@@ -166,7 +166,7 @@
   align-items: center;
   gap: 0.35rem;
   padding: 4px 10px;
-  font-size: 0.75rem;
+  font-size: var(--ems-font-compact);
   font-weight: 600;
   border-radius: 6px;
 }
@@ -189,7 +189,7 @@
 .date-cell {
   color: #64748b;
   font-weight: 500;
-  font-size: 0.82rem;
+  font-size: var(--ems-font-meta);
 }
 
 .approval-status-badge,
@@ -198,7 +198,7 @@
   align-items: center;
   padding: 0.3rem 0.6rem;
   border-radius: 999px;
-  font-size: 0.72rem;
+  font-size: var(--ems-font-meta);
   font-weight: 700;
   line-height: 1.35;
 }
@@ -208,7 +208,7 @@
 .payment-badge.free { color: #047857; background: #ecfdf5; }
 .payment-badge.paid { color: #92400e; background: #fef3c7; max-width: 230px; white-space: normal; }
 .approval-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.approval-action-btn { padding: 0.4rem 0.6rem; border: 0; border-radius: 7px; font: inherit; font-size: 0.76rem; font-weight: 700; cursor: pointer; }
+.approval-action-btn { padding: 0.4rem 0.6rem; border: 0; border-radius: 7px; font: inherit; font-size: var(--ems-font-compact); font-weight: 700; cursor: pointer; }
 .approval-action-btn:disabled { cursor: wait; opacity: 0.6; }
 .approval-action-btn.approve { color: #047857; background: #d1fae5; }
 .approval-action-btn.reject { color: #b91c1c; background: #fee2e2; }

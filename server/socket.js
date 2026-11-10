@@ -62,13 +62,16 @@ export const initIO = (httpServer, corsOrigin) => {
 
   io.on("connection", async (socket) => {
     try {
-      await socket.join(["blogs", "polls"]);
+      await socket.join(["blogs"]);
       if (socket.data.role === "admin") {
         await socket.join("events");
+        await socket.join("polls:admin");
       } else {
         await socket.join("events:all");
+        await socket.join("polls:all");
         if (socket.data.department && socket.data.semester) {
           await socket.join(eventTargetRoom(socket.data.department, socket.data.semester));
+          await socket.join(pollTargetRoom(socket.data.department, socket.data.semester));
         }
       }
       await socket.join(`user:${socket.data.userId}`);
@@ -114,6 +117,9 @@ export const initIO = (httpServer, corsOrigin) => {
 const eventTargetRoom = (department, semester) =>
   `events:target:${encodeURIComponent(department)}:${encodeURIComponent(semester)}`;
 
+const pollTargetRoom = (department, semester) =>
+  `polls:target:${encodeURIComponent(department)}:${encodeURIComponent(semester)}`;
+
 const eventRooms = (event) => {
   if (!event) return [];
   const targets = event?.audienceTargets;
@@ -143,6 +149,32 @@ export const emitEventStatusRefresh = () => {
     }
   }
   for (const room of rooms) io.to(room).emit("events:statuses-updated");
+};
+
+const pollRooms = (poll) => {
+  if (!poll) return [];
+  const targets = poll.audienceTargets;
+  if (!Array.isArray(targets) || !targets.length) return ["polls:all"];
+  const rooms = new Set();
+  for (const target of targets) {
+    if (!EVENT_DEPARTMENTS.includes(target?.department) || !Array.isArray(target.semesters)) continue;
+    for (const semester of target.semesters) {
+      if (EVENT_SEMESTERS.includes(semester)) rooms.add(pollTargetRoom(target.department, semester));
+    }
+  }
+  return [...rooms];
+};
+
+export const emitPollToAudience = (eventName, payload, poll, previousPoll) => {
+  const io = getIO();
+  const rooms = new Set(["polls:admin", ...pollRooms(poll), ...pollRooms(previousPoll)]);
+  for (const room of rooms) io.to(room).emit(eventName, payload);
+};
+
+export const emitPollExpiryToAudience = (poll) => {
+  const io = getIO();
+  const rooms = new Set(["polls:admin", ...pollRooms(poll)]);
+  for (const room of rooms) io.to(room).emit("polls:expired", { pollId: String(poll._id) });
 };
 
 export const getIO = () => {

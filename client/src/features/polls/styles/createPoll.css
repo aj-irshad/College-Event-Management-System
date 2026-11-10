@@ -17,7 +17,7 @@
 .createPollQuestion h2 {
   margin: 0 0 25px;
   color: #0f172a;
-  font-size: 28px;
+  font-size: var(--ems-font-page-title);
   font-weight: 700;
 }
 
@@ -32,7 +32,7 @@
   border-radius: 8px;
   background: #f8fafc;
   color: #0f172a;
-  font-size: 15px;
+  font-size: var(--ems-font-body);
   outline: none;
   transition: all 0.2s ease;
 }
@@ -53,7 +53,7 @@
   gap: 8px;
   margin-top: 18px;
   color: #334155;
-  font-size: 14px;
+  font-size: var(--ems-font-label);
   font-weight: 600;
 }
 
@@ -80,7 +80,7 @@
 .optionTitle {
   margin: 25px 0 10px;
   color: #0f172a;
-  font-size: 18px;
+  font-size: var(--ems-font-section-heading);
   font-weight: 700;
 }
 
@@ -103,7 +103,7 @@
   border-radius: 8px;
   background: #f8fafc;
   color: #0f172a;
-  font-size: 15px;
+  font-size: var(--ems-font-body);
   outline: none;
   transition: all 0.2s ease;
 }
@@ -136,7 +136,7 @@
   border-radius: 8px;
   background: #f8fafc;
   color: #0f172a;
-  font-size: 14px;
+  font-size: var(--ems-font-button);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -161,7 +161,7 @@
   border-radius: 8px;
   background: #0f172a;
   color: #ffffff;
-  font-size: 15px;
+  font-size: var(--ems-font-button);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -186,7 +186,7 @@
   }
 
   .createPollQuestion h2 {
-    font-size: 24px;
+    font-size: var(--ems-font-page-title);
   }
 }
 
@@ -198,7 +198,7 @@
   }
 
   .createPollQuestion h2 {
-    font-size: 22px;
+    font-size: var(--ems-font-page-title);
   }
 
   .createPollQuestion > input,
