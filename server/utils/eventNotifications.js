@@ -1,9 +1,11 @@
 import fetchAllEmails from "./fetchUserEmails.js";
 import sendEventNotification from "./notification.js";
 
-const sendEventNotifications = async (event) => {
+const sendEventNotifications = async (event, recipients) => {
   try {
-    const emails = await fetchAllEmails();
+    const emails = Array.isArray(recipients)
+      ? recipients.map(({ email }) => email).filter(Boolean)
+      : await fetchAllEmails();
 
     const results = await Promise.allSettled(
       emails.map((email) => sendEventNotification(email, event)),

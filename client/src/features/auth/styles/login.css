@@ -167,6 +167,19 @@
   color: rgb(101, 101, 246);
 }
 
+.forgotPasswordLink {
+  align-self: flex-end;
+  margin-top: 8px;
+  color: rgb(101, 101, 246);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.forgotPasswordLink:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   .LoginMain {
     flex-direction: column;

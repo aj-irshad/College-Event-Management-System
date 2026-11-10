@@ -40,6 +40,36 @@
   flex-direction: column;
 }
 
+.payment-qr-image {
+  display: block;
+  width: min(100%, 320px);
+  max-height: 360px;
+  object-fit: contain;
+  margin: 16px auto;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.payment-proof-field,
+.payment-reference-field {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.payment-reference-field input {
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+}
+
 /* Participation Options */
 
 .participationOptions {

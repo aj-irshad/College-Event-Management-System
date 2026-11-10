@@ -8,6 +8,7 @@ import {
   CalendarDays,
   Plus,
   Vote,
+  CreditCard,
 } from "lucide-react";
 
 import { useContext } from "react";
@@ -112,6 +113,11 @@ const AdminDashboard = () => {
             className="pollBtnSecondary"
             icon={<Vote size={16} />}
             style={{ backgroundColor: "blue", color: "white" }}
+          />
+          <EventBtn
+            text="Review Payments"
+            onClick={() => navigate("/admin/payments")}
+            icon={<CreditCard size={18} />}
           />
         </div>
       </header>

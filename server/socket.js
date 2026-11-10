@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { Server } from "socket.io";
 import Users from "./model/user.js";
+import { EVENT_DEPARTMENTS, EVENT_SEMESTERS } from "./utils/eventTargeting.js";
 
 let io = null;
 const isDebugEventSocket = () => process.env.DEBUG_EVENT_SOCKET === "true";
@@ -41,7 +42,7 @@ export const initIO = (httpServer, corsOrigin) => {
       }
 
       const decoded = jwt.verify(token, process.env.JWT_KEY);
-      const user = await Users.findById(decoded.userId).select("role");
+      const user = await Users.findById(decoded.userId).select("role department semester");
       if (!user) {
         debugLog("authentication rejected: user not found", decoded.userId);
         return next(new Error("Authentication required"));
@@ -49,6 +50,8 @@ export const initIO = (httpServer, corsOrigin) => {
 
       socket.data.userId = String(user._id);
       socket.data.role = user.role;
+      socket.data.department = user.department;
+      socket.data.semester = user.semester;
       debugLog("socket authenticated", { userId: socket.data.userId });
       return next();
     } catch (error) {
@@ -59,7 +62,15 @@ export const initIO = (httpServer, corsOrigin) => {
 
   io.on("connection", async (socket) => {
     try {
-      await socket.join(["events", "blogs", "polls"]);
+      await socket.join(["blogs", "polls"]);
+      if (socket.data.role === "admin") {
+        await socket.join("events");
+      } else {
+        await socket.join("events:all");
+        if (socket.data.department && socket.data.semester) {
+          await socket.join(eventTargetRoom(socket.data.department, socket.data.semester));
+        }
+      }
       await socket.join(`user:${socket.data.userId}`);
       if (socket.data.role === "admin") await socket.join("admins");
       let roomSize;
@@ -98,6 +109,40 @@ export const initIO = (httpServer, corsOrigin) => {
   });
 
   return io;
+};
+
+const eventTargetRoom = (department, semester) =>
+  `events:target:${encodeURIComponent(department)}:${encodeURIComponent(semester)}`;
+
+const eventRooms = (event) => {
+  if (!event) return [];
+  const targets = event?.audienceTargets;
+  if (!Array.isArray(targets) || targets.length === 0) return ["events:all"];
+  const rooms = new Set();
+  for (const target of targets) {
+    if (!EVENT_DEPARTMENTS.includes(target?.department) || !Array.isArray(target.semesters)) continue;
+    for (const semester of target.semesters) {
+      if (EVENT_SEMESTERS.includes(semester)) rooms.add(eventTargetRoom(target.department, semester));
+    }
+  }
+  return [...rooms];
+};
+
+export const emitEventToAudience = (eventName, payload, event, previousEvent) => {
+  const io = getIO();
+  const rooms = new Set(["events", ...eventRooms(event), ...eventRooms(previousEvent)]);
+  for (const room of rooms) io.to(room).emit(eventName, payload);
+};
+
+export const emitEventStatusRefresh = () => {
+  const io = getIO();
+  const rooms = new Set(["events", "events:all"]);
+  for (const department of EVENT_DEPARTMENTS) {
+    for (const semester of EVENT_SEMESTERS) {
+      rooms.add(eventTargetRoom(department, semester));
+    }
+  }
+  for (const room of rooms) io.to(room).emit("events:statuses-updated");
 };
 
 export const getIO = () => {

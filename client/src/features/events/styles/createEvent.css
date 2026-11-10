@@ -280,6 +280,102 @@
   cursor: not-allowed;
 }
 
+.audience-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.audience-targets-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.audience-targets-heading h3 {
+  margin: 0;
+  color: var(--text-main, #0f172a);
+  font-size: 1rem;
+}
+
+.audience-targets-heading p,
+.audience-targets-empty {
+  margin: 0.35rem 0 0;
+  color: var(--text-muted, #64748b);
+  font-size: 0.85rem;
+}
+
+.audience-targets-heading select {
+  width: auto;
+  min-width: 190px;
+}
+
+.audience-target-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.75rem;
+}
+
+.audience-department {
+  min-width: 0;
+  margin: 0;
+  padding: 0.8rem;
+  border: 1px solid var(--border-color, #dbe3ed);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.audience-department legend {
+  max-width: 85%;
+  padding: 0 0.3rem;
+  color: var(--text-main, #0f172a);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.audience-remove {
+  margin: 0.2rem 0 0.6rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #b91c1c;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.semester-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.semester-option {
+  display: flex !important;
+  align-items: center;
+  gap: 0.3rem !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+  cursor: pointer;
+}
+
+.semester-option input {
+  width: auto !important;
+  margin: 0;
+  padding: 0;
+}
+
+.audience-department small {
+  display: block;
+  margin-top: 0.55rem;
+  color: var(--text-muted, #64748b);
+}
+
 /* 
    Tablet
  */
@@ -317,6 +413,15 @@
   .form-row {
     grid-template-columns: 1fr;
     gap: 1.25rem;
+  }
+
+  .audience-targets-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .audience-targets-heading select {
+    width: 100%;
   }
 
   .event-form {

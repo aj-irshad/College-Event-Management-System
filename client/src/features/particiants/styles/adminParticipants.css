@@ -39,6 +39,20 @@
   border-radius: 10px;
 }
 
+.pending-payment-review {
+  margin: 0 0 1.5rem;
+  padding: 1rem;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 14px;
+}
+.pending-payment-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 0.8rem; }
+.pending-payment-heading h2 { margin: 0 0 0.3rem; color: #78350f; font-size: 1.05rem; }
+.pending-payment-heading p { margin: 0; color: #92400e; font-size: 0.86rem; }
+.pending-payment-review-link { display: inline-flex; align-items: center; justify-content: center; padding: 0.45rem 0.7rem; border-radius: 7px; background: #4f46e5; color: white; font-size: 0.8rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.pending-payment-empty { margin: 0; color: #64748b; font-size: 0.88rem; }
+.payment-badge.pending { color: #92400e; background: #fef3c7; }
+
 .participant-filters {
   display: grid;
   grid-template-columns: repeat(3, minmax(150px, 1fr)) minmax(240px, 2fr) auto;
@@ -206,4 +220,5 @@
 @media (max-width: 560px) {
   .participant-filters { grid-template-columns: 1fr; }
   .participant-roster-heading { align-items: flex-start; flex-direction: column; }
+  .pending-payment-heading { align-items: flex-start; flex-direction: column; }
 }

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { EVENT_SEMESTERS } from "../utils/eventTargeting.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -33,6 +34,12 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    semester: {
+      type: String,
+      enum: EVENT_SEMESTERS,
+      default: undefined,
+    },
+
     role: {
       type: String,
       enum: ["user", "admin"],
@@ -42,6 +49,15 @@ const userSchema = new mongoose.Schema(
     profileImage: {
       type: String,
       default: "",
+    },
+
+    passwordResetTokenHash: {
+      type: String,
+      select: false,
+    },
+    passwordResetExpiresAt: {
+      type: Date,
+      select: false,
     },
   },
   {

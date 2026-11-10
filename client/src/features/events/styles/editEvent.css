@@ -107,6 +107,98 @@
   text-decoration: underline;
 }
 
+.editEvent .audience-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0.75rem 0;
+  padding: 1rem;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.editEvent .audience-targets-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.editEvent .audience-targets-heading h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.editEvent .audience-targets-heading p,
+.editEvent .audience-targets-empty {
+  margin: 0.35rem 0 0;
+  color: var(--muted-text, #64748b);
+  font-size: 0.85rem;
+}
+
+.editEvent .audience-targets-heading select {
+  width: auto;
+  min-width: 190px;
+}
+
+.editEvent .audience-target-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.75rem;
+}
+
+.editEvent .audience-department {
+  min-width: 0;
+  margin: 0;
+  padding: 0.8rem;
+  border: 1px solid var(--border-color, #dbe3ed);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.editEvent .audience-department legend {
+  padding: 0 0.3rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.editEvent .audience-remove {
+  width: auto;
+  margin: 0.2rem 0 0.6rem;
+  padding: 0;
+  background: none;
+  color: #b91c1c;
+  font-size: 0.8rem;
+}
+
+.editEvent .semester-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.editEvent .semester-option {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.editEvent .semester-option input {
+  width: auto;
+  min-height: auto;
+  margin: 0;
+}
+
+.editEvent .audience-department small {
+  display: block;
+  margin-top: 0.55rem;
+  color: var(--muted-text, #64748b);
+}
+
 /* Tablet */
 @media (max-width: 768px) {
   .editEvent {
@@ -136,6 +228,15 @@
   .editEventForm input,
   .editEventForm textarea {
     padding: 0.7rem;
+  }
+
+  .editEvent .audience-targets-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .editEvent .audience-targets-heading select {
+    width: 100%;
   }
 
   .editEventForm textarea {

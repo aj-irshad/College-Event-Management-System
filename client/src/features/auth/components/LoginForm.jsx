@@ -49,6 +49,9 @@ const LoginForm = ({ formData, handleChange, handleSubmit, Eye, EyeOff }) => {
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
+        <Link className="forgotPasswordLink" to="/forgot-password">
+          Forgot password?
+        </Link>
       </section>
       <button className="loginBtn">Login</button>
 

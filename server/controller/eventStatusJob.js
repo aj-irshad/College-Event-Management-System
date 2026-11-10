@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Event from "../model/events.js";
-import { getIO } from "../socket.js";
+import { emitEventStatusRefresh } from "../socket.js";
 import { updateEventStatus, validEventDateRange } from "../services/eventStatusService.js";
 
 const MAX_TIMER_DELAY = 2 ** 31 - 1;
@@ -18,14 +18,11 @@ const clearScheduledTransition = () => {
 
 const emitStatusesUpdated = async () => {
   try {
-    const io = getIO();
-    io.to("events").emit("events:statuses-updated");
+    emitEventStatusRefresh();
     if (isDebugEventSocket()) {
-      const members = await io.in("events").allSockets();
       console.info("[event-socket] emitted", {
         pid: process.pid,
         eventName: "events:statuses-updated",
-        roomSize: members.size,
       });
     }
   } catch (error) {

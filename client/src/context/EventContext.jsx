@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { getEvents, createEvent, deleteEvent } from "../services/eventService";
 import authContext from "./authContext";
 import socket from "../api/socket";
+import { isEventAvailableToProfile } from "../features/events/utils/eventTargeting.js";
 
 const eventContext = createContext({});
 const debugEventSocket = import.meta.env.VITE_DEBUG_EVENT_SOCKET === "true";
@@ -23,12 +24,17 @@ export const EventProvider = ({ children }) => {
   const initialEventsLoadRef = useRef(null);
   const hasConnectedRef = useRef(false);
   const eventRevisionRef = useRef(0);
+  const accessProfileRef = useRef(null);
+  accessProfileRef.current = user;
+  const userId = user?._id ?? user?.id ?? "";
 
   useEffect(() => {
     const loadInitialEvents = async () => {
       try {
         const response = await getEvents();
-        setEvents(sortEvents(response.data));
+        setEvents(sortEvents(response.data.filter((event) =>
+          isEventAvailableToProfile(event, accessProfileRef.current),
+        )));
         debugLog("initial REST event state loaded", {
           count: response.data.length,
         });
@@ -41,7 +47,7 @@ export const EventProvider = ({ children }) => {
     };
 
     initialEventsLoadRef.current = loadInitialEvents();
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     const refreshEvents = async () => {
@@ -50,7 +56,9 @@ export const EventProvider = ({ children }) => {
         const response = await getEvents();
         // Do not let an older REST snapshot overwrite newer socket changes.
         if (eventRevisionRef.current === revisionAtRequest) {
-          setEvents(sortEvents(response.data));
+          setEvents(sortEvents(response.data.filter((event) =>
+            isEventAvailableToProfile(event, accessProfileRef.current),
+          )));
           debugLog("REST event state synchronized", {
             count: response.data.length,
           });
@@ -86,6 +94,7 @@ export const EventProvider = ({ children }) => {
     const handleCreated = (event) => {
       eventRevisionRef.current += 1;
       debugLog("received events:created", { eventId: event?._id });
+      if (!isEventAvailableToProfile(event, accessProfileRef.current)) return;
       setEvents((prev) => {
         const next = sortEvents([
           event,
@@ -101,6 +110,10 @@ export const EventProvider = ({ children }) => {
     const handleUpdated = (event) => {
       eventRevisionRef.current += 1;
       debugLog("received events:updated", { eventId: event?._id });
+      if (!isEventAvailableToProfile(event, accessProfileRef.current)) {
+        setEvents((prev) => prev.filter((item) => item._id !== event?._id));
+        return;
+      }
       setEvents((prev) => {
         const next = sortEvents([
           event,

@@ -5,8 +5,9 @@ import Blog from "../model/blogs.js";
 import Users from "../model/user.js";
 import { getIO } from "../socket.js";
 import createNotification from "../utils/bellNotification.js";
+import { getUploadDirectory } from "../utils/uploadPaths.js";
 
-const BLOG_UPLOAD_DIR = path.resolve(process.cwd(), "uploads/blog");
+const BLOG_UPLOAD_DIR = getUploadDirectory("blogs");
 const isValidId = (id) => /^[a-f\d]{24}$/i.test(id);
 
 const removeBlogImageFile = async (filename) => {

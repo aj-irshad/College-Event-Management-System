@@ -338,6 +338,41 @@
   text-align: center;
 }
 
+.browserPushSetting {
+  margin-bottom: 0.45rem;
+}
+
+.browserPushButton {
+  border: 1px solid #c7d2fe;
+  border-radius: 7px;
+  padding: 0.4rem 0.7rem;
+  background: #eef2ff;
+  color: #4338ca;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.browserPushButton:hover:not(:disabled) {
+  background: #e0e7ff;
+}
+
+.browserPushButton:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.browserPushMessage {
+  margin: 0.35rem 0 0;
+  color: #166534;
+  font-size: 0.7rem;
+}
+
+.browserPushMessage.error {
+  color: #b91c1c;
+}
+
 .closeNotificationBtn {
   background: none;
   border: none;

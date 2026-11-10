@@ -11,8 +11,8 @@ import adminMiddleware from "../middleware/adminMiddleware.js";
 
 const eventRouter = express.Router();
 
-eventRouter.get("/get-events", getAllEvent);
-eventRouter.get("/:eventId", getEventById);
+eventRouter.get("/get-events", authMiddleware, getAllEvent);
+eventRouter.get("/:eventId", authMiddleware, getEventById);
 eventRouter.post("/new-event", authMiddleware, adminMiddleware, createNewEvent);
 eventRouter.delete(
   "/delete-event/:eventId",

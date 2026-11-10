@@ -11,6 +11,8 @@ import Login from "../features/auth/pages/Login";
 import Signup from "../features/auth/pages/Signup";
 import ResetForm from "../features/auth/pages/ResetForm";
 import VerifyOTP from "../features/auth/pages/VerifyOTP";
+import ForgotPassword from "../features/auth/pages/ForgotPassword";
+import CompletePasswordReset from "../features/auth/pages/CompletePasswordReset";
 
 // Main Layout
 import Home from "../layout/Home";
@@ -44,12 +46,18 @@ import ParticipateEvent from "../features/events/pages/ParticipateEvent";
 import SearchPage from "../components/pages/SearchPage";
 import UserParticipants from "../features/particiants/pages/UserParticipants";
 import AdminParticipants from "../features/particiants/pages/AdminParticipants";
+import MyPayments from "../features/payments/pages/MyPayments";
+import AdminPayments from "../features/payments/pages/AdminPayments";
 
 const AppRoutes = () => {
   const { user, isAdmin } = useContext(authContext);
 
   return (
     <Routes>
+      {/* Password recovery links remain usable even if an old session exists. */}
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<CompletePasswordReset />} />
+
       {/*  PUBLIC ROUTES  */}
 
       <Route element={<PublicRoute />}>
@@ -89,9 +97,11 @@ const AppRoutes = () => {
             path="/participations"
             element={isAdmin ? <AdminParticipants /> : <UserParticipants />}
           />
+          <Route path="/payment-submissions" element={<MyPayments />} />
 
           {/*  ADMIN ROUTES  */}
           <Route element={<AdminRoute />}>
+            <Route path="admin/payments" element={<AdminPayments />} />
             <Route path="create-event" element={<CreateEvent />} />
             <Route path="/edit-event/:id" element={<EditEvent />} />
             <Route path="/post-blog" element={<PostBlog />} />

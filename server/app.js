@@ -21,6 +21,8 @@ import blogRouter from "./routes/blog.js";
 import feedbackRouter from "./routes/feedback.js";
 import pollRouter from "./routes/polls.js";
 import notificationRouter from "./routes/notification.js";
+import paymentRouter from "./routes/payments.js";
+import { getUploadDirectory } from "./utils/uploadPaths.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -52,7 +54,17 @@ connection().then(() => {
   startPollExpiryJob();
 });
 
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+const eventUploadDirectory = getUploadDirectory("events");
+const blogUploadDirectory = getUploadDirectory("blogs");
+const profileUploadDirectory = getUploadDirectory("profiles");
+app.use("/uploads/events", express.static(eventUploadDirectory));
+app.use("/uploads/blogs", express.static(blogUploadDirectory));
+app.use("/uploads/profiles", express.static(profileUploadDirectory));
+// Keep existing image URLs working while storage uses the canonical folders.
+app.use("/uploads/blog", express.static(blogUploadDirectory));
+app.use("/uploads/user", express.static(profileUploadDirectory));
+// Legacy root-level upload names now resolve only inside the events folder.
+app.use("/uploads", express.static(eventUploadDirectory));
 app.use(express.static(path.join(__dirname, "../client/dist")));
 
 app.use("/auth", authRouter);
@@ -63,6 +75,7 @@ app.use("/feedback", feedbackRouter);
 app.use("/polls", pollRouter);
 app.use("/participant", participantRouter);
 app.use("/notification", notificationRouter);
+app.use("/payments", paymentRouter);
 
 app.get("/{*splat}", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist/index.html"));

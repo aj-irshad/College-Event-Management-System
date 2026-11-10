@@ -1,12 +1,14 @@
 import mongoose from "mongoose";
 import Event from "../model/events.js";
-import { getIO } from "../socket.js";
+import Users from "../model/user.js";
+import { emitEventToAudience } from "../socket.js";
 import { getEventStatus } from "../services/eventStatusService.js";
 import { refreshEventStatusSchedule } from "./eventStatusJob.js";
 import sendEventNotifications from "../utils/eventNotifications.js";
 import createNotification, {
   maybeCreateEventExpiryReminder,
 } from "../utils/bellNotification.js";
+import { EVENT_DEPARTMENTS, EVENT_SEMESTERS, isEventAvailableToUser } from "../utils/eventTargeting.js";
 
 const EVENT_FIELDS = [
   "title",
@@ -17,31 +19,22 @@ const EVENT_FIELDS = [
   "end_at",
   "venue",
   "price",
+  "audienceTargets",
 ];
 const DATE_FIELDS = ["start_at", "end_at"];
 const REQUIRED_TEXT_FIELDS = ["title", "description", "event_type", "venue"];
 const isDebugEventSocket = () => process.env.DEBUG_EVENT_SOCKET === "true";
 
 const isValidId = (id) => /^[a-f\d]{24}$/i.test(id);
-const emitEvent = (eventName, payload) => {
+const emitEvent = (eventName, payload, event, previousEvent) => {
   try {
-    const io = getIO();
-    io.to("events").emit(eventName, payload);
+    emitEventToAudience(eventName, payload, event, previousEvent);
     if (isDebugEventSocket()) {
-      void io
-        .in("events")
-        .allSockets()
-        .then((roomMembers) => {
-          console.info("[event-socket] emitted", {
-            pid: process.pid,
-            eventName,
-            eventId: String(payload?._id ?? ""),
-            roomSize: roomMembers.size,
-          });
-        })
-        .catch((error) => {
-          console.info("[event-socket] room count unavailable", error.message);
-        });
+      console.info("[event-socket] emitted", {
+        pid: process.pid,
+        eventName,
+        eventId: String(payload?._id ?? ""),
+      });
     }
   } catch (error) {
     console.error(`Failed to emit ${eventName}:`, error.message);
@@ -59,6 +52,39 @@ const validateEventData = (data, { partial = false, existing = {} } = {}) => {
 
   for (const field of EVENT_FIELDS) {
     if (Object.hasOwn(data, field)) eventData[field] = data[field];
+  }
+
+  if (Object.hasOwn(data, "audienceTargets")) {
+    if (!Array.isArray(data.audienceTargets)) {
+      return { error: "Audience targets must be a list" };
+    }
+    const seenDepartments = new Set();
+    for (const target of data.audienceTargets) {
+      if (!target || typeof target !== "object" || Array.isArray(target)) {
+        return { error: "Each audience target must include a department and semesters" };
+      }
+      if (!EVENT_DEPARTMENTS.includes(target.department)) {
+        return { error: "Audience target contains an invalid department" };
+      }
+      if (seenDepartments.has(target.department)) {
+        return { error: "Audience target departments cannot be duplicated" };
+      }
+      seenDepartments.add(target.department);
+      if (!Array.isArray(target.semesters) || target.semesters.length === 0) {
+        return { error: "Select at least one semester for every targeted department" };
+      }
+      const seenSemesters = new Set();
+      for (const semester of target.semesters) {
+        if (!EVENT_SEMESTERS.includes(semester)) {
+          return { error: "Audience target contains an invalid semester" };
+        }
+        if (seenSemesters.has(semester)) {
+          return { error: "Audience target semesters cannot be duplicated" };
+        }
+        seenSemesters.add(semester);
+      }
+      target.semesters = [...seenSemesters];
+    }
   }
 
   if (!partial) {
@@ -120,8 +146,14 @@ const validateEventData = (data, { partial = false, existing = {} } = {}) => {
 
 const getAllEvent = async (req, res) => {
   try {
-    const events = await Event.find().sort({ start_at: -1, _id: -1 });
-    return res.status(200).json(events);
+    const [events, user] = await Promise.all([
+      Event.find().sort({ start_at: -1, _id: -1 }),
+      Users.findById(req.userId).select("role department semester"),
+    ]);
+    if (!user) return res.status(401).json({ success: false, message: "Please login" });
+    return res.status(200).json(
+      user.role === "admin" ? events : events.filter((event) => isEventAvailableToUser(event, user)),
+    );
   } catch (error) {
     console.error("Failed to fetch events:", error.message);
     return res.status(500).json({ success: false, message: "Failed to fetch events" });
@@ -135,9 +167,16 @@ const getEventById = async (req, res) => {
   }
 
   try {
-    const event = await Event.findById(eventId);
+    const [event, user] = await Promise.all([
+      Event.findById(eventId),
+      Users.findById(req.userId).select("role department semester"),
+    ]);
+    if (!user) return res.status(401).json({ success: false, message: "Please login" });
     if (!event) {
       return res.status(404).json({ success: false, message: "Event not found" });
+    }
+    if (!isEventAvailableToUser(event, user)) {
+      return res.status(403).json({ success: false, message: "This event is not available to your department and semester" });
     }
     return res.status(200).json(event);
   } catch (error) {
@@ -154,20 +193,27 @@ const createNewEvent = async (req, res) => {
     eventData.status = getEventStatus(eventData.start_at, eventData.end_at);
     const createdEvent = await Event.create(eventData);
 
-    emitEvent("events:created", createdEvent);
+    emitEvent("events:created", createdEvent, createdEvent);
     refreshStatusSchedule();
-    setImmediate(() => void sendEventNotifications(createdEvent));
-
-    createNotification(
-      "New Event Added!",
-      `A new event "${createdEvent.title}" has been published.`,
-      "event",
-      createdEvent._id,
-    ).catch((err) => console.error("Background notification error:", err.message));
-
-    maybeCreateEventExpiryReminder(createdEvent).catch((err) =>
-      console.error("Background expiry reminder error:", err.message),
-    );
+    setImmediate(async () => {
+      try {
+        const recipients = await getEventRecipients(createdEvent);
+        const recipientIds = recipients.map(({ _id }) => _id);
+        void sendEventNotifications(createdEvent, recipients);
+        void createNotification(
+          "New Event Added!",
+          `A new event "${createdEvent.title}" has been published.`,
+          "event",
+          createdEvent._id,
+          { recipientIds },
+        ).catch((err) => console.error("Background notification error:", err.message));
+        void maybeCreateEventExpiryReminder(createdEvent, recipientIds).catch((err) =>
+          console.error("Background expiry reminder error:", err.message),
+        );
+      } catch (err) {
+        console.error("Could not determine event notification recipients:", err.message);
+      }
+    });
 
     return res.status(201).json({
       success: true,
@@ -183,6 +229,15 @@ const createNewEvent = async (req, res) => {
   }
 };
 
+const getEventRecipients = async (event) => {
+  const users = await Users.find(
+    Array.isArray(event.audienceTargets) && event.audienceTargets.length > 0
+      ? { role: "user" }
+      : {},
+  ).select("_id email department semester").lean();
+  return users.filter((user) => isEventAvailableToUser(event, user));
+};
+
 const deleteEvent = async (req, res) => {
   const { eventId } = req.params;
   if (!isValidId(eventId)) {
@@ -195,7 +250,7 @@ const deleteEvent = async (req, res) => {
       return res.status(404).json({ success: false, message: "Event not found" });
     }
 
-    emitEvent("events:deleted", { _id: deletedEvent._id });
+    emitEvent("events:deleted", { _id: deletedEvent._id }, null, deletedEvent);
     refreshStatusSchedule();
     return res.status(200).json({
       success: true,
@@ -233,9 +288,10 @@ const updateEvent = async (req, res) => {
     const end = eventData.end_at ?? existing.end_at;
     eventData.status = getEventStatus(start, end);
 
+    const previousEvent = existing.toObject();
     Object.assign(existing, eventData);
     const updatedEvent = await existing.save();
-    emitEvent("events:updated", updatedEvent);
+    emitEvent("events:updated", updatedEvent, updatedEvent, previousEvent);
     refreshStatusSchedule();
 
     return res.status(200).json({

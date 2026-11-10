@@ -122,12 +122,29 @@ const SignupForm = ({
             id="userDepartment"
             value={formData.department}
             onChange={handleChange}
+            required
           >
             <option value="">Select Dept</option>
             <option value="B. Tech in CS & AI">B. Tech in CS & AI</option>
             <option value="B. Tech in IT">B. Tech in IT</option>
             <option value="Civil Engineering">Civil Engineering</option>
             <option value="IT Engineering">IT Engineering</option>
+          </select>
+        </section>
+
+        <section className="formGrp">
+          <label htmlFor="userSemester">Semester</label>
+          <select
+            name="semester"
+            id="userSemester"
+            value={formData.semester}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select semester</option>
+            {["I", "II", "III", "IV", "V", "VI", "VII", "VIII"].map((semester) => (
+              <option value={semester} key={semester}>{semester}</option>
+            ))}
           </select>
         </section>
 

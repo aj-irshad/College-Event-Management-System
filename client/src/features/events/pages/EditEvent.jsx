@@ -5,6 +5,7 @@ import eventContext from "../../../context/EventContext.jsx";
 import "../styles/editEvent.css";
 
 import { getEventById, updateEvent } from "../../../services/eventService.js";
+import EventAudienceTargets from "../components/EventAudienceTargets.jsx";
 
 const EditEvent = () => {
   const formatDateTimeLocal = (date) => {
@@ -28,6 +29,7 @@ const EditEvent = () => {
   const [editVenue, setEditVenue] = useState("");
   const [editPrice, setEditPrice] = useState(0);
   const [priceType, setPriceType] = useState("free");
+  const [editAudienceTargets, setEditAudienceTargets] = useState([]);
 
   const { events, setEvents, eventLoading } = useContext(eventContext);
 
@@ -63,6 +65,9 @@ const EditEvent = () => {
       setEditEndAt(formatDateTimeLocal(event.end_at));
       setEditVenue(event.venue);
       setEditDepartment(event.department || "");
+      setEditAudienceTargets(
+        Array.isArray(event.audienceTargets) ? event.audienceTargets : [],
+      );
 
       const eventPrice = event.price !== undefined ? event.price : 0;
       setEditPrice(eventPrice);
@@ -97,6 +102,11 @@ const EditEvent = () => {
       return;
     }
 
+    if (editAudienceTargets.some((target) => !target.semesters?.length)) {
+      alert("Select at least one semester for every targeted department.");
+      return;
+    }
+
     const updatedEvent = {
       title: editTitle,
       description: editDescription,
@@ -106,14 +116,17 @@ const EditEvent = () => {
       end_at: new Date(editEndAt),
       venue: editVenue,
       price: priceType === "free" ? 0 : Number(editPrice),
+      audienceTargets: editAudienceTargets,
     };
 
     try {
       const response = await updateEvent(id, updatedEvent);
 
       setEvents((previous) =>
-        [...previous.filter((item) => item._id.toString() !== id), response.data.event]
-          .sort((a, b) => new Date(b.start_at) - new Date(a.start_at)),
+        [
+          ...previous.filter((item) => item._id.toString() !== id),
+          response.data.event,
+        ].sort((a, b) => new Date(b.start_at) - new Date(a.start_at)),
       );
 
       alert("Successfully updated event info.");
@@ -143,6 +156,11 @@ const EditEvent = () => {
               required
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
+            />
+
+            <EventAudienceTargets
+              value={editAudienceTargets}
+              onChange={setEditAudienceTargets}
             />
 
             <label htmlFor="eventDescription">Description:</label>
@@ -190,13 +208,13 @@ const EditEvent = () => {
               </>
             )}
 
-            <label htmlFor="eventDepartment">Department (optional):</label>
+            {/* <label htmlFor="eventDepartment">Department (optional):</label>
             <input
               type="text"
               id="eventDepartment"
               value={editDepartment}
               onChange={(e) => setEditDepartment(e.target.value)}
-            />
+            /> */}
 
             <label htmlFor="startAt">Start Date & Time:</label>
             <input

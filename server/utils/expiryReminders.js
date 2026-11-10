@@ -1,9 +1,11 @@
 import Event from "../model/events.js";
+import Users from "../model/user.js";
 import FeedbackForm from "../model/feedbackAdmin.js";
 import {
   createExpiryReminder,
   TWENTY_FOUR_HOURS_MS,
 } from "./bellNotification.js";
+import { isEventAvailableToUser } from "./eventTargeting.js";
 
 const FEEDBACK_TTL_MS = 48 * 60 * 60 * 1000;
 
@@ -13,15 +15,23 @@ const processExpiryReminders = async () => {
 
   const events = await Event.find({
     end_at: { $gt: new Date(now), $lte: reminderHorizon },
-  }).select("title end_at");
+  }).select("title end_at audienceTargets");
 
   for (const event of events) {
     try {
+      const targeted = Array.isArray(event.audienceTargets) && event.audienceTargets.length > 0;
+      const users = await Users.find(targeted ? { role: "user" } : {})
+        .select("_id role department semester")
+        .lean();
+      const recipientIds = users
+        .filter((user) => isEventAvailableToUser(event, user))
+        .map((user) => user._id);
       await createExpiryReminder(
         "Event ending soon",
         `"${event.title}" will end in less than 24 hours.`,
         "event",
         event._id,
+        recipientIds,
       );
     } catch (error) {
       console.error(

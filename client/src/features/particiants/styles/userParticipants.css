@@ -22,6 +22,17 @@
   font-size: 0.925rem;
 }
 
+.payment-submissions-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  color: #4338ca;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
 /* Table Card Wrapper */
 .participation-table-container {
   background: #ffffff;

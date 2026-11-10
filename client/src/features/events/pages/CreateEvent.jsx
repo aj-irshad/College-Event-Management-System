@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import eventContext from "../../../context/EventContext.jsx";
+import EventAudienceTargets from "../components/EventAudienceTargets.jsx";
 import "../styles/createEvent.css";
 
 const CreateEvent = () => {
@@ -26,6 +27,7 @@ const CreateEvent = () => {
     start_at: "",
     end_at: "",
     price: 0,
+    audienceTargets: [],
   });
 
   const [priceType, setPriceType] = useState("free"); // "free" or "paid"
@@ -100,13 +102,23 @@ const CreateEvent = () => {
       }
 
       if (new Date(eventData.end_at) <= new Date(eventData.start_at)) {
-        setError("Event end date and time must be after the start date and time.");
+        setError(
+          "Event end date and time must be after the start date and time.",
+        );
         setLoading(false);
         return;
       }
 
       if (eventData.event_type === "Other" && !customEventType.trim()) {
         setError("Please enter an event type.");
+        setLoading(false);
+        return;
+      }
+
+      if (
+        eventData.audienceTargets.some((target) => !target.semesters?.length)
+      ) {
+        setError("Select at least one semester for every targeted department.");
         setLoading(false);
         return;
       }
@@ -139,7 +151,9 @@ const CreateEvent = () => {
       navigate("/upcoming-events");
     } catch (err) {
       setError(
-        err.response?.data?.message || err.message || "An unexpected error occurred.",
+        err.response?.data?.message ||
+          err.message ||
+          "An unexpected error occurred.",
       );
     } finally {
       setLoading(false);
@@ -238,7 +252,14 @@ const CreateEvent = () => {
             </div>
           </div>
 
-          <div className="form-row">
+          <EventAudienceTargets
+            value={eventData.audienceTargets}
+            onChange={(audienceTargets) =>
+              setEventData((prev) => ({ ...prev, audienceTargets }))
+            }
+          />
+
+          {/* <div className="form-row">
             <div className="form-group">
               <label htmlFor="department">Department (optional)</label>
               <input
@@ -250,7 +271,7 @@ const CreateEvent = () => {
                 onChange={handleChange}
               />
             </div>
-          </div>
+          </div> */}
 
           {/* Ticket Pricing (Free / Paid) */}
           <div className="form-row">
@@ -277,7 +298,7 @@ const CreateEvent = () => {
                   id="price"
                   name="price"
                   step="10"
-                  placeholder="e.g. 15.00"
+                  placeholder="e.g. 500.00"
                   value={eventData.price}
                   onChange={handleChange}
                   required

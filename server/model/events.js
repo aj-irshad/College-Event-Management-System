@@ -1,4 +1,13 @@
 import mongoose from "mongoose";
+import { EVENT_DEPARTMENTS, EVENT_SEMESTERS } from "../utils/eventTargeting.js";
+
+const audienceTargetSchema = new mongoose.Schema(
+  {
+    department: { type: String, enum: EVENT_DEPARTMENTS, required: true },
+    semesters: [{ type: String, enum: EVENT_SEMESTERS, required: true }],
+  },
+  { _id: false },
+);
 
 const eventSchema = new mongoose.Schema(
   {
@@ -21,6 +30,10 @@ const eventSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: "",
+    },
+    audienceTargets: {
+      type: [audienceTargetSchema],
+      default: [],
     },
     start_at: {
       type: Date,

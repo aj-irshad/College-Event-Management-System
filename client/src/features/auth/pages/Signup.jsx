@@ -16,6 +16,7 @@ function Signup() {
     password: "",
     confirmPassword: "",
     department: "",
+    semester: "",
     contact: "",
     "profile-img": null,
   });
@@ -34,6 +35,11 @@ function Signup() {
 
     if (!formData.department) {
       setWarning("Please select a department.");
+      return;
+    }
+
+    if (!formData.semester) {
+      setWarning("Please select your semester.");
       return;
     }
 
@@ -60,6 +66,7 @@ function Signup() {
     signupData.append("password", formData.password);
     signupData.append("contact", formData.contact);
     signupData.append("department", formData.department);
+    signupData.append("semester", formData.semester);
 
     if (formData["profile-img"]) {
       signupData.append("profile-img", formData["profile-img"]);

@@ -7,6 +7,7 @@ import {
   markNotificationsAsRead,
   markNotificationAsRead,
 } from "../services/notification.js";
+import { isBrowserPushSupported, subscribeBrowserPush } from "../services/pushNotifications";
 
 import "../styles/header.css";
 
@@ -34,6 +35,9 @@ const Header = ({ user, onToggleMenu, isMobileMenuOpen }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationStatus, setNotificationStatus] = useState("loading");
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushMessage, setPushMessage] = useState("");
+  const [pushError, setPushError] = useState(false);
   const notificationRef = useRef(null);
 
   useEffect(() => {
@@ -84,6 +88,33 @@ const Header = ({ user, onToggleMenu, isMobileMenuOpen }) => {
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
       console.error("Failed to mark notifications as read", error);
+    }
+  };
+
+  const handleEnableBrowserNotifications = async () => {
+    setPushBusy(true);
+    setPushMessage("");
+    setPushError(false);
+    try {
+      if (!isBrowserPushSupported()) {
+        throw new Error("Browser notifications are unsupported here; in-app notifications remain available.");
+      }
+      if (Notification.permission === "denied") {
+        throw new Error("Notifications are blocked in browser settings; in-app notifications remain available.");
+      }
+      const permission = Notification.permission === "granted"
+        ? "granted"
+        : await Notification.requestPermission();
+      if (permission !== "granted") {
+        throw new Error("Notification permission was not granted; in-app notifications remain available.");
+      }
+      await subscribeBrowserPush();
+      setPushMessage("Browser notifications are enabled for this device.");
+    } catch (error) {
+      setPushError(true);
+      setPushMessage(error.response?.data?.message || error.message || "Could not enable browser notifications.");
+    } finally {
+      setPushBusy(false);
     }
   };
 
@@ -242,6 +273,17 @@ const Header = ({ user, onToggleMenu, isMobileMenuOpen }) => {
               </div>
 
               <div className="notificationFooter">
+                <div className="browserPushSetting">
+                  <button
+                    type="button"
+                    className="browserPushButton"
+                    onClick={handleEnableBrowserNotifications}
+                    disabled={pushBusy}
+                  >
+                    {pushBusy ? "Enabling…" : "Enable browser notifications"}
+                  </button>
+                  {pushMessage && <p className={pushError ? "browserPushMessage error" : "browserPushMessage"} role={pushError ? "alert" : "status"}>{pushMessage}</p>}
+                </div>
                 <button
                   type="button"
                   className="closeNotificationBtn"

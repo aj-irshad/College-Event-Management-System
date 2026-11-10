@@ -1,6 +1,8 @@
 import Participant from "../model/participants.js";
 import Event from "../model/events.js";
+import Users from "../model/user.js";
 import { getIO } from "../socket.js";
+import { isEventAvailableToUser } from "../utils/eventTargeting.js";
 
 const APPROVAL_STATUSES = ["Pending", "Approved", "Not Approved"];
 
@@ -11,11 +13,28 @@ const participateInEvent = async (req, res) => {
     const userId = req.userId;
 
     // Check event exists
-    const event = await Event.findById(eventId);
+    const [event, user] = await Promise.all([
+      Event.findById(eventId),
+      Users.findById(userId).select("role department semester"),
+    ]);
+
+    if (!user) {
+      return res.status(401).json({ message: "Please login" });
+    }
 
     if (!event) {
       return res.status(404).json({
         message: "Event not found",
+      });
+    }
+
+    if (!isEventAvailableToUser(event, user)) {
+      return res.status(403).json({ message: "This event is not available to your department and semester" });
+    }
+
+    if (Number(event.price) > 0) {
+      return res.status(402).json({
+        message: "Paid event registration requires an approved payment submission",
       });
     }
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, CreditCard } from "lucide-react";
+import { Link } from "react-router-dom";
 import { getMyParticipation } from "../../../services/participantService.js";
 import { formatDate, formatTime } from "../../../hooks/dateFormatter.js";
 import socket from "../../../api/socket.js";
@@ -35,14 +36,20 @@ const UserParticipants = () => {
         ? { ...item, approvalStatus }
         : item));
     };
+    const handlePaymentUpdate = () => {
+      revisionRef.current += 1;
+      void loadParticipations();
+    };
 
     void loadParticipations();
     socket.on("participation:status-updated", handleApprovalUpdate);
+    socket.on("payments:status-updated", handlePaymentUpdate);
     socket.on("connect", loadParticipations);
     window.addEventListener("focus", loadParticipations);
     return () => {
       active = false;
       socket.off("participation:status-updated", handleApprovalUpdate);
+      socket.off("payments:status-updated", handlePaymentUpdate);
       socket.off("connect", loadParticipations);
       window.removeEventListener("focus", loadParticipations);
     };
@@ -53,6 +60,7 @@ const UserParticipants = () => {
       <header className="participation-header">
         <h1>My Participation</h1>
         <p>View your registered events and approval status.</p>
+        <Link to="/payment-submissions" className="payment-submissions-link"><CreditCard size={16} /> My payment submissions</Link>
       </header>
 
       {error && <div className="error-banner" role="alert">{error}</div>}

@@ -1,11 +1,103 @@
 import fs from "fs/promises";
+import path from "path";
+import { createHash, randomBytes } from "crypto";
 
 import Users from "../model/user.js";
 import PendingUser from "../model/pendingUser.js";
 
 import { setUser } from "../services/auth.js";
 import { createHashPassword, compareHashPassword } from "../services/bcrypt.js";
-import sendOTP from "../utils/otpSender.js";
+import sendOTP, { sendPasswordResetEmail } from "../utils/otpSender.js";
+import { getUploadDirectory } from "../utils/uploadPaths.js";
+import { EVENT_DEPARTMENTS, EVENT_SEMESTERS } from "../utils/eventTargeting.js";
+
+const PASSWORD_RESET_TTL_MS = 20 * 60 * 1000;
+const PASSWORD_RESET_NEUTRAL_MESSAGE =
+  "If an account exists with this email address, password reset instructions will be sent.";
+const PASSWORD_RULE =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=[\]{};':"\\|,.<>/?~`])[A-Za-z\d@$!%*?&^#()_+\-=[\]{};':"\\|,.<>/?~`]{8,16}$/;
+
+const requestPasswordReset = async (req, res) => {
+  const email = typeof req.body?.email === "string"
+    ? req.body.email.trim().toLowerCase()
+    : "";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ message: "Enter a valid email address." });
+  }
+
+  try {
+    const user = await Users.findOne({ email });
+    if (user) {
+      const frontendOrigin = new URL(process.env.VITE_BASE_URL);
+      if (!["http:", "https:"].includes(frontendOrigin.protocol)) {
+        throw new Error("Invalid frontend URL configuration");
+      }
+
+      const token = randomBytes(32).toString("base64url");
+      const tokenHash = createHash("sha256").update(token).digest("hex");
+      const expiresAt = new Date(Date.now() + PASSWORD_RESET_TTL_MS);
+      user.passwordResetTokenHash = tokenHash;
+      user.passwordResetExpiresAt = expiresAt;
+      await user.save();
+
+      const resetUrl = new URL(
+        `/reset-password/${encodeURIComponent(token)}`,
+        frontendOrigin.origin,
+      ).toString();
+      void sendPasswordResetEmail(email, resetUrl, 20).catch(async () => {
+        await Users.updateOne(
+          { _id: user._id, passwordResetTokenHash: tokenHash },
+          { $unset: { passwordResetTokenHash: 1, passwordResetExpiresAt: 1 } },
+        ).catch(() => {});
+        console.error("Password reset email delivery failed");
+      });
+    }
+  } catch {
+    // Keep the response identical for absent accounts and mail/config failures.
+    console.error("Password reset request could not be processed");
+  }
+
+  return res.status(202).json({ message: PASSWORD_RESET_NEUTRAL_MESSAGE });
+};
+
+const completePasswordReset = async (req, res) => {
+  const { token, newPassword } = req.body || {};
+  if (typeof token !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(token)) {
+    return res.status(400).json({ message: "This password reset link is invalid or expired." });
+  }
+  if (typeof newPassword !== "string" || !PASSWORD_RULE.test(newPassword)) {
+    return res.status(400).json({
+      message: "Password must be 8–16 characters with uppercase, lowercase, number and special character.",
+    });
+  }
+
+  try {
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+    const passwordHash = await createHashPassword(newPassword);
+    const consumedUser = await Users.findOneAndUpdate(
+      {
+        passwordResetTokenHash: tokenHash,
+        passwordResetExpiresAt: { $gt: new Date() },
+      },
+      {
+        $set: { password: passwordHash },
+        $unset: { passwordResetTokenHash: 1, passwordResetExpiresAt: 1 },
+      },
+      { returnDocument: "before" },
+    )
+      .select("_id")
+      .lean();
+
+    if (!consumedUser) {
+      return res.status(400).json({ message: "This password reset link is invalid or expired." });
+    }
+
+    return res.status(200).json({ message: "Password reset successful. Please log in." });
+  } catch {
+    console.error("Password reset could not be completed");
+    return res.status(500).json({ message: "Could not reset your password. Please try again." });
+  }
+};
 
 // TEST API FOR ALL USER
 const testAPI = async (req, res) => {
@@ -80,6 +172,8 @@ const userLogin = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        department: user.department,
+        semester: user.semester,
         profileImage: user.profileImage,
       },
     });
@@ -93,13 +187,20 @@ const userLogin = async (req, res) => {
 
 const userSignUp = async (req, res) => {
   try {
-    const { name, email, password, contact, department } = req.body;
+    const { name, email, password, contact, department, semester } = req.body;
 
     // Validate required fields
     if (!name || !email || !password) {
       return res.status(400).json({
         message: "All required fields must be provided.",
       });
+    }
+
+    if (!EVENT_SEMESTERS.includes(semester)) {
+      return res.status(400).json({ message: "Select a valid semester." });
+    }
+    if (!EVENT_DEPARTMENTS.includes(department)) {
+      return res.status(400).json({ message: "Select a valid department." });
     }
 
     // Check if user already exists
@@ -127,6 +228,7 @@ const userSignUp = async (req, res) => {
       password: await createHashPassword(password),
       contact,
       department,
+      semester,
       profileImage: req.file ? req.file.filename : null,
       otp,
       otpExpires,
@@ -161,7 +263,10 @@ const verifyOTP = async (req, res) => {
 
     if (pendingUser.otpExpires < Date.now()) {
       if (pendingUser.profileImage) {
-        await fs.unlink(`uploads/${pendingUser.profileImage}`).catch(() => {});
+        const filename = path.basename(pendingUser.profileImage);
+        if (filename === pendingUser.profileImage) {
+          await fs.unlink(path.join(getUploadDirectory("profiles"), filename)).catch(() => {});
+        }
       }
       await PendingUser.deleteOne({ email });
       return res.status(400).json({
@@ -181,6 +286,7 @@ const verifyOTP = async (req, res) => {
       password: pendingUser.password,
       contact: pendingUser.contact,
       department: pendingUser.department,
+      semester: pendingUser.semester,
       profileImage: pendingUser.profileImage,
     };
 
@@ -235,4 +341,6 @@ export {
   verifyOTP,
   logout,
   resetPassword,
+  requestPasswordReset,
+  completePasswordReset,
 };

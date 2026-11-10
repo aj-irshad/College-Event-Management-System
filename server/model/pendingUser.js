@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { EVENT_SEMESTERS } from "../utils/eventTargeting.js";
 
 const pendingUserSchema = new mongoose.Schema(
   {
@@ -28,6 +29,12 @@ const pendingUserSchema = new mongoose.Schema(
 
     department: {
       type: String,
+      required: true,
+    },
+
+    semester: {
+      type: String,
+      enum: EVENT_SEMESTERS,
       required: true,
     },
 

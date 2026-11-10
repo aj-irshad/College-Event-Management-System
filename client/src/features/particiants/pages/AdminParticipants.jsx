@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react";
 import { Users, Phone, Calendar, Shield, Search, RotateCcw } from "lucide-react";
+import { Link } from "react-router-dom";
+import socket from "../../../api/socket";
 import { getAllParticipants, updateParticipationApproval } from "../../../services/participantService";
 import { getEvents } from "../../../services/eventService";
+import { getAdminPayments } from "../../../services/payment";
 import "../styles/adminParticipants.css";
 
 const AdminParticipants = () => {
   const [participants, setParticipants] = useState([]);
+  const [pendingPayments, setPendingPayments] = useState([]);
+  const [pendingPaymentsLoading, setPendingPaymentsLoading] = useState(true);
+  const [pendingPaymentsError, setPendingPaymentsError] = useState("");
   const [events, setEvents] = useState([]);
   const [filters, setFilters] = useState({ status: "All", role: "All", approvalStatus: "All", search: "", eventId: "" });
   const [loading, setLoading] = useState(true);
@@ -38,6 +44,49 @@ const AdminParticipants = () => {
       if (active) setLoading(false);
     });
     return () => { active = false; };
+  }, [filters]);
+
+  useEffect(() => {
+    let active = true;
+    let requestRevision = 0;
+    const refreshPendingPayments = () => {
+      const currentRevision = ++requestRevision;
+      setPendingPaymentsLoading(true);
+      getAdminPayments("Pending").then(({ data }) => {
+        if (active && currentRevision === requestRevision) {
+          setPendingPayments(Array.isArray(data) ? data : []);
+          setPendingPaymentsError("");
+        }
+      }).catch((requestError) => {
+        if (active && currentRevision === requestRevision) setPendingPaymentsError(requestError.response?.data?.message || "Could not load pending payment submissions.");
+      }).finally(() => {
+        if (active && currentRevision === requestRevision) setPendingPaymentsLoading(false);
+      });
+    };
+    refreshPendingPayments();
+    socket.on("payments:updated", refreshPendingPayments);
+    socket.on("connect", refreshPendingPayments);
+    return () => {
+      active = false;
+      socket.off("payments:updated", refreshPendingPayments);
+      socket.off("connect", refreshPendingPayments);
+    };
+  }, []);
+
+  useEffect(() => {
+    const refreshParticipants = () => {
+      getAllParticipants(filters).then(({ data }) => {
+        setParticipants(Array.isArray(data) ? data : []);
+      }).catch((requestError) => {
+        setError(requestError.response?.data?.message || "Failed to refresh participant rosters.");
+      });
+    };
+    socket.on("participation:registered", refreshParticipants);
+    socket.on("payments:updated", refreshParticipants);
+    return () => {
+      socket.off("participation:registered", refreshParticipants);
+      socket.off("payments:updated", refreshParticipants);
+    };
   }, [filters]);
 
   const updateFilter = (key, value) => setFilters((current) => ({ ...current, [key]: value }));
@@ -73,6 +122,37 @@ const AdminParticipants = () => {
         </div>
         <div className="participant-count-pill"><Users size={16} /><span>{participants.length} Records</span></div>
       </header>
+
+      <section className="pending-payment-review" aria-labelledby="pending-payment-title">
+        <div className="pending-payment-heading">
+          <div>
+            <h2 id="pending-payment-title">Paid event requests awaiting review</h2>
+            <p>These are payment submissions, not confirmed participation records.</p>
+          </div>
+          <Link className="pending-payment-review-link" to="/admin/payments">Review all payments</Link>
+        </div>
+        {pendingPaymentsError && <p className="participant-error" role="alert">{pendingPaymentsError}</p>}
+        {pendingPaymentsLoading ? (
+          <p className="pending-payment-empty" role="status">Loading pending payment submissions…</p>
+        ) : pendingPayments.length === 0 ? (
+          <p className="pending-payment-empty">No pending paid-event submissions.</p>
+        ) : (
+          <div className="admin-table-container">
+            <table className="admin-table pending-payment-table">
+              <thead><tr><th>Participant</th><th>Event</th><th>Amount</th><th>Transaction reference</th><th>Submitted</th><th>Payment status</th><th>Review</th></tr></thead>
+              <tbody>{pendingPayments.map((payment) => <tr key={payment._id}>
+                <td><div className="user-identity"><strong>{payment.user?.name || "Unknown User"}</strong><small>{payment.user?.email || "No email"}</small></div></td>
+                <td>{payment.event?.title || "Event unavailable"}</td>
+                <td>NPR {Number(payment.amount).toFixed(2)}</td>
+                <td>{payment.transactionReference || "—"}</td>
+                <td>{payment.createdAt ? new Date(payment.createdAt).toLocaleDateString() : "—"}</td>
+                <td><span className="payment-badge pending">Payment Pending</span></td>
+                <td><Link className="pending-payment-review-link" to="/admin/payments">Inspect proof &amp; decide</Link></td>
+              </tr>)}</tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       <section className="participant-filters" aria-label="Filter participation records">
         <label>

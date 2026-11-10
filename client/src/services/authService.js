@@ -12,6 +12,14 @@ const resetPassword = async (resetData) => {
   return await apiRequest.patch("/auth/reset", resetData);
 };
 
+const requestPasswordReset = async (email) => {
+  return apiRequest.post("/auth/forgot-password", { email });
+};
+
+const completePasswordReset = async (token, newPassword) => {
+  return apiRequest.post("/auth/reset-password", { token, newPassword });
+};
+
 const logout = async () => {
   return await apiRequest.post("/auth/logout");
 };
@@ -24,4 +32,13 @@ const verifyOTP = async (otpData) => {
   return await apiRequest.post("/auth/verify-otp", otpData);
 };
 
-export { login, signUp, resetPassword, logout, getUserProfile, verifyOTP };
+export {
+  login,
+  signUp,
+  resetPassword,
+  requestPasswordReset,
+  completePasswordReset,
+  logout,
+  getUserProfile,
+  verifyOTP,
+};

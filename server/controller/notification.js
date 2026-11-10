@@ -27,7 +27,7 @@ const markOneAsRead = async (req, res) => {
         createdAt: { $gt: getRetentionCutoff() },
       },
       { read: true },
-      { new: true },
+      { returnDocument: "after" },
     ).lean();
     if (!item) return res.status(404).json({ message: "Notification not found" });
     getIO().to(`user:${req.userId}`).emit("notification:read", { _id: item._id });
