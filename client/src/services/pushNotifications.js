@@ -25,6 +25,70 @@ const decodeVapidKey = (value) => {
   return Uint8Array.from(raw, (character) => character.charCodeAt(0));
 };
 
+const waitForActiveWorker = (registration, expectedScope, expectedScriptURL) =>
+  new Promise((resolve, reject) => {
+    const timeoutMs = 15_000;
+    const workerListeners = new Map();
+    let settled = false;
+
+    const cleanup = () => {
+      window.clearTimeout(timeout);
+      registration.removeEventListener("updatefound", inspect);
+      for (const [worker, listener] of workerListeners) {
+        worker.removeEventListener("statechange", listener);
+      }
+      workerListeners.clear();
+    };
+
+    const finish = (error) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      if (error) reject(error);
+      else resolve(registration);
+    };
+
+    const inspect = () => {
+      if (registration.scope !== expectedScope) {
+        finish(new Error("The EMS Service Worker scope does not cover the frontend."));
+        return;
+      }
+
+      const workers = [registration.active, registration.waiting, registration.installing]
+        .filter(Boolean);
+      for (const worker of workers) {
+        if (!workerListeners.has(worker)) {
+          const listener = () => inspect();
+          workerListeners.set(worker, listener);
+          worker.addEventListener("statechange", listener);
+        }
+      }
+
+      const activeWorker = registration.active;
+      if (
+        activeWorker?.scriptURL === expectedScriptURL &&
+        activeWorker.state === "activated"
+      ) {
+        finish();
+        return;
+      }
+
+      const matchingWorkers = workers.filter(
+        (worker) => worker.scriptURL === expectedScriptURL,
+      );
+      if (matchingWorkers.length && matchingWorkers.every((worker) => worker.state === "redundant")) {
+        finish(new Error("The EMS Service Worker installation became redundant."));
+      }
+    };
+
+    const timeout = window.setTimeout(
+      () => finish(new Error("timed out waiting for the expected worker to activate")),
+      timeoutMs,
+    );
+    registration.addEventListener("updatefound", inspect);
+    inspect();
+  });
+
 export const isBrowserPushSupported = isPushSupported;
 
 export const subscribeBrowserPush = async () => {
@@ -52,21 +116,14 @@ export const subscribeBrowserPush = async () => {
   }
 
   let activeRegistration;
-  let readinessTimeout;
   try {
-    activeRegistration = await Promise.race([
-      serviceWorker.ready,
-      new Promise((_, reject) => {
-        readinessTimeout = window.setTimeout(
-          () => reject(new Error("timed out waiting for activation")),
-          15000,
-        );
-      }),
-    ]);
+    activeRegistration = await waitForActiveWorker(
+      registration,
+      frontendScope,
+      serviceWorkerUrl,
+    );
   } catch (error) {
     throw new Error(`The EMS Service Worker did not become ready: ${error.message || "readiness failed"}. Reload the page and try again.`);
-  } finally {
-    window.clearTimeout(readinessTimeout);
   }
   if (
     activeRegistration.scope !== frontendScope ||
