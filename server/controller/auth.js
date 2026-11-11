@@ -18,6 +18,15 @@ import { EVENT_DEPARTMENTS, EVENT_SEMESTERS } from "../utils/eventTargeting.js";
 const PASSWORD_RESET_TTL_MS = 20 * 60 * 1000;
 const PASSWORD_RESET_NEUTRAL_MESSAGE =
   "If an account exists with this email address, password reset instructions will be sent.";
+const getAuthCookieOptions = () => {
+  const isProduction = process.env.NODE_ENV === "production";
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+  };
+};
 const PASSWORD_RULE =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=[\]{};':"\\|,.<>/?~`])[A-Za-z\d@$!%*?&^#()_+\-=[\]{};':"\\|,.<>/?~`]{8,16}$/;
 
@@ -171,9 +180,7 @@ const userLogin = async (req, res) => {
     const token = setUser(user);
 
     const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      ...getAuthCookieOptions(),
       maxAge: 24 * 60 * 60 * 1000,
     };
 
@@ -441,7 +448,7 @@ const resetPassword = async (req, res) => {
 };
 
 const logout = (req, res) => {
-  res.clearCookie("ems");
+  res.clearCookie("ems", getAuthCookieOptions());
   res.send();
 };
 

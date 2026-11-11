@@ -9,7 +9,7 @@ const ADMIN = {
   email: process.env.ADMIN_EMAIL,
   password: process.env.ADMIN_PASSWORD,
   contact: process.env.ADMIN_CONTACT,
-  profileImage: "admin.jpeg",
+  profileImage: process.env.ADMIN_IMG,
   department: "None",
 };
 
