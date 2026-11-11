@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { verifyOTP } from "../../../services/authService";
 import VerifyOTPForm from "../components/VerifyOTPForm";
@@ -13,6 +13,8 @@ function VerifyOTP() {
 
   const [otp, setOtp] = useState("");
   const [warning, setWarning] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   // Redirect if accessed directly without an email in state
   useEffect(() => {
@@ -25,18 +27,24 @@ function VerifyOTP() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (submittingRef.current) return;
 
     if (otp.length !== 4) {
       setWarning("OTP must be exactly 4 digits");
       return;
     }
 
+    submittingRef.current = true;
+    setIsSubmitting(true);
     try {
       const response = await verifyOTP({ email, otp });
       alert(response.data.message);
       navigate("/login");
     } catch (error) {
-      setWarning(error.response?.data?.msg || "Verification failed");
+      setWarning(error.response?.data?.message || error.response?.data?.msg || "Verification failed");
+    } finally {
+      submittingRef.current = false;
+      setIsSubmitting(false);
     }
   }
 
@@ -54,6 +62,7 @@ function VerifyOTP() {
         setOtp={setOtp}
         warning={warning}
         handleSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
       />
     </main>
   );

@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { LoaderCircle } from "lucide-react";
 
 const SignupForm = ({
   warning,
   formData,
   handleChange,
   handleSubmit,
+  isSubmitting,
   Eye,
   EyeOff,
 }) => {
@@ -162,8 +164,9 @@ const SignupForm = ({
 
       {warning && <p className="warning">{warning}</p>}
 
-      <button type="submit" className="signupBtn">
-        Sign Up
+      <button type="submit" className="signupBtn" disabled={isSubmitting}>
+        {isSubmitting && <LoaderCircle className="signup-spinner" size={16} aria-hidden="true" />}
+        {isSubmitting ? "Signing up..." : "Sign Up"}
       </button>
 
       <p className="loginLink">

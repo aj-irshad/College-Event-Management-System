@@ -261,6 +261,8 @@ const removePendingProfileImageIfUnused = async (
 };
 
 const userSignUp = async (req, res) => {
+  const signupStartedAt = Date.now();
+  const signupTimings = {};
   let uploadedImage = null;
   let pendingUserSaved = false;
   let pendingUserWriteAttempted = false;
@@ -282,7 +284,9 @@ const userSignUp = async (req, res) => {
       return res.status(400).json({ message: "Select a valid department." });
     }
 
+    let stageStartedAt = Date.now();
     const existingUser = await Users.findOne({ email });
+    signupTimings.userLookupMs = Date.now() - stageStartedAt;
 
     if (existingUser) {
       return res.status(400).json({
@@ -290,17 +294,32 @@ const userSignUp = async (req, res) => {
       });
     }
 
+    stageStartedAt = Date.now();
     const previousPendingUser = await PendingUser.findOne({ email });
+    signupTimings.pendingUserLookupMs = Date.now() - stageStartedAt;
 
     // Upload profile image to Cloudinary
     if (req.file) {
-      uploadedImage = await uploadToCloudinary(req.file.path, "profiles");
+      stageStartedAt = Date.now();
+      try {
+        uploadedImage = await uploadToCloudinary(req.file.path, "profiles");
+      } finally {
+        signupTimings.profileImageUploadMs = Date.now() - stageStartedAt;
+      }
     }
 
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const otpExpires = Date.now() + 2 * 60 * 1000;
+    stageStartedAt = Date.now();
+    let hashedPassword;
+    try {
+      hashedPassword = await createHashPassword(password);
+    } finally {
+      signupTimings.passwordHashMs = Date.now() - stageStartedAt;
+    }
 
     // Create or update pending signup
+    stageStartedAt = Date.now();
     pendingUserWriteAttempted = true;
     const savedPendingUser = await PendingUser.findOneAndUpdate(
       { email },
@@ -308,7 +327,7 @@ const userSignUp = async (req, res) => {
         $set: {
           name,
           email,
-          password: await createHashPassword(password),
+          password: hashedPassword,
           contact,
           department,
           semester,
@@ -325,16 +344,24 @@ const userSignUp = async (req, res) => {
         setDefaultsOnInsert: true,
       },
     );
+    signupTimings.pendingUserWriteMs = Date.now() - stageStartedAt;
     pendingUserSaved = Boolean(savedPendingUser);
 
     // The new image is now referenced. Clean up any replaced asset best-effort.
     if (previousPendingUser) {
+      stageStartedAt = Date.now();
       await removePendingProfileImageIfUnused(previousPendingUser).catch(() => {
         console.error("Previous pending profile image cleanup failed");
       });
+      signupTimings.previousImageCleanupMs = Date.now() - stageStartedAt;
     }
 
-    await sendOTP(email, otp);
+    stageStartedAt = Date.now();
+    try {
+      await sendOTP(email, otp);
+    } finally {
+      signupTimings.otpDeliveryMs = Date.now() - stageStartedAt;
+    }
 
     return res.status(200).json({
       message: "OTP sent successfully.",
@@ -354,7 +381,11 @@ const userSignUp = async (req, res) => {
       });
     }
 
-    console.error("Signup failed:", error.message);
+    console.error("Signup failed:", {
+      name: error.name || "Error",
+      code: error.code || null,
+      timeoutType: error.timeoutType || null,
+    });
 
     return res.status(500).json({
       message: "Internal server error.",
@@ -362,7 +393,17 @@ const userSignUp = async (req, res) => {
   } finally {
     // Remove temporary local Multer file
     if (req.file?.path) {
+      const cleanupStartedAt = Date.now();
       await fs.unlink(req.file.path).catch(() => {});
+      signupTimings.temporaryFileCleanupMs = Date.now() - cleanupStartedAt;
+    }
+
+    const totalMs = Date.now() - signupStartedAt;
+    if (totalMs >= 5_000) {
+      console.warn("Slow signup request timing (ms):", {
+        ...signupTimings,
+        totalMs,
+      });
     }
   }
 };

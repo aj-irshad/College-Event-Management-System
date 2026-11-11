@@ -165,6 +165,22 @@
   transform: scale(0.98);
 }
 
+.verifyBtn:disabled {
+  cursor: wait;
+  opacity: 0.8;
+}
+
+.verify-spinner {
+  display: inline-block;
+  margin-right: 0.45rem;
+  vertical-align: middle;
+  animation: verify-spin 0.8s linear infinite;
+}
+
+@keyframes verify-spin {
+  to { transform: rotate(360deg); }
+}
+
 @media screen and (max-width: 768px) {
   .VerifyMain {
     flex-direction: column;

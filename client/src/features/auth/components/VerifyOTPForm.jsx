@@ -1,4 +1,6 @@
-function VerifyOTPForm({ email, otp, setOtp, warning, handleSubmit }) {
+import { LoaderCircle } from "lucide-react";
+
+function VerifyOTPForm({ email, otp, setOtp, warning, handleSubmit, isSubmitting }) {
   return (
     <form className="verifyForm" onSubmit={handleSubmit}>
       <section className="heading">
@@ -16,6 +18,7 @@ function VerifyOTPForm({ email, otp, setOtp, warning, handleSubmit }) {
           placeholder="● ● ● ●"
           maxLength={4}
           value={otp}
+          disabled={isSubmitting}
           onChange={(e) => {
             // Only allow numbers
             const value = e.target.value.replace(/\D/g, "");
@@ -28,8 +31,9 @@ function VerifyOTPForm({ email, otp, setOtp, warning, handleSubmit }) {
       {warning && <p className="warning">* {warning}</p>}
 
       <section className="btnSection">
-        <button type="submit" className="verifyBtn">
-          Verify Account
+        <button type="submit" className="verifyBtn" disabled={isSubmitting}>
+          {isSubmitting && <LoaderCircle className="verify-spinner" size={16} aria-hidden="true" />}
+          {isSubmitting ? "Verifying..." : "Verify Account"}
         </button>
       </section>
     </form>

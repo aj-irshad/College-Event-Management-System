@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signUp } from "../../../services/authService";
 import { UsersRound, Eye, EyeOff } from "lucide-react";
@@ -9,6 +9,8 @@ import "../auth.css";
 function Signup() {
   const navigate = useNavigate();
   const [warning, setWarning] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -32,6 +34,7 @@ function Signup() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (submittingRef.current) return;
 
     if (!formData.department) {
       setWarning("Please select a department.");
@@ -59,6 +62,8 @@ function Signup() {
     }
 
     setWarning("");
+    submittingRef.current = true;
+    setIsSubmitting(true);
 
     const signupData = new FormData();
     signupData.append("name", formData.name);
@@ -81,6 +86,9 @@ function Signup() {
     } catch (error) {
       console.error(error);
       setWarning(error.response?.data?.message || "Something went wrong.");
+    } finally {
+      submittingRef.current = false;
+      setIsSubmitting(false);
     }
   }
 
@@ -100,6 +108,7 @@ function Signup() {
           formData={formData}
           handleChange={handleChange}
           handleSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
           Eye={Eye}
           EyeOff={EyeOff}
         />

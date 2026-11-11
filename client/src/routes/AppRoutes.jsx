@@ -103,6 +103,7 @@ const AppRoutes = () => {
 
           {/*  ADMIN ROUTES  */}
           <Route element={<AdminRoute />}>
+            <Route path="admin" element={<AdminDashboard user={user} />} />
             <Route path="admin/payments" element={<AdminPayments />} />
             <Route path="create-event" element={<CreateEvent />} />
             <Route path="/edit-event/:id" element={<EditEvent />} />

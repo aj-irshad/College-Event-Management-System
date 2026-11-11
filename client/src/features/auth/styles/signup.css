@@ -183,6 +183,22 @@
   transform: scale(0.98);
 }
 
+.signupBtn:disabled {
+  cursor: wait;
+  opacity: 0.8;
+}
+
+.signup-spinner {
+  display: inline-block;
+  margin-right: 0.45rem;
+  vertical-align: middle;
+  animation: signup-spin 0.8s linear infinite;
+}
+
+@keyframes signup-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Bottom Link */
 .signup-form .loginLink {
   text-align: center;
