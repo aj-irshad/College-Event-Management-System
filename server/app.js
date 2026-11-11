@@ -2,10 +2,9 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import path from "path";
 import http from "http";
-import { fileURLToPath } from "url";
 import status from "express-status-monitor";
+import mongoose from "mongoose";
 import { initIO } from "./socket.js";
 dotenv.config();
 
@@ -24,6 +23,7 @@ import pollRouter from "./routes/polls.js";
 import notificationRouter from "./routes/notification.js";
 import paymentRouter from "./routes/payments.js";
 import { getUploadDirectory } from "./utils/uploadPaths.js";
+import { startOtpEmailWorker, stopOtpEmailWorker } from "./services/otpEmailWorker.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,9 +32,6 @@ const VITE_URL = process.env.VITE_BASE_URL;
 
 const server = http.createServer(app);
 const io = initIO(server, VITE_URL);
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // MIDDLEWARE
 app.use(
@@ -54,6 +51,7 @@ connection().then(() => {
   startExpiryReminderJob();
   startPollExpiryJob();
   startFeedbackPublicationJob();
+  startOtpEmailWorker();
 });
 
 const eventUploadDirectory = getUploadDirectory("events");
@@ -67,7 +65,6 @@ app.use("/uploads/blog", express.static(blogUploadDirectory));
 app.use("/uploads/user", express.static(profileUploadDirectory));
 // Legacy root-level upload names now resolve only inside the events folder.
 app.use("/uploads", express.static(eventUploadDirectory));
-app.use(express.static(path.join(__dirname, "../client/dist")));
 
 app.use("/auth", authRouter);
 app.use("/user", userRouter);
@@ -78,11 +75,39 @@ app.use("/polls", pollRouter);
 app.use("/participant", participantRouter);
 app.use("/notification", notificationRouter);
 app.use("/payments", paymentRouter);
-
-app.get("/{*splat}", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/dist/index.html"));
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "API route not found",
+  });
 });
 
 server.listen(PORT, () => {
   console.log(`Server is listening at ${PORT}`);
 });
+
+let shutdownStarted = false;
+const shutdown = async (signal) => {
+  if (shutdownStarted) return;
+  shutdownStarted = true;
+  console.info("Graceful shutdown started:", { signal });
+  const forceExit = setTimeout(() => process.exit(1), 35_000);
+  forceExit.unref();
+
+  try {
+    await stopOtpEmailWorker();
+    await new Promise((resolve) => io.close(resolve));
+    await mongoose.disconnect();
+    clearTimeout(forceExit);
+    process.exit(0);
+  } catch (error) {
+    console.error("Graceful shutdown failed:", {
+      name: error.name || "Error",
+      code: error.code || null,
+    });
+    process.exit(1);
+  }
+};
+
+process.once("SIGTERM", () => void shutdown("SIGTERM"));
+process.once("SIGINT", () => void shutdown("SIGINT"));

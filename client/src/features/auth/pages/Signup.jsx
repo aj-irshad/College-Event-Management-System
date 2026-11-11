@@ -78,13 +78,29 @@ function Signup() {
     }
 
     try {
-      await signUp(signupData);
-      alert("OTP has been sent to your email.");
+      const response = await signUp(signupData);
+      const result = response.data || {};
+      const email = result.email || formData.email.trim().toLowerCase();
+      const resendAvailableAt = Date.now() + (Number(result.resendAfterSeconds) || 60) * 1000;
+      const verificationSession = {
+        email,
+        signupToken: result.signupToken || "",
+        resendAvailableAt,
+        deliveryStatus: result.deliveryStatus || "queued",
+      };
+      try {
+        sessionStorage.setItem("ems.signup.session", JSON.stringify(verificationSession));
+      } catch {
+        // Route state still supports verification for this visit.
+      }
       navigate("/verify-otp", {
-        state: { email: formData.email },
+        state: verificationSession,
       });
     } catch (error) {
-      console.error(error);
+      console.warn("Signup request failed:", {
+        status: error.response?.status || null,
+        requestId: error.response?.headers?.["x-request-id"] || null,
+      });
       setWarning(error.response?.data?.message || "Something went wrong.");
     } finally {
       submittingRef.current = false;

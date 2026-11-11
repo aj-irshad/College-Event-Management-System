@@ -1,14 +1,38 @@
 import { LoaderCircle } from "lucide-react";
 
-function VerifyOTPForm({ email, otp, setOtp, warning, handleSubmit, isSubmitting }) {
+function VerifyOTPForm({
+  email,
+  otp,
+  setOtp,
+  warning,
+  handleSubmit,
+  isSubmitting,
+  deliveryStatus,
+  resendSeconds,
+  isResending,
+  handleResend,
+}) {
+  const deliveryMessage = {
+    checking: "Checking verification email status…",
+    queued: "Your verification email is queued for delivery.",
+    processing: "Your verification email is being sent.",
+    sent: "Verification email sent. Check your inbox and spam folder.",
+    failed: "Email delivery failed. You can request another verification email.",
+    unknown: "Checking verification email status…",
+  }[deliveryStatus] || "Enter the verification code sent to your inbox.";
+
   return (
     <form className="verifyForm" onSubmit={handleSubmit}>
       <section className="heading">
         <h2>Enter OTP</h2>
         <p>
-          Sent to <strong>{email}</strong>
+          Verification code for <strong>{email}</strong>
         </p>
       </section>
+
+      <p className={`otpDeliveryStatus otpDeliveryStatus--${deliveryStatus}`} aria-live="polite">
+        {deliveryMessage}
+      </p>
 
       <section className="formGrp otpGroup">
         <label htmlFor="otp">4-Digit Verification Code</label>
@@ -34,6 +58,19 @@ function VerifyOTPForm({ email, otp, setOtp, warning, handleSubmit, isSubmitting
         <button type="submit" className="verifyBtn" disabled={isSubmitting}>
           {isSubmitting && <LoaderCircle className="verify-spinner" size={16} aria-hidden="true" />}
           {isSubmitting ? "Verifying..." : "Verify Account"}
+        </button>
+        <button
+          type="button"
+          className="resendOtpBtn"
+          onClick={handleResend}
+          disabled={isResending || resendSeconds > 0}
+        >
+          {isResending && <LoaderCircle className="verify-spinner" size={16} aria-hidden="true" />}
+          {isResending
+            ? "Requesting..."
+            : resendSeconds > 0
+              ? `Resend code in ${resendSeconds}s`
+              : "Resend verification email"}
         </button>
       </section>
     </form>

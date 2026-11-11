@@ -30,6 +30,12 @@ async function sendOTP(email, otp) {
         </div>
       `,
     });
+    if (!Array.isArray(info.accepted) || info.accepted.length === 0) {
+      const error = new Error("SMTP did not accept the verification recipient");
+      error.code = "ERECIPIENTREJECTED";
+      error.responseCode = info.responseCode;
+      throw error;
+    }
     return info;
   } catch (err) {
     console.error("OTP email delivery failed:", {

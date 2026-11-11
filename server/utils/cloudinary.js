@@ -21,7 +21,7 @@ const operationError = (operation, error) => {
 export const uploadToCloudinary = async (
   filePath,
   folder,
-  { resourceType = "image", publicId, overwrite = false } = {},
+  { resourceType = "image", publicId, overwrite = false, timeout } = {},
 ) => {
   if (!allowedFolders.has(folder)) throw new Error("Invalid Cloudinary folder");
   if (!allowedResourceTypes.has(resourceType)) {
@@ -33,6 +33,7 @@ export const uploadToCloudinary = async (
       folder: `ems/${folder}`,
       resource_type: resourceType,
       ...(publicId ? { public_id: publicId } : {}),
+      ...(Number.isFinite(timeout) && timeout > 0 ? { timeout } : {}),
       overwrite,
     });
 

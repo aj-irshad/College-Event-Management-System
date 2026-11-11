@@ -1,6 +1,30 @@
 import mongoose from "mongoose";
 import { EVENT_SEMESTERS } from "../utils/eventTargeting.js";
 
+const otpEmailDeliverySchema = new mongoose.Schema(
+  {
+    jobId: { type: String, required: true },
+    status: {
+      type: String,
+      enum: ["queued", "processing", "sent", "failed"],
+      required: true,
+    },
+    encryptedOtp: String,
+    otpIv: String,
+    otpAuthTag: String,
+    attempts: { type: Number, default: 0 },
+    maxAttempts: { type: Number, default: 5 },
+    nextAttemptAt: Date,
+    lockedUntil: Date,
+    workerId: String,
+    queuedAt: Date,
+    sentAt: Date,
+    failedAt: Date,
+    lastErrorCode: String,
+  },
+  { _id: false },
+);
+
 const pendingUserSchema = new mongoose.Schema(
   {
     name: {
@@ -47,19 +71,37 @@ const pendingUserSchema = new mongoose.Schema(
       default: "",
     },
 
-    otp: {
-      type: String,
-      required: true,
-    },
-
-    otpExpires: {
-      type: Date,
-      required: true,
-    },
+    // `otp` is retained for pending records created before the hashed OTP flow.
+    otp: String,
+    otpHash: String,
+    otpSalt: String,
+    otpAttempts: { type: Number, default: 0 },
+    otpResendCount: { type: Number, default: 0 },
+    otpExpires: Date,
+    signupTokenHash: String,
+    signupTokenRotatedAt: Date,
+    registrationExpiresAt: Date,
+    resendAvailableAt: Date,
+    verificationClaimId: String,
+    verificationClaimExpiresAt: Date,
+    emailDelivery: otpEmailDeliverySchema,
   },
   {
     timestamps: true,
   },
+);
+
+pendingUserSchema.index(
+  {
+    "emailDelivery.status": 1,
+    "emailDelivery.nextAttemptAt": 1,
+    "emailDelivery.lockedUntil": 1,
+  },
+  { name: "pending_otp_email_queue" },
+);
+pendingUserSchema.index(
+  { registrationExpiresAt: 1, verificationClaimExpiresAt: 1 },
+  { name: "pending_signup_expiry" },
 );
 
 const PendingUser = mongoose.model("PendingUser", pendingUserSchema);

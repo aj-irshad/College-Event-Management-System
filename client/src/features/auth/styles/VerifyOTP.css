@@ -78,6 +78,21 @@
   color: #495057;
 }
 
+.otpDeliveryStatus {
+  color: #6c757d;
+  font-size: var(--ems-font-description);
+  line-height: 1.45;
+  margin: -0.8rem 0 1rem;
+}
+
+.otpDeliveryStatus--sent {
+  color: #247a4b;
+}
+
+.otpDeliveryStatus--failed {
+  color: #b42318;
+}
+
 .formGrp {
   display: flex;
   flex-direction: column;
@@ -168,6 +183,23 @@
 .verifyBtn:disabled {
   cursor: wait;
   opacity: 0.8;
+}
+
+.resendOtpBtn {
+  align-self: center;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: rgb(101, 101, 246);
+  font-size: var(--ems-font-button);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.resendOtpBtn:disabled {
+  color: #7b8190;
+  cursor: wait;
 }
 
 .verify-spinner {
