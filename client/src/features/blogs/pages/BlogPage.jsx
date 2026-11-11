@@ -6,6 +6,7 @@ import blogContext from "../../../context/blogContext";
 import socket from "../../../api/socket";
 import { getBlogById } from "../../../services/blogService";
 import { formatDate } from "../../../hooks/dateFormatter";
+import { resolveImageUrl } from "../../../utils/imageUrl";
 
 import "../style/blogPage.css";
 
@@ -105,7 +106,7 @@ const BlogPage = () => {
       {blog.blogImage && (
         <div className="blog-page-image-wrapper">
           <img
-            src={`${import.meta.env.VITE_BASE_URL}/uploads/blog/${blog.blogImage}`}
+            src={resolveImageUrl(blog.blogImage, "blogs")}
             alt={blog.title}
             className="blog-page-image"
           />

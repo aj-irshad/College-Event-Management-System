@@ -50,7 +50,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-
+    profileImagePublicId: {
+      type: String,
+      default: "",
+    },
     passwordResetTokenHash: {
       type: String,
       select: false,

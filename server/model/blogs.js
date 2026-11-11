@@ -24,6 +24,10 @@ const BlogSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    blogImagePublicId: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true },
 );

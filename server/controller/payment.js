@@ -1,4 +1,3 @@
-import fs from "fs/promises";
 import path from "path";
 import Event from "../model/events.js";
 import Participant from "../model/participants.js";
@@ -6,10 +5,11 @@ import Payment from "../model/payment.js";
 import Users from "../model/user.js";
 import { getIO } from "../socket.js";
 import {
-  getEsewaQrFile,
-  readPrivatePaymentFile,
-  removePaymentProof,
+  readEsewaQr,
+  readPaymentProof,
+  removeTemporaryPaymentProof,
 } from "../utils/paymentStorage.js";
+import { uploadToCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 import { isEventAvailableToUser } from "../utils/eventTargeting.js";
 
 const participationTypes = ["Participant", "Volunteer", "Organizing Member"];
@@ -19,6 +19,32 @@ const emitSafely = (room, eventName, payload) => {
     getIO().to(room).emit(eventName, payload);
   } catch (error) {
     console.error(`Could not emit ${eventName}:`, error.message);
+  }
+};
+
+const removeUploadedProofIfUnreferenced = async (asset, writeDefinitelyDidNotCommit) => {
+  if (!asset?.publicId) return;
+
+  try {
+    const referencedPayment = await Payment.exists({ proofPublicId: asset.publicId });
+    if (referencedPayment) {
+      console.warn("Retaining uploaded payment proof referenced by a payment record");
+      return;
+    }
+  } catch {
+    console.error("Could not verify payment proof references; retaining uploaded asset");
+    return;
+  }
+
+  if (!writeDefinitelyDidNotCommit) {
+    console.error("Payment write outcome is uncertain; retaining uploaded proof asset");
+    return;
+  }
+
+  try {
+    await deleteFromCloudinary(asset.publicId, asset.resourceType);
+  } catch {
+    console.error("Could not clean up an unreferenced payment proof asset");
   }
 };
 
@@ -41,11 +67,7 @@ const getPaymentQr = async (req, res) => {
     const activePayment = await Payment.findOne({ event: event._id, user: req.userId, isActive: true }).select("status");
     if (activePayment) return res.status(409).json({ message: `A ${activePayment.status.toLowerCase()} payment already exists for this event` });
 
-    const qrPath = getEsewaQrFile();
-    const extension = path.extname(qrPath).toLowerCase();
-    const contentType = extension === ".jpg" || extension === ".jpeg" ? "image/jpeg" : extension === ".png" ? "image/png" : null;
-    if (!contentType) return res.status(503).json({ message: "The event payment QR is not configured" });
-    const data = await fs.readFile(qrPath);
+    const { data, contentType } = await readEsewaQr();
     const validImage = contentType === "image/png"
       ? data.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
       : data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff;
@@ -54,6 +76,10 @@ const getPaymentQr = async (req, res) => {
     return res.status(200).send(data);
   } catch (error) {
     if (error.code === "ENOENT") return res.status(503).json({ message: "The event payment QR has not been installed" });
+    if (error.code?.startsWith("ESEWA_QR_")) {
+      console.error("Could not serve configured eSewa QR:", error.code, error.message);
+      return res.status(503).json({ message: "The event payment QR is not configured or temporarily unavailable" });
+    }
     console.error("Could not serve payment QR:", error.message);
     return res.status(500).json({ message: "Could not load the payment QR" });
   }
@@ -61,42 +87,50 @@ const getPaymentQr = async (req, res) => {
 
 const submitManualPayment = async (req, res) => {
   const { eventId, participationType = "Participant", transactionReference = "" } = req.body || {};
-  let proofFilename = req.file?.filename;
   let resolvedEventId;
-  const rejectAndRemoveProof = async (status, message) => {
-    if (proofFilename) await removePaymentProof(proofFilename).catch(() => {});
-    proofFilename = null;
-    return res.status(status).json({ message });
-  };
-
-  if (!validId(eventId)) return rejectAndRemoveProof(400, "A valid event ID is required");
-  if (!participationTypes.includes(participationType)) return rejectAndRemoveProof(400, "Invalid participation role");
-  if (typeof transactionReference !== "string" || transactionReference.trim().length > 100) {
-    return rejectAndRemoveProof(400, "Transaction reference must be 100 characters or fewer");
-  }
+  let uploadedProof = null;
 
   try {
+    if (!req.file) return res.status(400).json({ message: "Payment proof is required" });
+    if (!validId(eventId)) return res.status(400).json({ message: "A valid event ID is required" });
+    if (!participationTypes.includes(participationType)) {
+      return res.status(400).json({ message: "Invalid participation role" });
+    }
+    if (typeof transactionReference !== "string" || transactionReference.trim().length > 100) {
+      return res.status(400).json({ message: "Transaction reference must be 100 characters or fewer" });
+    }
+
     const [event, user] = await Promise.all([
       Event.findById(eventId),
       Users.findById(req.userId).select("role department semester"),
     ]);
-    if (!user) return rejectAndRemoveProof(401, "Please login");
-    if (!event) return rejectAndRemoveProof(404, "Event not found");
-    if (!isEventAvailableToUser(event, user)) return rejectAndRemoveProof(403, "This event is not available to your department and semester");
+    if (!user) return res.status(401).json({ message: "Please login" });
+    if (!event) return res.status(404).json({ message: "Event not found" });
+    if (!isEventAvailableToUser(event, user)) {
+      return res.status(403).json({ message: "This event is not available to your department and semester" });
+    }
     resolvedEventId = event._id;
     if (Number(event.price) <= 0 || event.status === "Completed") {
-      return rejectAndRemoveProof(400, "This event is not eligible for paid registration");
+      return res.status(400).json({ message: "This event is not eligible for paid registration" });
     }
     if (await Participant.exists({ event: event._id, user: req.userId })) {
-      return rejectAndRemoveProof(409, "You already have a participation record for this event");
+      return res.status(409).json({ message: "You already have a participation record for this event" });
     }
     if (await Payment.exists({ event: event._id, user: req.userId, isActive: true })) {
-      return rejectAndRemoveProof(409, "A pending or approved payment already exists for this event");
+      return res.status(409).json({ message: "A pending or approved payment already exists for this event" });
     }
     const amount = Number(event.price);
     if (!Number.isFinite(amount) || amount <= 0) {
-      return rejectAndRemoveProof(400, "The event payment amount is invalid");
+      return res.status(400).json({ message: "The event payment amount is invalid" });
     }
+
+    const proofResourceType = req.paymentProofResourceType || "image";
+    uploadedProof = await uploadToCloudinary(req.file.path, "payment-proofs", {
+      resourceType: proofResourceType,
+      ...(proofResourceType === "raw"
+        ? { publicId: path.parse(req.file.filename).name + ".pdf" }
+        : {}),
+    });
 
     const payment = await Payment.create({
       user: req.userId,
@@ -105,11 +139,14 @@ const submitManualPayment = async (req, res) => {
       amount,
       currency: "NPR",
       method: "Manual eSewa QR",
-      proofFilename,
+      proofFilename: "",
+      proofUrl: uploadedProof.url,
+      proofPublicId: uploadedProof.publicId,
+      proofResourceType: uploadedProof.resourceType,
       proofMimeType: req.paymentProofMimeType,
       transactionReference: transactionReference.trim(),
     });
-    proofFilename = null;
+    uploadedProof = null;
 
     emitSafely("admins", "payments:updated", { paymentId: String(payment._id), status: payment.status, eventId: String(event._id) });
     return res.status(201).json({ message: "Payment proof submitted for admin verification", payment: {
@@ -122,7 +159,14 @@ const submitManualPayment = async (req, res) => {
       createdAt: payment.createdAt,
     } });
   } catch (error) {
-    if (proofFilename) await removePaymentProof(proofFilename).catch(() => {});
+    if (uploadedProof?.publicId) {
+      const writeDefinitelyDidNotCommit =
+        error.code === 11000 || error.name === "ValidationError";
+      await removeUploadedProofIfUnreferenced(
+        uploadedProof,
+        writeDefinitelyDidNotCommit,
+      );
+    }
     if (error.code === 11000) {
       const indexName = error.message.match(/\bindex:\s+(?:[^ ]+\.)*\$?([^\s]+?)\s+dup key:/i)?.[1] || null;
       console.error("Payment duplicate-key conflict:", {
@@ -152,6 +196,10 @@ const submitManualPayment = async (req, res) => {
     }
     console.error("Could not submit manual payment:", error.message);
     return res.status(500).json({ message: "Could not submit payment proof" });
+  } finally {
+    await removeTemporaryPaymentProof(req.file).catch(() => {
+      console.error("Could not remove temporary payment proof file");
+    });
   }
 };
 
@@ -209,7 +257,7 @@ const getAdminPayments = async (req, res) => {
 
 const sendProof = async (payment, res) => {
   try {
-    const buffer = await readPrivatePaymentFile(payment.proofFilename);
+    const buffer = await readPaymentProof(payment);
     const disposition = payment.proofMimeType === "application/pdf" ? "attachment" : "inline";
     res.set({
       "Content-Type": payment.proofMimeType,
@@ -219,7 +267,9 @@ const sendProof = async (payment, res) => {
     });
     return res.status(200).send(buffer);
   } catch (error) {
-    if (error.code === "ENOENT") return res.status(404).json({ message: "Payment proof is unavailable" });
+    if (error.code === "ENOENT" || error.code === 404) {
+      return res.status(404).json({ message: "Payment proof is unavailable" });
+    }
     console.error("Could not read payment proof:", error.message);
     return res.status(500).json({ message: "Could not open payment proof" });
   }
@@ -228,7 +278,8 @@ const sendProof = async (payment, res) => {
 const getMyPaymentProof = async (req, res) => {
   if (!validId(req.params.paymentId)) return res.status(400).json({ message: "Invalid payment ID" });
   try {
-    const payment = await Payment.findOne({ _id: req.params.paymentId, user: req.userId }).select("proofFilename proofMimeType");
+    const payment = await Payment.findOne({ _id: req.params.paymentId, user: req.userId })
+      .select("proofFilename proofUrl proofPublicId proofResourceType proofMimeType");
     if (!payment) return res.status(404).json({ message: "Payment proof not found" });
     return sendProof(payment, res);
   } catch (error) {
@@ -239,7 +290,8 @@ const getMyPaymentProof = async (req, res) => {
 const getAdminPaymentProof = async (req, res) => {
   if (!validId(req.params.paymentId)) return res.status(400).json({ message: "Invalid payment ID" });
   try {
-    const payment = await Payment.findById(req.params.paymentId).select("proofFilename proofMimeType");
+    const payment = await Payment.findById(req.params.paymentId)
+      .select("proofFilename proofUrl proofPublicId proofResourceType proofMimeType");
     if (!payment) return res.status(404).json({ message: "Payment proof not found" });
     return sendProof(payment, res);
   } catch (error) {

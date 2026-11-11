@@ -5,6 +5,10 @@ import { createHash, randomBytes } from "crypto";
 import Users from "../model/user.js";
 import PendingUser from "../model/pendingUser.js";
 
+import {
+  uploadToCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudinary.js";
 import { setUser } from "../services/auth.js";
 import { createHashPassword, compareHashPassword } from "../services/bcrypt.js";
 import sendOTP, { sendPasswordResetEmail } from "../utils/otpSender.js";
@@ -18,9 +22,10 @@ const PASSWORD_RULE =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&^#()_+\-=[\]{};':"\\|,.<>/?~`])[A-Za-z\d@$!%*?&^#()_+\-=[\]{};':"\\|,.<>/?~`]{8,16}$/;
 
 const requestPasswordReset = async (req, res) => {
-  const email = typeof req.body?.email === "string"
-    ? req.body.email.trim().toLowerCase()
-    : "";
+  const email =
+    typeof req.body?.email === "string"
+      ? req.body.email.trim().toLowerCase()
+      : "";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.status(400).json({ message: "Enter a valid email address." });
   }
@@ -63,11 +68,14 @@ const requestPasswordReset = async (req, res) => {
 const completePasswordReset = async (req, res) => {
   const { token, newPassword } = req.body || {};
   if (typeof token !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(token)) {
-    return res.status(400).json({ message: "This password reset link is invalid or expired." });
+    return res
+      .status(400)
+      .json({ message: "This password reset link is invalid or expired." });
   }
   if (typeof newPassword !== "string" || !PASSWORD_RULE.test(newPassword)) {
     return res.status(400).json({
-      message: "Password must be 8–16 characters with uppercase, lowercase, number and special character.",
+      message:
+        "Password must be 8–16 characters with uppercase, lowercase, number and special character.",
     });
   }
 
@@ -89,13 +97,19 @@ const completePasswordReset = async (req, res) => {
       .lean();
 
     if (!consumedUser) {
-      return res.status(400).json({ message: "This password reset link is invalid or expired." });
+      return res
+        .status(400)
+        .json({ message: "This password reset link is invalid or expired." });
     }
 
-    return res.status(200).json({ message: "Password reset successful. Please log in." });
+    return res
+      .status(200)
+      .json({ message: "Password reset successful. Please log in." });
   } catch {
     console.error("Password reset could not be completed");
-    return res.status(500).json({ message: "Could not reset your password. Please try again." });
+    return res
+      .status(500)
+      .json({ message: "Could not reset your password. Please try again." });
   }
 };
 
@@ -185,11 +199,68 @@ const userLogin = async (req, res) => {
   }
 };
 
+const removePendingProfileImageIfUnused = async (
+  pendingUser,
+  { writeDefinitelyDidNotCommit = true } = {},
+) => {
+  const image = pendingUser?.profileImage;
+  if (!image) return;
+
+  if (pendingUser.profileImagePublicId) {
+    const [userReference, pendingReference] = await Promise.all([
+      Users.exists({
+        $or: [
+          { profileImagePublicId: pendingUser.profileImagePublicId },
+          { profileImage: image },
+        ],
+      }),
+      PendingUser.exists({
+        $or: [
+          { profileImagePublicId: pendingUser.profileImagePublicId },
+          { profileImage: image },
+        ],
+      }),
+    ]);
+    if (!userReference && !pendingReference) {
+      if (!writeDefinitelyDidNotCommit) {
+        console.error("Pending signup write outcome is uncertain; retaining profile image");
+        return;
+      }
+      await deleteFromCloudinary(pendingUser.profileImagePublicId);
+    }
+    return;
+  }
+
+  // Retain compatibility with local filename records; never treat URLs as paths.
+  if (/^https?:\/\//i.test(image)) return;
+  const filename = path.basename(image);
+  if (!filename || filename !== image || filename.includes("\\")) return;
+
+  const [userReference, pendingReference] = await Promise.all([
+    Users.exists({ profileImage: image }),
+    PendingUser.exists({ profileImage: image }),
+  ]);
+  if (userReference || pendingReference) return;
+  if (!writeDefinitelyDidNotCommit) {
+    console.error("Pending signup write outcome is uncertain; retaining profile image");
+    return;
+  }
+
+  await fs
+    .unlink(path.join(getUploadDirectory("profiles"), filename))
+    .catch((error) => {
+      if (error.code !== "ENOENT") throw error;
+    });
+};
+
 const userSignUp = async (req, res) => {
+  let uploadedImage = null;
+  let pendingUserSaved = false;
+  let pendingUserWriteAttempted = false;
+
   try {
     const { name, email, password, contact, department, semester } = req.body;
 
-    // Validate required fields
     if (!name || !email || !password) {
       return res.status(400).json({
         message: "All required fields must be provided.",
@@ -199,11 +270,11 @@ const userSignUp = async (req, res) => {
     if (!EVENT_SEMESTERS.includes(semester)) {
       return res.status(400).json({ message: "Select a valid semester." });
     }
+
     if (!EVENT_DEPARTMENTS.includes(department)) {
       return res.status(400).json({ message: "Select a valid department." });
     }
 
-    // Check if user already exists
     const existingUser = await Users.findOne({ email });
 
     if (existingUser) {
@@ -212,40 +283,80 @@ const userSignUp = async (req, res) => {
       });
     }
 
-    // Generate 4-digit OTP
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const previousPendingUser = await PendingUser.findOne({ email });
 
-    // OTP expires in 2 minutes
+    // Upload profile image to Cloudinary
+    if (req.file) {
+      uploadedImage = await uploadToCloudinary(req.file.path, "profiles");
+    }
+
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const otpExpires = Date.now() + 2 * 60 * 1000;
 
-    // Remove previous pending signup (if any)
-    await PendingUser.deleteOne({ email });
+    // Create or update pending signup
+    pendingUserWriteAttempted = true;
+    const savedPendingUser = await PendingUser.findOneAndUpdate(
+      { email },
+      {
+        $set: {
+          name,
+          email,
+          password: await createHashPassword(password),
+          contact,
+          department,
+          semester,
+          profileImage: uploadedImage?.url || "",
+          profileImagePublicId: uploadedImage?.publicId || "",
+          otp,
+          otpExpires,
+        },
+      },
+      {
+        upsert: true,
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    );
+    pendingUserSaved = Boolean(savedPendingUser);
 
-    // Store pending user
-    await PendingUser.create({
-      name,
-      email,
-      password: await createHashPassword(password),
-      contact,
-      department,
-      semester,
-      profileImage: req.file ? req.file.filename : null,
-      otp,
-      otpExpires,
-    });
+    // The new image is now referenced. Clean up any replaced asset best-effort.
+    if (previousPendingUser) {
+      await removePendingProfileImageIfUnused(previousPendingUser).catch(() => {
+        console.error("Previous pending profile image cleanup failed");
+      });
+    }
 
-    // Send OTP
     await sendOTP(email, otp);
 
     return res.status(200).json({
       message: "OTP sent successfully.",
     });
   } catch (error) {
-    console.error(error);
+    // A persisted pending record owns this image, even if OTP delivery fails.
+    if (!pendingUserSaved && uploadedImage?.publicId) {
+      const writeDefinitelyDidNotCommit =
+        !pendingUserWriteAttempted ||
+        error.code === 11000 ||
+        error.name === "ValidationError";
+      await removePendingProfileImageIfUnused({
+        profileImage: uploadedImage.url,
+        profileImagePublicId: uploadedImage.publicId,
+      }, { writeDefinitelyDidNotCommit }).catch(() => {
+        console.error("Could not safely clean up the signup profile image");
+      });
+    }
+
+    console.error("Signup failed:", error.message);
 
     return res.status(500).json({
       message: "Internal server error.",
     });
+  } finally {
+    // Remove temporary local Multer file
+    if (req.file?.path) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
   }
 };
 
@@ -262,13 +373,11 @@ const verifyOTP = async (req, res) => {
     }
 
     if (pendingUser.otpExpires < Date.now()) {
-      if (pendingUser.profileImage) {
-        const filename = path.basename(pendingUser.profileImage);
-        if (filename === pendingUser.profileImage) {
-          await fs.unlink(path.join(getUploadDirectory("profiles"), filename)).catch(() => {});
-        }
-      }
-      await PendingUser.deleteOne({ email });
+      await PendingUser.deleteOne({ _id: pendingUser._id });
+      await removePendingProfileImageIfUnused(pendingUser).catch(() => {
+        console.error("Expired pending profile image cleanup failed");
+      });
+
       return res.status(400).json({
         message: "OTP Expired",
       });
@@ -288,17 +397,20 @@ const verifyOTP = async (req, res) => {
       department: pendingUser.department,
       semester: pendingUser.semester,
       profileImage: pendingUser.profileImage,
+      profileImagePublicId: pendingUser.profileImagePublicId || "",
     };
 
     await Users.create(newUser);
 
-    await PendingUser.deleteOne({ email });
+    await PendingUser.deleteOne({ _id: pendingUser._id });
 
     return res.status(200).json({
       message: "Account successfully created",
     });
   } catch (err) {
-    res.status(500).json({
+    console.error("OTP verification failed:", err.message);
+
+    return res.status(500).json({
       message: "Internal server error!",
     });
   }

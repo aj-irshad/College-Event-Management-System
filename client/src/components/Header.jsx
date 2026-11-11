@@ -2,6 +2,7 @@ import { Search, Bell, Zap, Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import socket from "../api/socket";
+import { resolveImageUrl } from "../utils/imageUrl";
 import {
   fetchNotifications,
   markNotificationsAsRead,
@@ -298,7 +299,7 @@ const Header = ({ user, onToggleMenu, isMobileMenuOpen }) => {
 
         <section className="userProfile">
           <img
-            src={`${import.meta.env.VITE_BASE_URL}/uploads/user/${user.profileImage}`}
+            src={resolveImageUrl(user.profileImage, "profiles")}
             alt={`${user.name}'s profile`}
             className="userImage"
           />

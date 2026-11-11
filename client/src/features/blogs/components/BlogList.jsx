@@ -6,6 +6,7 @@ import BlogButton from "./BlogButton";
 import { formatDate } from "../../../hooks/dateFormatter";
 import { deleteBlog } from "../../../services/blogService";
 import blogContext from "../../../context/blogContext";
+import { resolveImageUrl } from "../../../utils/imageUrl";
 
 import "../style/blogList.css";
 
@@ -28,7 +29,7 @@ const BlogList = ({ blog, isAdmin }) => {
         <div className="blog-image-wrapper">
           {blog.blogImage && (
             <img
-              src={`${import.meta.env.VITE_BASE_URL}/uploads/blog/${blog.blogImage}`}
+              src={resolveImageUrl(blog.blogImage, "blogs")}
               alt={blog.title}
               className="blog-image"
             />

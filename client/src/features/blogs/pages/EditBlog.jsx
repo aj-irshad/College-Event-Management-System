@@ -4,6 +4,7 @@ import { CalendarDays, Image, Save, ArrowLeft } from "lucide-react";
 
 import blogContext from "../../../context/blogContext";
 import { getBlogById, updateBlog } from "../../../services/blogService";
+import { resolveImageUrl } from "../../../utils/imageUrl";
 
 import "../style/editBlog.css";
 
@@ -86,7 +87,7 @@ const EditBlog = () => {
         <section className="edit-form-group"><label htmlFor="blogDescription">Description</label><textarea id="blogDescription" required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Write your blog description..." /></section>
         <section className="edit-form-group"><label htmlFor="eventDate"><CalendarDays size={16} />Event Date</label><input type="date" id="eventDate" value={eventDate} onChange={(e) => setEventDate(e.target.value)} /><small>Select the date associated with this blog post.</small></section>
         <section className="edit-form-group"><label htmlFor="blogImage"><Image size={16} />Change Image</label><input type="file" id="blogImage" accept=".jpg,.jpeg,.png,.webp,.gif,.avif,image/jpeg,image/png,image/webp,image/gif,image/avif" onChange={(e) => setBlogImage(e.target.files?.[0] || null)} /><small>Leave empty if you want to keep the current image.</small></section>
-        {(previewUrl || currentImage) && <img className="blog-form-image-preview" src={previewUrl || `${import.meta.env.VITE_BASE_URL}/uploads/blog/${currentImage}`} alt="Blog cover preview" />}
+        {(previewUrl || currentImage) && <img className="blog-form-image-preview" src={previewUrl || resolveImageUrl(currentImage, "blogs")} alt="Blog cover preview" />}
         {error && <p className="blog-form-error" role="alert">{error}</p>}
         <div className="edit-blog-actions"><Link to="/blogs" className="cancel-blog-btn">Cancel</Link><button type="submit" className="update-blog-btn" disabled={updating}><Save size={18} />{updating ? "Updating..." : "Update Blog"}</button></div>
       </form>
