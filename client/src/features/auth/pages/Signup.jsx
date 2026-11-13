@@ -1,17 +1,35 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getOtpDeliveryStatus, resendOTP, signUp } from "../../../services/authService";
+import { resendOTP, signUp } from "../../../services/authService";
 import { UsersRound, Eye, EyeOff } from "lucide-react";
 import SignupForm from "../components/SignupForm";
 import "../styles/signup.css";
 import "../auth.css";
 
-const OTP_STATUS_POLL_MS = 2_000;
-const OTP_STATUS_TIMEOUT_MS = 2 * 60_000;
-const OTP_SENT_MESSAGE_MS = 700;
 const SIGNUP_SESSION_KEY = "ems.signup.session";
 
 const wait = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
+
+const createSignupToken = () => {
+  const bytes = new Uint8Array(32);
+  window.crypto.getRandomValues(bytes);
+  let binary = "";
+  bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+  return window.btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/g, "");
+};
+
+const makeSignupData = (formData, signupToken) => {
+  const signupData = new FormData();
+  signupData.append("name", formData.name);
+  signupData.append("email", formData.email);
+  signupData.append("password", formData.password);
+  signupData.append("contact", formData.contact);
+  signupData.append("department", formData.department);
+  signupData.append("semester", formData.semester);
+  signupData.append("signupToken", signupToken);
+  if (formData["profile-img"]) signupData.append("profile-img", formData["profile-img"]);
+  return signupData;
+};
 
 function Signup() {
   const navigate = useNavigate();
@@ -22,6 +40,9 @@ function Signup() {
   const [resendSeconds, setResendSeconds] = useState(0);
   const submittingRef = useRef(false);
   const mountedRef = useRef(true);
+  const activeSignupTokenRef = useRef("");
+  const canRetrySignupRef = useRef(false);
+  const submittedFormRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -42,6 +63,21 @@ function Signup() {
   }, []);
 
   useEffect(() => {
+    try {
+      const stored = JSON.parse(sessionStorage.getItem(SIGNUP_SESSION_KEY) || "null");
+      if (stored?.email && /^[A-Za-z0-9_-]{43}$/.test(stored.signupToken || "")) {
+        activeSignupTokenRef.current = stored.signupToken;
+        setPendingVerification(stored);
+        setSignupPhase(stored.deliveryStatus === "sent" ? "timeout" : "failed");
+        setResendSeconds(Math.max(0, Math.ceil(((stored.resendAvailableAt || 0) - Date.now()) / 1000)));
+        setWarning("Your signup session is saved. Retry email delivery to continue verification.");
+      }
+    } catch {
+      // A fresh signup can still proceed if browser storage is unavailable.
+    }
+  }, []);
+
+  useEffect(() => {
     if (resendSeconds <= 0) return undefined;
     const timer = window.setTimeout(() => {
       setResendSeconds((seconds) => Math.max(0, seconds - 1));
@@ -58,37 +94,6 @@ function Signup() {
     }));
   }
 
-  const pollEmailStatus = async (signupToken) => {
-    const deadline = Date.now() + OTP_STATUS_TIMEOUT_MS;
-    while (mountedRef.current && Date.now() < deadline) {
-      try {
-        const response = await getOtpDeliveryStatus({ signupToken });
-        if (!mountedRef.current) return { type: "cancelled" };
-
-        const status = response.data?.status;
-        setResendSeconds(Math.max(0, Number(response.data?.resendAfterSeconds) || 0));
-        if (status === "sent") return { type: "sent" };
-        if (status === "failed") return { type: "failed" };
-        if (status !== "queued" && status !== "processing") {
-          return { type: "unavailable", message: "The signup verification session is no longer available." };
-        }
-      } catch (error) {
-        if (!mountedRef.current) return { type: "cancelled" };
-        if ([400, 401, 403, 404, 410].includes(error.response?.status)) {
-          return {
-            type: "unavailable",
-            message: error.response.data?.message || "The signup verification session has expired.",
-          };
-        }
-        // Keep checking through temporary network errors or backend restarts.
-      }
-
-      await wait(OTP_STATUS_POLL_MS);
-    }
-
-    return mountedRef.current ? { type: "timeout" } : { type: "cancelled" };
-  };
-
   const saveVerificationSession = (session) => {
     try {
       sessionStorage.setItem(SIGNUP_SESSION_KEY, JSON.stringify(session));
@@ -97,37 +102,11 @@ function Signup() {
     }
   };
 
-  const continueAfterDelivery = async (session, outcome) => {
-    if (!mountedRef.current || outcome.type === "cancelled") return;
-
-    if (outcome.type === "sent") {
-      setSignupPhase("sent");
-      setWarning("");
-      await wait(OTP_SENT_MESSAGE_MS);
-      if (mountedRef.current) navigate("/verify-otp", { state: session });
-      return;
-    }
-
-    setPendingVerification(session);
-    if (outcome.type === "failed") {
-      setSignupPhase("failed");
-      setWarning("The verification email could not be sent after retries. You can safely request another code below.");
-      return;
-    }
-    if (outcome.type === "timeout") {
-      setSignupPhase("timeout");
-      setWarning("Email delivery is taking longer than expected. Your registration is saved; check the status again before requesting another code.");
-      return;
-    }
-
-    setSignupPhase("unavailable");
-    setWarning(outcome.message || "The verification session is unavailable. Please start signup again.");
-    setPendingVerification(null);
-    try {
-      sessionStorage.removeItem(SIGNUP_SESSION_KEY);
-    } catch {
-      // A stale browser session must not block a fresh signup.
-    }
+  const continueAfterDelivery = async (session) => {
+    if (!mountedRef.current) return;
+    setSignupPhase("sent");
+    setWarning("");
+    navigate("/verify-otp", { state: session });
   };
 
   async function handleSubmit(e) {
@@ -163,6 +142,17 @@ function Signup() {
     submittingRef.current = true;
     setIsSubmitting(true);
     setSignupPhase("signing");
+    const signupToken = activeSignupTokenRef.current || createSignupToken();
+    activeSignupTokenRef.current = signupToken;
+    const submittedForm = { ...formData };
+    submittedFormRef.current = submittedForm;
+    const email = formData.email.trim().toLowerCase();
+    const provisionalSession = {
+      email,
+      signupToken,
+      resendAvailableAt: Date.now(),
+      deliveryStatus: "sending",
+    };
 
     try {
       await wait(0);
@@ -171,44 +161,60 @@ function Signup() {
       await wait(0);
       if (!mountedRef.current) return;
       setSignupPhase("creating");
-
-      const signupData = new FormData();
-      signupData.append("name", formData.name);
-      signupData.append("email", formData.email);
-      signupData.append("password", formData.password);
-      signupData.append("contact", formData.contact);
-      signupData.append("department", formData.department);
-      signupData.append("semester", formData.semester);
-      if (formData["profile-img"]) {
-        signupData.append("profile-img", formData["profile-img"]);
-      }
-
-      const response = await signUp(signupData);
+      await wait(0);
+      if (!mountedRef.current) return;
+      setSignupPhase("sending");
+      saveVerificationSession(provisionalSession);
+      const response = await signUp(makeSignupData(submittedForm, signupToken));
       const result = response.data || {};
-      const signupToken = result.signupToken;
-      if (typeof signupToken !== "string" || !signupToken) {
-        throw new Error("The signup was saved, but its verification session could not be confirmed. Please try signing in or contact support.");
+      if (result.deliveryStatus !== "sent") {
+        throw Object.assign(new Error("The verification email was not confirmed as sent."), {
+          response: { data: result, status: response.status },
+        });
       }
 
       const session = {
-        email: result.email || formData.email.trim().toLowerCase(),
-        signupToken,
+        ...provisionalSession,
+        email: result.email || email,
         resendAvailableAt: Date.now() + (Number(result.resendAfterSeconds) || 60) * 1_000,
-        deliveryStatus: result.deliveryStatus || "queued",
+        deliveryStatus: "sent",
       };
       saveVerificationSession(session);
       setPendingVerification(session);
-      setSignupPhase("sending");
-      const outcome = await pollEmailStatus(signupToken);
-      await continueAfterDelivery(session, outcome);
+      canRetrySignupRef.current = false;
+      setResendSeconds(Number(result.resendAfterSeconds) || 60);
+      await continueAfterDelivery(session);
     } catch (error) {
       if (!mountedRef.current) return;
       console.warn("Signup request failed:", {
         status: error.response?.status || null,
         requestId: error.response?.headers?.["x-request-id"] || null,
       });
-      setSignupPhase("error");
-      setWarning(error.response?.data?.message || error.message || "Something went wrong. Please try again.");
+      const responseData = error.response?.data || {};
+      const hasSession =
+        error.response?.status >= 500 ||
+        !error.response ||
+        Boolean(responseData.signupToken);
+      if (hasSession) {
+        const retryAfterSeconds = Math.max(0, Number(responseData.resendAfterSeconds || responseData.retryAfterSeconds) || 60);
+        const session = {
+          ...provisionalSession,
+          email: responseData.email || email,
+          signupToken: responseData.signupToken || signupToken,
+          resendAvailableAt: Date.now() + retryAfterSeconds * 1_000,
+          deliveryStatus: responseData.deliveryStatus || "failed",
+        };
+        activeSignupTokenRef.current = session.signupToken;
+        saveVerificationSession(session);
+        setPendingVerification(session);
+        setResendSeconds(retryAfterSeconds);
+        canRetrySignupRef.current = error.response?.status !== 502;
+        setSignupPhase(error.response?.status === 502 ? "failed" : "timeout");
+      } else {
+        try { sessionStorage.removeItem(SIGNUP_SESSION_KEY); } catch { /* best effort */ }
+        setSignupPhase("error");
+      }
+      setWarning(responseData.message || error.message || "Something went wrong. Please try again.");
     } finally {
       submittingRef.current = false;
       if (mountedRef.current) setIsSubmitting(false);
@@ -222,29 +228,48 @@ function Signup() {
     setWarning("");
 
     try {
-      if (signupPhase === "timeout") {
-        setSignupPhase("sending");
-        const outcome = await pollEmailStatus(pendingVerification.signupToken);
-        await continueAfterDelivery(pendingVerification, outcome);
-        return;
-      }
-
       setSignupPhase("sending");
-      const response = await resendOTP({ signupToken: pendingVerification.signupToken });
+      const response = canRetrySignupRef.current
+        ? await signUp(makeSignupData(submittedFormRef.current || formData, pendingVerification.signupToken))
+        : await resendOTP({ signupToken: pendingVerification.signupToken });
+      if (response.data?.deliveryStatus !== "sent") {
+        throw Object.assign(new Error("The verification email was not confirmed as sent."), {
+          response: { data: response.data || {}, status: response.status },
+        });
+      }
       const nextSession = {
         ...pendingVerification,
         resendAvailableAt: Date.now() + (Number(response.data?.resendAfterSeconds) || 60) * 1_000,
-        deliveryStatus: response.data?.deliveryStatus || "queued",
+        deliveryStatus: "sent",
       };
       saveVerificationSession(nextSession);
       setPendingVerification(nextSession);
-      const outcome = await pollEmailStatus(nextSession.signupToken);
-      await continueAfterDelivery(nextSession, outcome);
+      canRetrySignupRef.current = false;
+      setResendSeconds(Number(response.data?.resendAfterSeconds) || 60);
+      await continueAfterDelivery(nextSession);
     } catch (error) {
       if (!mountedRef.current) return;
+      if (error.response?.status === 404) {
+        canRetrySignupRef.current = true;
+        setPendingVerification(null);
+        try { sessionStorage.removeItem(SIGNUP_SESSION_KEY); } catch { /* best effort */ }
+        setSignupPhase("error");
+        setWarning("The pending signup was not found. Review your details and submit again to create a verification session.");
+        return;
+      }
       const retrySeconds = Number(error.response?.data?.retryAfterSeconds);
-      if (retrySeconds > 0) setResendSeconds(retrySeconds);
-      setSignupPhase("failed");
+      const waitSeconds = retrySeconds || Number(error.response?.data?.resendAfterSeconds);
+      if (waitSeconds > 0) {
+        setResendSeconds(waitSeconds);
+        const nextSession = {
+          ...pendingVerification,
+          resendAvailableAt: Date.now() + waitSeconds * 1_000,
+          deliveryStatus: "failed",
+        };
+        setPendingVerification(nextSession);
+        saveVerificationSession(nextSession);
+      }
+      setSignupPhase(error.response?.status === 502 ? "failed" : "timeout");
       setWarning(error.response?.data?.message || "Could not request another verification email.");
     } finally {
       submittingRef.current = false;
@@ -255,18 +280,18 @@ function Signup() {
   const phaseMessages = {
     signing: "Signing up...",
     validating: "Validating information...",
-    creating: "Creating registration...",
-    sending: "Sending verification email...",
+    creating: "Creating your account...",
+    sending: "Sending verification code to your email...",
     sent: "OTP sent successfully!",
     failed: "Verification email delivery failed.",
-    timeout: "Still waiting for email confirmation.",
+    timeout: "The signup request needs to be retried.",
     unavailable: "Verification session unavailable.",
     error: "Signup could not be confirmed.",
   };
-  const statusActionLabel = signupPhase === "timeout"
-    ? "Check email status"
-    : resendSeconds > 0
-      ? `Resend available in ${resendSeconds}s`
+  const statusActionLabel = resendSeconds > 0
+    ? `Retry available in ${resendSeconds}s`
+    : canRetrySignupRef.current
+      ? "Retry signup and email"
       : "Resend verification email";
 
   return (
@@ -289,7 +314,7 @@ function Signup() {
           signupStatus={phaseMessages[signupPhase] || ""}
           signupStatusTone={signupPhase}
           statusActionLabel={statusActionLabel}
-          statusActionDisabled={isSubmitting || (resendSeconds > 0 && signupPhase !== "timeout")}
+          statusActionDisabled={isSubmitting || resendSeconds > 0}
           onStatusAction={handleVerificationAction}
           showStatusAction={Boolean(pendingVerification) && ["failed", "timeout"].includes(signupPhase)}
           Eye={Eye}

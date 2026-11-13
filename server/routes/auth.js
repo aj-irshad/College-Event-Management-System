@@ -8,7 +8,6 @@ import {
   getCurrentUser,
   requestPasswordReset,
   completePasswordReset,
-  getOtpDeliveryStatus,
   resendOTP,
 } from "../controller/auth.js";
 
@@ -56,7 +55,6 @@ authRouter.get("/me", authMiddleware, getCurrentUser);
 authRouter.post("/signup", signupRequestTiming, timedSignupUpload, userSignUp);
 authRouter.post("/verify-otp", signupRequestTiming, verifyOTP);
 authRouter.post("/resend-otp", signupRequestTiming, resendOTP);
-authRouter.post("/otp-status", signupRequestTiming, getOtpDeliveryStatus);
 authRouter.post("/login", userLogin);
 authRouter.post("/logout", logout);
 authRouter.post("/forgot-password", limitPasswordResetRequests, requestPasswordReset);

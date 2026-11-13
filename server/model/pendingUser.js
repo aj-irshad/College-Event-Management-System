@@ -82,8 +82,14 @@ const pendingUserSchema = new mongoose.Schema(
     signupTokenRotatedAt: Date,
     registrationExpiresAt: Date,
     resendAvailableAt: Date,
+    emailStatus: { type: String, enum: ["sending", "sent", "failed"] },
+    emailSentAt: Date,
+    emailLastErrorCode: String,
+    emailSendClaimId: String,
+    emailSendClaimExpiresAt: Date,
     verificationClaimId: String,
     verificationClaimExpiresAt: Date,
+    // Retained to read existing queue-backed pending records during transition.
     emailDelivery: otpEmailDeliverySchema,
   },
   {
@@ -91,14 +97,6 @@ const pendingUserSchema = new mongoose.Schema(
   },
 );
 
-pendingUserSchema.index(
-  {
-    "emailDelivery.status": 1,
-    "emailDelivery.nextAttemptAt": 1,
-    "emailDelivery.lockedUntil": 1,
-  },
-  { name: "pending_otp_email_queue" },
-);
 pendingUserSchema.index(
   { registrationExpiresAt: 1, verificationClaimExpiresAt: 1 },
   { name: "pending_signup_expiry" },

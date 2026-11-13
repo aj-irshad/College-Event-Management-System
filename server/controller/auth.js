@@ -9,14 +9,13 @@ import {
 } from "../utils/cloudinary.js";
 import { setUser } from "../services/auth.js";
 import { createHashPassword, compareHashPassword } from "../services/bcrypt.js";
-import { sendPasswordResetEmail } from "../utils/otpSender.js";
+import sendOTP, { sendPasswordResetEmail } from "../utils/otpSender.js";
 import { EVENT_DEPARTMENTS, EVENT_SEMESTERS } from "../utils/eventTargeting.js";
 import {
   createSignupToken,
-  encryptOtp,
   hashOtp,
   hashSignupToken,
-  otpEncryptionConfigured,
+  otpHashingConfigured,
   verifyOtpHash,
 } from "../utils/otpCrypto.js";
 import { removePendingProfileImageIfUnused } from "../utils/pendingProfileImageCleanup.js";
@@ -27,10 +26,10 @@ const PASSWORD_RESET_NEUTRAL_MESSAGE =
   "If an account exists with this email address, password reset instructions will be sent.";
 const PENDING_SIGNUP_LIFETIME_MS = 24 * 60 * 60_000;
 const OTP_RESEND_COOLDOWN_MS = 60_000;
-const SIGNUP_TOKEN_ROTATION_COOLDOWN_MS = 60_000;
+const OTP_LIFETIME_MS = 2 * 60_000;
 const MAX_OTP_ATTEMPTS = 5;
 const MAX_OTP_RESENDS = 5;
-const EMAIL_JOB_MAX_ATTEMPTS = 5;
+const EMAIL_SEND_CLAIM_MS = 60_000;
 const getAuthCookieOptions = () => {
   const isProduction = process.env.NODE_ENV === "production";
   return {
@@ -219,17 +218,9 @@ const userLogin = async (req, res) => {
   }
 };
 
-const createOtpEmailJob = (otp, now = new Date()) => ({
-  jobId: randomUUID(),
-  status: "queued",
-  ...encryptOtp(otp),
-  attempts: 0,
-  maxAttempts: EMAIL_JOB_MAX_ATTEMPTS,
-  nextAttemptAt: now,
-  queuedAt: now,
-});
-
 const pendingDeliveryStatus = (pendingUser) => {
+  if (pendingUser.emailStatus) return pendingUser.emailStatus;
+  // Legacy queue-backed records remain readable; new requests use emailStatus.
   if (pendingUser.emailDelivery?.status) return pendingUser.emailDelivery.status;
   return pendingUser.otp ? "sent" : "queued";
 };
@@ -238,14 +229,149 @@ const registrationExpiry = (pendingUser) =>
   pendingUser.registrationExpiresAt ||
   new Date(new Date(pendingUser.createdAt || Date.now()).getTime() + PENDING_SIGNUP_LIFETIME_MS);
 
-const deliveryStatusResponse = (pendingUser, now = new Date()) => ({
-  status: pendingDeliveryStatus(pendingUser),
-  resendAfterSeconds: Math.max(
-    0,
-    Math.ceil(((pendingUser.resendAvailableAt?.getTime?.() || 0) - now.getTime()) / 1000),
-  ),
-  otpExpiresAt: pendingUser.otpExpires || null,
-});
+const makeOtpCredentials = () => {
+  const otp = randomInt(1000, 10_000).toString();
+  const otpSalt = randomBytes(16).toString("hex");
+  return { otp, otpSalt, otpHash: hashOtp(otp, otpSalt) };
+};
+
+const sendOtpForPendingUser = async ({
+  pendingUserId,
+  identityFilter,
+  signupToken,
+  countAsResend,
+  attachSignupToken = false,
+}) => {
+  const now = new Date();
+  const claimId = randomUUID();
+  const credentials = makeOtpCredentials();
+  const claimFilter = {
+    _id: pendingUserId,
+    ...identityFilter,
+    $or: [
+      { registrationExpiresAt: { $gt: now } },
+      {
+        registrationExpiresAt: { $exists: false },
+        createdAt: { $gt: new Date(now.getTime() - PENDING_SIGNUP_LIFETIME_MS) },
+      },
+    ],
+    $and: [
+      {
+        $or: [
+          { emailSendClaimExpiresAt: { $exists: false } },
+          { emailSendClaimExpiresAt: { $lte: now } },
+        ],
+      },
+      {
+        $or: [
+          { resendAvailableAt: { $exists: false } },
+          { resendAvailableAt: { $lte: now } },
+        ],
+      },
+      ...(countAsResend
+        ? [{ $or: [{ otpResendCount: { $lt: MAX_OTP_RESENDS } }, { otpResendCount: { $exists: false } }] }]
+        : []),
+      {
+        $or: [
+          { verificationClaimExpiresAt: { $exists: false } },
+          { verificationClaimExpiresAt: { $lte: now } },
+        ],
+      },
+    ],
+  };
+  const update = {
+    $set: {
+      otpHash: credentials.otpHash,
+      otpSalt: credentials.otpSalt,
+      otpExpires: null,
+      emailStatus: "sending",
+      emailSendClaimId: claimId,
+      emailSendClaimExpiresAt: new Date(now.getTime() + EMAIL_SEND_CLAIM_MS),
+      resendAvailableAt: new Date(now.getTime() + OTP_RESEND_COOLDOWN_MS),
+      otpAttempts: 0,
+      ...(attachSignupToken ? { signupTokenHash: hashSignupToken(signupToken) } : {}),
+    },
+    $unset: {
+      otp: 1,
+      emailDelivery: 1,
+      emailLastErrorCode: 1,
+      verificationClaimId: 1,
+      verificationClaimExpiresAt: 1,
+    },
+  };
+  if (countAsResend) update.$inc = { otpResendCount: 1 };
+
+  const claimed = await PendingUser.findOneAndUpdate(
+    claimFilter,
+    update,
+    { returnDocument: "after", runValidators: true },
+  ).lean();
+
+  if (!claimed) {
+    const current = await PendingUser.findOne({ _id: pendingUserId, ...identityFilter })
+      .select("emailStatus resendAvailableAt emailSendClaimExpiresAt otpResendCount")
+      .lean();
+    if (!current) return { type: "missing" };
+    if (current.otpResendCount >= MAX_OTP_RESENDS && countAsResend) {
+      return { type: "limit" };
+    }
+    const retryAfterSeconds = Math.max(
+      1,
+      Math.ceil(((current.emailSendClaimExpiresAt || current.resendAvailableAt || now) - now) / 1000),
+    );
+    return { type: "busy", retryAfterSeconds };
+  }
+
+  try {
+    await sendOTP(claimed.email, credentials.otp);
+  } catch (error) {
+    const safeCode = /^[A-Za-z0-9_-]{1,48}$/.test(error?.code || "")
+      ? error.code
+      : "EMAIL_DELIVERY_ERROR";
+    try {
+      await PendingUser.updateOne(
+        { _id: claimed._id, emailSendClaimId: claimId },
+        {
+          $set: { emailStatus: "failed", emailLastErrorCode: safeCode, otpExpires: null },
+          $unset: { emailSendClaimId: 1, emailSendClaimExpiresAt: 1 },
+        },
+      );
+    } catch (updateError) {
+      console.error("Could not record OTP email delivery failure:", {
+        name: updateError.name || "Error",
+        code: updateError.code || null,
+      });
+    }
+    console.warn("Synchronous OTP email delivery failed:", {
+      code: safeCode,
+      responseCode: Number(error?.responseCode) || null,
+    });
+    return { type: "failed", retryAfterSeconds: OTP_RESEND_COOLDOWN_MS / 1000 };
+  }
+
+  const sentAt = new Date();
+  const persisted = await PendingUser.updateOne(
+    { _id: claimed._id, emailSendClaimId: claimId },
+    {
+      $set: {
+        emailStatus: "sent",
+        emailSentAt: sentAt,
+        emailLastErrorCode: null,
+        otpExpires: new Date(sentAt.getTime() + OTP_LIFETIME_MS),
+        registrationExpiresAt: new Date(Math.max(
+          registrationExpiry(claimed).getTime(),
+          sentAt.getTime() + OTP_LIFETIME_MS,
+        )),
+        resendAvailableAt: new Date(sentAt.getTime() + OTP_RESEND_COOLDOWN_MS),
+      },
+      $unset: { emailSendClaimId: 1, emailSendClaimExpiresAt: 1 },
+    },
+  );
+  if (!persisted.matchedCount) {
+    throw new Error("OTP was accepted by SMTP but its pending registration could not be confirmed");
+  }
+  return { type: "sent", sentAt, signupToken };
+};
 
 const userSignUp = async (req, res) => {
   const signupStartedAt = Date.now();
@@ -254,19 +380,25 @@ const userSignUp = async (req, res) => {
   let uploadedImage = null;
   let pendingUserSaved = false;
   let pendingUserWriteAttempted = false;
+  let signupToken = "";
+  let email = "";
 
   try {
     const validationStartedAt = Date.now();
     const { name, password, contact, department, semester } = req.body || {};
-    const email = typeof req.body?.email === "string"
+    email = typeof req.body?.email === "string"
       ? req.body.email.trim().toLowerCase()
       : "";
+    signupToken = typeof req.body?.signupToken === "string" ? req.body.signupToken : createSignupToken();
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "All required fields must be provided." });
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ message: "Enter a valid email address." });
+    }
+    if (typeof signupToken !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(signupToken)) {
+      return res.status(400).json({ message: "Signup verification session is invalid." });
     }
     if (!EVENT_SEMESTERS.includes(semester)) {
       return res.status(400).json({ message: "Select a valid semester." });
@@ -281,10 +413,12 @@ const userSignUp = async (req, res) => {
       return res.status(429).json({
         message: "Too many signup attempts for this address. Please try again later.",
         retryAfterSeconds: signupRetryAfter,
+        signupToken,
+        email,
       });
     }
 
-    if (!otpEncryptionConfigured()) {
+    if (!otpHashingConfigured()) {
       return res.status(503).json({
         message: "Email verification is temporarily unavailable. Please try again later.",
       });
@@ -297,57 +431,105 @@ const userSignUp = async (req, res) => {
       return res.status(400).json({ message: "User already exists. Please login." });
     }
 
+    const tokenHash = hashSignupToken(signupToken);
     stageStartedAt = Date.now();
-    const previousPendingUser = await PendingUser.findOne({ email }).lean();
+    let pendingUser = await PendingUser.findOne({ email }).lean();
     timings.pendingUserLookupMs = Date.now() - stageStartedAt;
     const now = new Date();
-    if (previousPendingUser && registrationExpiry(previousPendingUser) > now) {
-      const signupToken = createSignupToken();
-      const rotatedToken = await PendingUser.findOneAndUpdate(
-        {
-          _id: previousPendingUser._id,
-          $or: [
-            { signupTokenRotatedAt: { $exists: false } },
-            { signupTokenRotatedAt: { $lte: new Date(now.getTime() - SIGNUP_TOKEN_ROTATION_COOLDOWN_MS) } },
-          ],
-        },
-        {
-          $set: {
-            signupTokenHash: hashSignupToken(signupToken),
-            signupTokenRotatedAt: now,
-          },
-        },
-        { returnDocument: "after" },
-      ).lean();
-
-      if (!rotatedToken) {
-        const retryAfterSeconds = Math.max(
-          1,
-          Math.ceil(
-            (previousPendingUser.signupTokenRotatedAt.getTime() +
-              SIGNUP_TOKEN_ROTATION_COOLDOWN_MS -
-              now.getTime()) / 1000,
-          ),
-        );
-        return res.status(429).json({
-          message: "A signup is already pending. Continue from the verification page or try again shortly.",
-          retryAfterSeconds,
+    if (
+      pendingUser &&
+      (registrationExpiry(pendingUser) > now ||
+        (pendingUser.otpExpires && new Date(pendingUser.otpExpires) > now) ||
+        pendingUser.emailSendClaimExpiresAt > now)
+    ) {
+      if (pendingUser.signupTokenHash !== tokenHash) {
+        return res.status(409).json({
+          message: "A signup is already pending for this email. Continue with its verification session.",
         });
       }
 
-      return res.status(202).json({
-        message: "A signup is already pending. Continue verification or request a new code.",
+      if (pendingUser.otpExpires && new Date(pendingUser.otpExpires) > now) {
+        return res.status(200).json({
+          message: "Verification email already sent.",
+          email,
+          signupToken,
+          deliveryStatus: "sent",
+          resendAfterSeconds: Math.max(0, Math.ceil(((pendingUser.resendAvailableAt || now) - now) / 1000)),
+        });
+      }
+
+      if (registrationExpiry(pendingUser) <= now) {
+        return res.status(410).json({
+          message: "This signup request expired. Please start signup again.",
+          email,
+          signupToken,
+        });
+      }
+
+      if (pendingUser.emailSendClaimExpiresAt > now) {
+        return res.status(409).json({
+          message: "The verification email is currently being sent. Please try again shortly.",
+          email,
+          signupToken,
+          deliveryStatus: "sending",
+          resendAfterSeconds: Math.max(1, Math.ceil((pendingUser.emailSendClaimExpiresAt - now) / 1000)),
+        });
+      }
+
+      if (pendingUser.otpResendCount >= MAX_OTP_RESENDS) {
+        return res.status(429).json({
+          message: "The resend limit was reached. Please start signup again after this registration expires.",
+          email,
+          signupToken,
+        });
+      }
+      if (pendingUser.resendAvailableAt > now) {
+        return res.status(429).json({
+          message: "Please wait before requesting another verification code.",
+          email,
+          signupToken,
+          retryAfterSeconds: Math.ceil((pendingUser.resendAvailableAt - now) / 1000),
+        });
+      }
+
+      const result = await sendOtpForPendingUser({
+        pendingUserId: pendingUser._id,
+        identityFilter: { signupTokenHash: tokenHash },
+        signupToken,
+        countAsResend: true,
+      });
+      if (result.type === "sent") {
+        return res.status(200).json({
+          message: "Verification email sent successfully.",
+          email,
+          signupToken,
+          deliveryStatus: "sent",
+          resendAfterSeconds: Math.ceil(OTP_RESEND_COOLDOWN_MS / 1000),
+        });
+      }
+      if (result.type === "failed") {
+        return res.status(502).json({
+          message: "The verification email could not be sent. Please retry after the cooldown.",
+          email,
+          signupToken,
+          deliveryStatus: "failed",
+          resendAfterSeconds: result.retryAfterSeconds,
+        });
+      }
+      return res.status(result.type === "limit" ? 429 : 409).json({
+        message: result.type === "limit"
+          ? "The resend limit was reached. Please start signup again after this registration expires."
+          : "The verification email is currently being sent. Please try again shortly.",
         email,
         signupToken,
-        deliveryStatus: pendingDeliveryStatus(rotatedToken),
-        ...deliveryStatusResponse(rotatedToken, now),
+        retryAfterSeconds: result.retryAfterSeconds,
       });
     }
 
-    if (previousPendingUser) {
-      const removed = await PendingUser.deleteOne({ _id: previousPendingUser._id });
+    if (pendingUser) {
+      const removed = await PendingUser.deleteOne({ _id: pendingUser._id });
       if (removed.deletedCount) {
-        void removePendingProfileImageIfUnused(previousPendingUser).catch(() => {
+        void removePendingProfileImageIfUnused(pendingUser).catch(() => {
           console.error("Expired pending profile image cleanup failed");
         });
       }
@@ -358,15 +540,12 @@ const userSignUp = async (req, res) => {
       !process.env.CLOUDINARY_CLOUD_NAME &&
       !process.env.CLOUDINARY_API_KEY &&
       !process.env.CLOUDINARY_API_SECRET;
-
     if (req.file && localCloudinaryFallback) {
       uploadedImage = { url: req.file.filename, publicId: "", isLocal: true };
     } else if (req.file) {
       stageStartedAt = Date.now();
       try {
-        uploadedImage = await uploadToCloudinary(req.file.path, "profiles", {
-          timeout: 30_000,
-        });
+        uploadedImage = await uploadToCloudinary(req.file.path, "profiles", { timeout: 30_000 });
       } finally {
         timings.cloudinaryUploadMs = Date.now() - stageStartedAt;
       }
@@ -375,18 +554,11 @@ const userSignUp = async (req, res) => {
     stageStartedAt = Date.now();
     const hashedPassword = await createHashPassword(password);
     timings.passwordHashMs = Date.now() - stageStartedAt;
-
-    stageStartedAt = Date.now();
-    const otp = randomInt(1000, 10_000).toString();
-    const otpSalt = randomBytes(16).toString("hex");
-    const otpHash = hashOtp(otp, otpSalt);
-    const signupToken = createSignupToken();
-    const emailDelivery = createOtpEmailJob(otp, now);
-    timings.otpGenerationAndProtectionMs = Date.now() - stageStartedAt;
+    const createdAt = new Date();
 
     stageStartedAt = Date.now();
     pendingUserWriteAttempted = true;
-    const savedPendingUser = await PendingUser.create({
+    pendingUser = await PendingUser.create({
       name,
       email,
       password: hashedPassword,
@@ -395,47 +567,53 @@ const userSignUp = async (req, res) => {
       semester,
       profileImage: uploadedImage?.url || "",
       profileImagePublicId: uploadedImage?.publicId || "",
-      otpHash,
-      otpSalt,
       otpAttempts: 0,
       otpResendCount: 0,
       otpExpires: null,
-      signupTokenHash: hashSignupToken(signupToken),
-      signupTokenRotatedAt: now,
-      registrationExpiresAt: new Date(now.getTime() + PENDING_SIGNUP_LIFETIME_MS),
-      resendAvailableAt: new Date(now.getTime() + OTP_RESEND_COOLDOWN_MS),
-      emailDelivery,
+      emailStatus: "failed",
+      signupTokenHash: tokenHash,
+      registrationExpiresAt: new Date(createdAt.getTime() + PENDING_SIGNUP_LIFETIME_MS),
+      resendAvailableAt: createdAt,
     });
-    pendingUserSaved = Boolean(savedPendingUser);
-    timings.queuePersistenceMs = Date.now() - stageStartedAt;
-    console.info("Signup pending record and OTP email job persisted:", {
-      requestId,
-      jobId: emailDelivery.jobId,
-      queuePersistenceMs: timings.queuePersistenceMs,
-    });
+    pendingUserSaved = Boolean(pendingUser);
+    timings.pendingRegistrationPersistenceMs = Date.now() - stageStartedAt;
 
-    return res.status(202).json({
-      message: "Signup saved. Your verification email has been queued, not delivered yet.",
+    stageStartedAt = Date.now();
+    const sendResult = await sendOtpForPendingUser({
+      pendingUserId: pendingUser._id,
+      identityFilter: { signupTokenHash: tokenHash },
+      signupToken,
+      countAsResend: false,
+    });
+    timings.smtpDeliveryMs = Date.now() - stageStartedAt;
+    if (sendResult.type !== "sent") {
+      const status = sendResult.type === "failed" ? 502 : 409;
+      return res.status(status).json({
+        message: sendResult.type === "failed"
+          ? "The registration is saved, but the verification email could not be sent. Please retry after the cooldown."
+          : "The registration is saved and the verification email is being processed. Please retry shortly.",
+        email,
+        signupToken,
+        deliveryStatus: sendResult.type === "failed" ? "failed" : "sending",
+        resendAfterSeconds: sendResult.retryAfterSeconds || Math.ceil(OTP_RESEND_COOLDOWN_MS / 1000),
+      });
+    }
+
+    return res.status(200).json({
+      message: "Signup saved and verification email sent successfully.",
       email,
       signupToken,
-      deliveryStatus: "queued",
+      deliveryStatus: "sent",
       resendAfterSeconds: Math.ceil(OTP_RESEND_COOLDOWN_MS / 1000),
     });
   } catch (error) {
     if (!pendingUserSaved && uploadedImage?.url) {
       const writeDefinitelyDidNotCommit =
-        !pendingUserWriteAttempted ||
-        error.code === 11000 ||
-        error.name === "ValidationError";
+        !pendingUserWriteAttempted || error.code === 11000 || error.name === "ValidationError";
       await removePendingProfileImageIfUnused(
-        {
-          profileImage: uploadedImage.url,
-          profileImagePublicId: uploadedImage.publicId,
-        },
+        { profileImage: uploadedImage.url, profileImagePublicId: uploadedImage.publicId },
         { writeDefinitelyDidNotCommit },
-      ).catch(() => {
-        console.error("Could not safely clean up the signup profile image");
-      });
+      ).catch(() => console.error("Could not safely clean up the signup profile image"));
     }
 
     console.error("Signup request failed:", {
@@ -444,11 +622,40 @@ const userSignUp = async (req, res) => {
       code: error.code || null,
     });
     if (error.code === 11000) {
+      const duplicatePending = email
+        ? await PendingUser.findOne({ email }).lean().catch(() => null)
+        : null;
+      const now = new Date();
+      if (duplicatePending?.signupTokenHash === hashSignupToken(signupToken)) {
+        if (duplicatePending.otpExpires && new Date(duplicatePending.otpExpires) > now) {
+          return res.status(200).json({
+            message: "Verification email already sent.",
+            email,
+            signupToken,
+            deliveryStatus: "sent",
+            resendAfterSeconds: Math.max(0, Math.ceil(((duplicatePending.resendAvailableAt || now) - now) / 1000)),
+          });
+        }
+        const retryAt = Math.max(
+          duplicatePending.emailSendClaimExpiresAt?.getTime?.() || 0,
+          duplicatePending.resendAvailableAt?.getTime?.() || 0,
+        );
+        return res.status(409).json({
+          message: "The signup request is already being processed. Retry this same verification session shortly.",
+          email,
+          signupToken,
+          deliveryStatus: duplicatePending.emailSendClaimExpiresAt > now ? "sending" : "failed",
+          retryAfterSeconds: Math.max(1, Math.ceil((retryAt - now.getTime()) / 1000)),
+        });
+      }
       return res.status(409).json({
-        message: "A signup is already pending for this email. Continue from the verification page.",
+        message: "A signup is already pending for this email. Continue from its verification session.",
       });
     }
-    return res.status(500).json({ message: "Signup could not be saved. Please try again." });
+    return res.status(500).json({
+      message: "Signup could not be confirmed. Retry with the same verification session.",
+      ...(signupToken ? { signupToken, email } : {}),
+    });
   } finally {
     if (req.file?.path && !uploadedImage?.isLocal) {
       const cleanupStartedAt = Date.now();
@@ -463,31 +670,6 @@ const userSignUp = async (req, res) => {
   }
 };
 
-const getOtpDeliveryStatus = async (req, res) => {
-  const signupToken = req.body?.signupToken;
-  if (typeof signupToken !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(signupToken)) {
-    return res.status(400).json({ message: "Signup verification session is invalid." });
-  }
-
-  try {
-    const pendingUser = await PendingUser.findOne({
-      signupTokenHash: hashSignupToken(signupToken),
-    }).lean();
-    if (!pendingUser) return res.status(404).json({ message: "Signup request not found." });
-    if (registrationExpiry(pendingUser) <= new Date()) {
-      return res.status(410).json({ message: "Signup request expired. Please sign up again." });
-    }
-
-    return res.status(200).json({
-      message: "Email status retrieved.",
-      ...deliveryStatusResponse(pendingUser),
-    });
-  } catch (error) {
-    console.error("OTP delivery status lookup failed:", { code: error.code || null });
-    return res.status(500).json({ message: "Could not retrieve email status." });
-  }
-};
-
 const resendOTP = async (req, res) => {
   const signupToken = req.body?.signupToken;
   const legacyEmail = typeof req.body?.email === "string"
@@ -497,15 +679,15 @@ const resendOTP = async (req, res) => {
   if (!tokenValid && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(legacyEmail)) {
     return res.status(400).json({ message: "Signup verification session is invalid." });
   }
-  if (!otpEncryptionConfigured()) {
+  if (!otpHashingConfigured()) {
     return res.status(503).json({ message: "Email verification is temporarily unavailable." });
   }
 
   try {
-    const lookup = tokenValid
+    const identityFilter = tokenValid
       ? { signupTokenHash: hashSignupToken(signupToken) }
       : { email: legacyEmail, signupTokenHash: { $exists: false } };
-    const pendingUser = await PendingUser.findOne(lookup).lean();
+    const pendingUser = await PendingUser.findOne(identityFilter).lean();
     if (!pendingUser) return res.status(404).json({ message: "Signup request not found." });
 
     const now = new Date();
@@ -524,101 +706,48 @@ const resendOTP = async (req, res) => {
     if (pendingUser.verificationClaimExpiresAt > now) {
       return res.status(409).json({ message: "Verification is already being completed." });
     }
-    if (
-      pendingUser.emailDelivery?.status === "processing" &&
-      pendingUser.emailDelivery.lockedUntil > now
-    ) {
+    if (pendingUser.emailSendClaimExpiresAt > now) {
       return res.status(409).json({ message: "The verification email is currently being sent." });
     }
 
-    const otp = randomInt(1000, 10_000).toString();
-    const otpSalt = randomBytes(16).toString("hex");
-    const otpHash = hashOtp(otp, otpSalt);
-    const emailDelivery = createOtpEmailJob(otp, now);
     const newSignupToken = tokenValid ? signupToken : createSignupToken();
-    const identityFilter = tokenValid
-      ? { signupTokenHash: hashSignupToken(signupToken) }
-      : { email: legacyEmail, signupTokenHash: { $exists: false } };
-    const updatedPending = await PendingUser.findOneAndUpdate(
-      {
-        _id: pendingUser._id,
-        ...identityFilter,
-        $and: [
-          {
-            $or: [
-              { registrationExpiresAt: { $gt: now } },
-              {
-                registrationExpiresAt: { $exists: false },
-                createdAt: { $gt: new Date(now.getTime() - PENDING_SIGNUP_LIFETIME_MS) },
-              },
-            ],
-          },
-          {
-            $or: [
-              { otpResendCount: { $lt: MAX_OTP_RESENDS } },
-              { otpResendCount: { $exists: false } },
-            ],
-          },
-          {
-            $or: [
-              { resendAvailableAt: { $exists: false } },
-              { resendAvailableAt: { $lte: now } },
-            ],
-          },
-          {
-            $or: [
-              { verificationClaimExpiresAt: { $exists: false } },
-              { verificationClaimExpiresAt: { $lte: now } },
-            ],
-          },
-          {
-            $or: [
-              { "emailDelivery.status": { $ne: "processing" } },
-              { "emailDelivery.lockedUntil": { $exists: false } },
-              { "emailDelivery.lockedUntil": { $lte: now } },
-            ],
-          },
-        ],
-      },
-      {
-        $set: {
-          otpHash,
-          otpSalt,
-          otpAttempts: 0,
-          otpExpires: null,
-          resendAvailableAt: new Date(now.getTime() + OTP_RESEND_COOLDOWN_MS),
-          signupTokenHash: hashSignupToken(newSignupToken),
-          emailDelivery,
-        },
-        $inc: { otpResendCount: 1 },
-        $unset: { otp: 1, verificationClaimId: 1, verificationClaimExpiresAt: 1 },
-      },
-      { returnDocument: "after", runValidators: true },
-    ).lean();
-
-    if (!updatedPending) {
-      const current = await PendingUser.findOne(lookup)
-        .select("resendAvailableAt")
-        .lean();
-      const retryAfterSeconds = Math.max(
-        1,
-        Math.ceil(((current?.resendAvailableAt?.getTime?.() || now.getTime()) - now.getTime()) / 1000),
-      );
-      return res.status(429).json({
-        message: "Please wait before requesting another verification code.",
-        retryAfterSeconds,
+    const result = await sendOtpForPendingUser({
+      pendingUserId: pendingUser._id,
+      identityFilter,
+      signupToken: newSignupToken,
+      countAsResend: true,
+      attachSignupToken: !tokenValid,
+    });
+    if (result.type === "sent") {
+      return res.status(200).json({
+        message: "Verification email sent successfully.",
+        deliveryStatus: "sent",
+        signupToken: newSignupToken,
+        resendAfterSeconds: Math.ceil(OTP_RESEND_COOLDOWN_MS / 1000),
       });
     }
+    if (result.type === "failed") {
+      return res.status(502).json({
+        message: "The verification email could not be sent. Please retry after the cooldown.",
+        deliveryStatus: "failed",
+        signupToken: newSignupToken,
+        resendAfterSeconds: result.retryAfterSeconds,
+      });
+    }
+    if (result.type === "missing") {
+      return res.status(404).json({ message: "Signup request not found." });
+    }
+    if (result.type === "limit") {
+      return res.status(429).json({ message: "The resend limit was reached. Please start signup again." });
+    }
 
-    return res.status(202).json({
-      message: "A new verification email has been queued, not delivered yet.",
-      deliveryStatus: "queued",
-      signupToken: newSignupToken,
-      resendAfterSeconds: Math.ceil(OTP_RESEND_COOLDOWN_MS / 1000),
+    return res.status(429).json({
+      message: "Please wait before requesting another verification code.",
+      retryAfterSeconds: result.retryAfterSeconds,
     });
   } catch (error) {
     console.error("OTP resend request failed:", { code: error.code || null });
-    return res.status(500).json({ message: "Could not queue a new verification email." });
+    return res.status(500).json({ message: "Could not send a new verification email." });
   }
 };
 
@@ -653,14 +782,15 @@ const verifyOTP = async (req, res) => {
     if (!pendingUser) return res.status(404).json({ message: "Signup request not found." });
 
     const now = new Date();
-    if (registrationExpiry(pendingUser) <= now) {
+    if (registrationExpiry(pendingUser) <= now &&
+      (!pendingUser.otpExpires || new Date(pendingUser.otpExpires) <= now)) {
       return res.status(410).json({ message: "Signup request expired. Please sign up again." });
     }
     if (pendingUser.otpAttempts >= MAX_OTP_ATTEMPTS) {
       return res.status(429).json({ message: "Too many incorrect codes. Request a new code to continue." });
     }
     const deliveryStatus = pendingDeliveryStatus(pendingUser);
-    if (deliveryStatus === "queued" || deliveryStatus === "processing") {
+    if (deliveryStatus === "sending" || deliveryStatus === "queued" || deliveryStatus === "processing") {
       return res.status(409).json({ message: "Your verification email is still being sent. Please wait." });
     }
     if (deliveryStatus === "failed") {
@@ -683,9 +813,16 @@ const verifyOTP = async (req, res) => {
     const otpIdentity = pendingUser.otpHash
       ? { otpHash: pendingUser.otpHash }
       : { otp: pendingUser.otp };
-    const registrationFilter = pendingUser.registrationExpiresAt
-      ? { registrationExpiresAt: { $gt: now } }
-      : { createdAt: { $gt: new Date(now.getTime() - PENDING_SIGNUP_LIFETIME_MS) } };
+    const registrationFilter = {
+      $or: [
+        { registrationExpiresAt: { $gt: now } },
+        { otpExpires: { $gt: now } },
+        {
+          registrationExpiresAt: { $exists: false },
+          createdAt: { $gt: new Date(now.getTime() - PENDING_SIGNUP_LIFETIME_MS) },
+        },
+      ],
+    };
     if (!codeMatches) {
       const attempt = await PendingUser.findOneAndUpdate(
         {
@@ -857,6 +994,5 @@ export {
   resetPassword,
   requestPasswordReset,
   completePasswordReset,
-  getOtpDeliveryStatus,
   resendOTP,
 };

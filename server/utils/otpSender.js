@@ -6,10 +6,10 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   service: "gmail",
   // Keep signup requests from waiting on Nodemailer's long SMTP defaults.
-  dnsTimeout: 10_000,
-  connectionTimeout: 15_000,
+  dnsTimeout: 5_000,
+  connectionTimeout: 10_000,
   greetingTimeout: 10_000,
-  socketTimeout: 30_000,
+  socketTimeout: 20_000,
   auth: {
     user: process.env.NODEMAILER_EMAIL,
     pass: process.env.NODEMAILER_PASS,

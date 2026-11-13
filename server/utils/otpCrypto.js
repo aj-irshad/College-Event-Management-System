@@ -1,17 +1,9 @@
-import {
-  createCipheriv,
-  createDecipheriv,
-  createHash,
-  createHmac,
-  hkdfSync,
-  randomBytes,
-  timingSafeEqual,
-} from "crypto";
+import { createHash, createHmac, hkdfSync, randomBytes, timingSafeEqual } from "crypto";
 
-let cachedKeys;
+let cachedHashingKey;
 
-const getKeys = () => {
-  if (cachedKeys) return cachedKeys;
+const getHashingKey = () => {
+  if (cachedHashingKey) return cachedHashingKey;
 
   let sourceKey;
   const configuredKey = process.env.OTP_ENCRYPTION_KEY;
@@ -28,20 +20,15 @@ const getKeys = () => {
     throw new Error("OTP_ENCRYPTION_KEY is not configured");
   }
 
-  cachedKeys = {
-    encryption: Buffer.from(
-      hkdfSync("sha256", sourceKey, "ems-otp-v1", "outbox-encryption", 32),
-    ),
-    hashing: Buffer.from(
-      hkdfSync("sha256", sourceKey, "ems-otp-v1", "otp-verification-hash", 32),
-    ),
-  };
-  return cachedKeys;
+  cachedHashingKey = Buffer.from(
+    hkdfSync("sha256", sourceKey, "ems-otp-v1", "otp-verification-hash", 32),
+  );
+  return cachedHashingKey;
 };
 
-export const otpEncryptionConfigured = () => {
+export const otpHashingConfigured = () => {
   try {
-    getKeys();
+    getHashingKey();
     return true;
   } catch {
     return false;
@@ -49,7 +36,7 @@ export const otpEncryptionConfigured = () => {
 };
 
 export const hashOtp = (otp, salt) =>
-  createHmac("sha256", getKeys().hashing)
+  createHmac("sha256", getHashingKey())
     .update(`${salt}:${otp}`)
     .digest("hex");
 
@@ -64,30 +51,3 @@ export const hashSignupToken = (token) =>
   createHash("sha256").update(token).digest("hex");
 
 export const createSignupToken = () => randomBytes(32).toString("base64url");
-
-export const encryptOtp = (otp) => {
-  const iv = randomBytes(12);
-  const cipher = createCipheriv("aes-256-gcm", getKeys().encryption, iv);
-  const ciphertext = Buffer.concat([
-    cipher.update(otp, "utf8"),
-    cipher.final(),
-  ]);
-  return {
-    encryptedOtp: ciphertext.toString("base64"),
-    otpIv: iv.toString("base64"),
-    otpAuthTag: cipher.getAuthTag().toString("base64"),
-  };
-};
-
-export const decryptOtp = ({ encryptedOtp, otpIv, otpAuthTag }) => {
-  const decipher = createDecipheriv(
-    "aes-256-gcm",
-    getKeys().encryption,
-    Buffer.from(otpIv, "base64"),
-  );
-  decipher.setAuthTag(Buffer.from(otpAuthTag, "base64"));
-  return Buffer.concat([
-    decipher.update(Buffer.from(encryptedOtp, "base64")),
-    decipher.final(),
-  ]).toString("utf8");
-};

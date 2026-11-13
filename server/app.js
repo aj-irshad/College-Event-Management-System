@@ -23,7 +23,10 @@ import pollRouter from "./routes/polls.js";
 import notificationRouter from "./routes/notification.js";
 import paymentRouter from "./routes/payments.js";
 import { getUploadDirectory } from "./utils/uploadPaths.js";
-import { startOtpEmailWorker, stopOtpEmailWorker } from "./services/otpEmailWorker.js";
+import {
+  startPendingSignupCleanup,
+  stopPendingSignupCleanup,
+} from "./services/pendingSignupCleanup.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -51,7 +54,7 @@ connection().then(() => {
   startExpiryReminderJob();
   startPollExpiryJob();
   startFeedbackPublicationJob();
-  startOtpEmailWorker();
+  startPendingSignupCleanup();
 });
 
 const eventUploadDirectory = getUploadDirectory("events");
@@ -95,7 +98,7 @@ const shutdown = async (signal) => {
   forceExit.unref();
 
   try {
-    await stopOtpEmailWorker();
+    await stopPendingSignupCleanup();
     await new Promise((resolve) => io.close(resolve));
     await mongoose.disconnect();
     clearTimeout(forceExit);

@@ -33,11 +33,7 @@ const verifyOTP = async (otpData) => {
 };
 
 const resendOTP = async (signupData) => {
-  return apiRequest.post("/auth/resend-otp", signupData, { timeout: 15_000 });
-};
-
-const getOtpDeliveryStatus = async (signupData) => {
-  return apiRequest.post("/auth/otp-status", signupData, { timeout: 8_000 });
+  return apiRequest.post("/auth/resend-otp", signupData, { timeout: 60_000 });
 };
 
 export {
@@ -50,5 +46,4 @@ export {
   getUserProfile,
   verifyOTP,
   resendOTP,
-  getOtpDeliveryStatus,
 };

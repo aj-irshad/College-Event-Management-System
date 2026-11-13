@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  getOtpDeliveryStatus,
   resendOTP,
   verifyOTP,
 } from "../../../services/authService";
@@ -36,8 +35,10 @@ function VerifyOTP() {
   const [warning, setWarning] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [deliveryStatus, setDeliveryStatus] = useState(
-    session?.deliveryStatus || (signupToken ? "checking" : "sent"),
+  const [deliveryStatus, setDeliveryStatus] = useState(() =>
+    ["queued", "processing", "sending", "checking", "unknown"].includes(session?.deliveryStatus)
+      ? "failed"
+      : (session?.deliveryStatus || "sent"),
   );
   const [resendSeconds, setResendSeconds] = useState(() =>
     Math.max(0, Math.ceil(((session?.resendAvailableAt || 0) - Date.now()) / 1000)),
@@ -57,40 +58,6 @@ function VerifyOTP() {
       // The route state remains usable for this visit when session storage is unavailable.
     }
   }, [location.state, session]);
-
-  useEffect(() => {
-    if (!signupToken || !["queued", "processing", "checking", "unknown"].includes(deliveryStatus)) {
-      return undefined;
-    }
-    let active = true;
-    let timer;
-
-    const poll = async () => {
-      try {
-        const response = await getOtpDeliveryStatus({ signupToken });
-        if (!active) return;
-        const status = response.data?.status || "unknown";
-        setDeliveryStatus(status);
-        if (status === "queued" || status === "processing") {
-          timer = setTimeout(poll, 5_000);
-        }
-      } catch (error) {
-        if (!active) return;
-        if (error.response?.status === 410 || error.response?.status === 404) {
-          setDeliveryStatus("failed");
-          setWarning(error.response?.data?.message || "Signup verification is no longer available.");
-          return;
-        }
-        timer = setTimeout(poll, 10_000);
-      }
-    };
-
-    void poll();
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [signupToken, deliveryStatus]);
 
   useEffect(() => {
     if (!session?.resendAvailableAt) return undefined;
@@ -146,7 +113,7 @@ function VerifyOTP() {
         email,
         signupToken: nextToken,
         resendAvailableAt,
-        deliveryStatus: response.data?.deliveryStatus || "queued",
+        deliveryStatus: response.data?.deliveryStatus || "sent",
       };
       setSession(nextSession);
       setDeliveryStatus(nextSession.deliveryStatus);
@@ -156,10 +123,17 @@ function VerifyOTP() {
         // Current page state remains sufficient to continue verification.
       }
     } catch (error) {
-      const retrySeconds = Number(error.response?.data?.retryAfterSeconds);
+      const retrySeconds = Number(
+        error.response?.data?.retryAfterSeconds || error.response?.data?.resendAfterSeconds,
+      );
       if (retrySeconds > 0) {
-        const nextSession = { ...session, resendAvailableAt: Date.now() + retrySeconds * 1000 };
+        const nextSession = {
+          ...session,
+          resendAvailableAt: Date.now() + retrySeconds * 1000,
+          deliveryStatus: error.response?.status === 502 ? "failed" : deliveryStatus,
+        };
         setSession(nextSession);
+        setDeliveryStatus(nextSession.deliveryStatus);
         try {
           sessionStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
         } catch {
