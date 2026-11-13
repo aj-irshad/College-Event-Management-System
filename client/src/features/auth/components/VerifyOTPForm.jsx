@@ -5,21 +5,12 @@ function VerifyOTPForm({
   otp,
   setOtp,
   warning,
+  info,
   handleSubmit,
   isSubmitting,
-  deliveryStatus,
-  resendSeconds,
   isResending,
   handleResend,
 }) {
-  const deliveryMessage = {
-    checking: "Email status is unavailable. Request a new verification code.",
-    sending: "Email delivery was interrupted. Request a new verification code to continue.",
-    sent: "Verification email sent. Check your inbox and spam folder.",
-    failed: "Email delivery failed. You can request another verification email.",
-    unknown: "Email status is unavailable. Request a new verification code.",
-  }[deliveryStatus] || "Enter the verification code sent to your inbox.";
-
   return (
     <form className="verifyForm" onSubmit={handleSubmit}>
       <section className="heading">
@@ -29,8 +20,8 @@ function VerifyOTPForm({
         </p>
       </section>
 
-      <p className={`otpDeliveryStatus otpDeliveryStatus--${deliveryStatus}`} aria-live="polite">
-        {deliveryMessage}
+      <p className="otpDeliveryStatus" aria-live="polite">
+        Enter the 4-digit code sent to your inbox. If it expired, you can request another.
       </p>
 
       <section className="formGrp otpGroup">
@@ -41,20 +32,17 @@ function VerifyOTPForm({
           placeholder="● ● ● ●"
           maxLength={4}
           value={otp}
-          disabled={isSubmitting}
-          onChange={(e) => {
-            // Only allow numbers
-            const value = e.target.value.replace(/\D/g, "");
-            setOtp(value);
-          }}
+          disabled={isSubmitting || isResending}
+          onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
           required
         />
       </section>
 
       {warning && <p className="warning">* {warning}</p>}
+      {info && <p className="otpDeliveryStatus" role="status">{info}</p>}
 
       <section className="btnSection">
-        <button type="submit" className="verifyBtn" disabled={isSubmitting}>
+        <button type="submit" className="verifyBtn" disabled={isSubmitting || isResending}>
           {isSubmitting && <LoaderCircle className="verify-spinner" size={16} aria-hidden="true" />}
           {isSubmitting ? "Verifying..." : "Verify Account"}
         </button>
@@ -62,14 +50,10 @@ function VerifyOTPForm({
           type="button"
           className="resendOtpBtn"
           onClick={handleResend}
-          disabled={isResending || resendSeconds > 0}
+          disabled={isSubmitting || isResending}
         >
           {isResending && <LoaderCircle className="verify-spinner" size={16} aria-hidden="true" />}
-          {isResending
-            ? "Requesting..."
-            : resendSeconds > 0
-              ? `Resend code in ${resendSeconds}s`
-              : "Resend verification email"}
+          {isResending ? "Sending..." : "Resend verification email"}
         </button>
       </section>
     </form>

@@ -8,14 +8,8 @@ const SignupForm = ({
   handleChange,
   handleSubmit,
   isSubmitting,
-  submitDisabled = false,
-  submitLabel,
-  signupStatus,
-  signupStatusTone,
-  showStatusAction = false,
-  statusActionLabel,
-  statusActionDisabled = false,
-  onStatusAction,
+  pendingEmail = "",
+  onRetryEmail,
   Eye,
   EyeOff,
 }) => {
@@ -172,30 +166,24 @@ const SignupForm = ({
 
       {warning && <p className="warning">{warning}</p>}
 
-      {signupStatus && (
-        <p
-          className={`signupStatus signupStatus--${signupStatusTone || "info"}`}
-          role="status"
-          aria-live="polite"
-        >
-          {signupStatus}
-        </p>
+      {pendingEmail && (
+        <section className="signupStatus" role="status" aria-live="polite">
+          <p>A signup is saved for {pendingEmail}. You can safely retry the verification email.</p>
+          <button
+            type="button"
+            className="signupStatusAction"
+            onClick={onRetryEmail}
+            disabled={isSubmitting}
+          >
+            {isSubmitting && <LoaderCircle className="signup-spinner" size={16} aria-hidden="true" />}
+            {isSubmitting ? "Sending..." : "Resend verification email"}
+          </button>
+        </section>
       )}
 
-      {showStatusAction && (
-        <button
-          type="button"
-          className="signupStatusAction"
-          onClick={onStatusAction}
-          disabled={statusActionDisabled}
-        >
-          {statusActionLabel}
-        </button>
-      )}
-
-      <button type="submit" className="signupBtn" disabled={isSubmitting || submitDisabled}>
-        {isSubmitting && <LoaderCircle className="signup-spinner" size={16} aria-hidden="true" />}
-        {submitLabel || (isSubmitting ? "Signing up..." : "Sign Up")}
+      <button type="submit" className="signupBtn" disabled={isSubmitting || Boolean(pendingEmail)}>
+        {isSubmitting && !pendingEmail && <LoaderCircle className="signup-spinner" size={16} aria-hidden="true" />}
+        {pendingEmail ? "Signup pending" : isSubmitting ? "Signing up..." : "Sign Up"}
       </button>
 
       <p className="loginLink">

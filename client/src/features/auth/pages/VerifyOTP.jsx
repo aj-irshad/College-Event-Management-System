@@ -1,98 +1,69 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import {
-  resendOTP,
-  verifyOTP,
-} from "../../../services/authService";
+import { resendOTP, verifyOTP } from "../../../services/authService";
 import VerifyOTPForm from "../components/VerifyOTPForm";
 import { MailCheck } from "lucide-react";
 import "../styles/VerifyOTP.css";
 
 const SESSION_KEY = "ems.signup.session";
 
-const readStoredSession = () => {
+const readStoredEmail = () => {
   try {
-    const value = sessionStorage.getItem(SESSION_KEY);
-    return value ? JSON.parse(value) : null;
+    const stored = JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null");
+    return typeof stored?.email === "string" ? stored.email : "";
   } catch {
-    return null;
+    return "";
   }
 };
-
-const getInitialSession = (routeState) => ({
-  ...(readStoredSession() || {}),
-  ...(routeState || {}),
-});
 
 function VerifyOTP() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [session, setSession] = useState(() => getInitialSession(location.state));
-  const email = session?.email || "";
-  const signupToken = session?.signupToken || "";
-
+  const [email] = useState(() => location.state?.email || readStoredEmail());
   const [otp, setOtp] = useState("");
   const [warning, setWarning] = useState("");
+  const [info, setInfo] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [deliveryStatus, setDeliveryStatus] = useState(() =>
-    ["sending", "checking", "unknown"].includes(session?.deliveryStatus)
-      ? "failed"
-      : (session?.deliveryStatus || "sent"),
-  );
-  const [resendSeconds, setResendSeconds] = useState(() =>
-    Math.max(0, Math.ceil(((session?.resendAvailableAt || 0) - Date.now()) / 1000)),
-  );
   const submittingRef = useRef(false);
   const resendingRef = useRef(false);
 
   useEffect(() => {
-    if (!email) navigate("/signup", { replace: true });
-  }, [email, navigate]);
-
-  useEffect(() => {
-    if (!session || !location.state) return;
-    try {
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
-    } catch {
-      // The route state remains usable for this visit when session storage is unavailable.
+    if (!email) {
+      navigate("/signup", { replace: true });
+      return;
     }
-  }, [location.state, session]);
-
-  useEffect(() => {
-    if (!session?.resendAvailableAt) return undefined;
-    const updateCountdown = () => {
-      setResendSeconds(Math.max(0, Math.ceil((session.resendAvailableAt - Date.now()) / 1000)));
-    };
-    updateCountdown();
-    const timer = setInterval(updateCountdown, 1_000);
-    return () => clearInterval(timer);
-  }, [session?.resendAvailableAt]);
+    try {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ email }));
+    } catch {
+      // Route state remains usable for the current visit.
+    }
+  }, [email, navigate]);
 
   if (!email) return null;
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (submittingRef.current) return;
-
-    if (otp.length !== 4) {
-      setWarning("OTP must be exactly 4 digits");
+    if (submittingRef.current || resendingRef.current) return;
+    if (!/^\d{4}$/.test(otp)) {
+      setWarning("Enter the 4-digit verification code.");
       return;
     }
 
     submittingRef.current = true;
     setIsSubmitting(true);
     setWarning("");
+    setInfo("");
     try {
-      const response = await verifyOTP({ email, otp, ...(signupToken ? { signupToken } : {}) });
+      const response = await verifyOTP({ email, otp });
       try {
         sessionStorage.removeItem(SESSION_KEY);
       } catch {
-        // Verification has succeeded; storage cleanup is best-effort.
+        // Account creation succeeded; storage cleanup is best-effort.
       }
       navigate("/login", { state: { message: response.data?.message } });
     } catch (error) {
-      setWarning(error.response?.data?.message || error.response?.data?.msg || "Verification failed");
+      setWarning(error.response?.data?.message || "Verification failed. Please try again.");
     } finally {
       submittingRef.current = false;
       setIsSubmitting(false);
@@ -100,46 +71,15 @@ function VerifyOTP() {
   }
 
   async function handleResend() {
-    if (resendingRef.current || resendSeconds > 0) return;
+    if (resendingRef.current || submittingRef.current) return;
     resendingRef.current = true;
     setIsResending(true);
     setWarning("");
+    setInfo("");
     try {
-      const response = await resendOTP({ email, ...(signupToken ? { signupToken } : {}) });
-      const nextToken = response.data?.signupToken || signupToken;
-      const resendAvailableAt = Date.now() + (Number(response.data?.resendAfterSeconds) || 60) * 1000;
-      const nextSession = {
-        ...session,
-        email,
-        signupToken: nextToken,
-        resendAvailableAt,
-        deliveryStatus: response.data?.deliveryStatus || "sent",
-      };
-      setSession(nextSession);
-      setDeliveryStatus(nextSession.deliveryStatus);
-      try {
-        sessionStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
-      } catch {
-        // Current page state remains sufficient to continue verification.
-      }
+      const response = await resendOTP({ email });
+      setInfo(response.data?.message || "Verification email sent. Check your inbox.");
     } catch (error) {
-      const retrySeconds = Number(
-        error.response?.data?.retryAfterSeconds || error.response?.data?.resendAfterSeconds,
-      );
-      if (retrySeconds > 0) {
-        const nextSession = {
-          ...session,
-          resendAvailableAt: Date.now() + retrySeconds * 1000,
-          deliveryStatus: error.response?.status === 502 ? "failed" : deliveryStatus,
-        };
-        setSession(nextSession);
-        setDeliveryStatus(nextSession.deliveryStatus);
-        try {
-          sessionStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
-        } catch {
-          // The server continues enforcing the cooldown if storage is unavailable.
-        }
-      }
       setWarning(error.response?.data?.message || "Could not resend the verification email.");
     } finally {
       resendingRef.current = false;
@@ -160,10 +100,9 @@ function VerifyOTP() {
         otp={otp}
         setOtp={setOtp}
         warning={warning}
+        info={info}
         handleSubmit={handleSubmit}
         isSubmitting={isSubmitting}
-        deliveryStatus={deliveryStatus}
-        resendSeconds={resendSeconds}
         isResending={isResending}
         handleResend={handleResend}
       />

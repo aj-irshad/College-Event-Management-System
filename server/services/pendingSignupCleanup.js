@@ -44,12 +44,6 @@ const cleanupExpiredPendingSignups = async () => {
           { verificationClaimExpiresAt: { $lte: now } },
         ],
       },
-      {
-        $or: [
-          { emailSendClaimExpiresAt: { $exists: false } },
-          { emailSendClaimExpiresAt: { $lte: now } },
-        ],
-      },
     ],
   };
 

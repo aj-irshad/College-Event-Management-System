@@ -1,4 +1,4 @@
-import { createHash, createHmac, hkdfSync, randomBytes, timingSafeEqual } from "crypto";
+import { createHmac, hkdfSync, randomBytes, timingSafeEqual } from "crypto";
 
 let cachedHashingKey;
 
@@ -46,8 +46,3 @@ export const verifyOtpHash = (otp, salt, storedHash) => {
   const actual = Buffer.from(hashOtp(otp, salt), "hex");
   return expected.length === actual.length && timingSafeEqual(expected, actual);
 };
-
-export const hashSignupToken = (token) =>
-  createHash("sha256").update(token).digest("hex");
-
-export const createSignupToken = () => randomBytes(32).toString("base64url");

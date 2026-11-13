@@ -85,14 +85,6 @@
   margin: -0.8rem 0 1rem;
 }
 
-.otpDeliveryStatus--sent {
-  color: #247a4b;
-}
-
-.otpDeliveryStatus--failed {
-  color: #b42318;
-}
-
 .formGrp {
   display: flex;
   flex-direction: column;

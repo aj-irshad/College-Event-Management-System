@@ -155,6 +155,7 @@
 
 .signup-form .signupStatus {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
@@ -163,17 +164,6 @@
   font-size: var(--ems-font-description);
   line-height: 1.45;
   text-align: center;
-}
-
-.signup-form .signupStatus--sent {
-  color: #247a4b;
-  font-weight: 600;
-}
-
-.signup-form .signupStatus--failed,
-.signup-form .signupStatus--unavailable,
-.signup-form .signupStatus--error {
-  color: #b42318;
 }
 
 .signupStatusAction {
