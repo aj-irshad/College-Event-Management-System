@@ -5,7 +5,7 @@ const login = async (loginData) => {
 };
 
 const signUp = async (signupData) => {
-  return await apiRequest.post("/auth/signup", signupData);
+  return await apiRequest.post("/auth/signup", signupData, { timeout: 60_000 });
 };
 
 const resetPassword = async (resetData) => {
@@ -33,11 +33,11 @@ const verifyOTP = async (otpData) => {
 };
 
 const resendOTP = async (signupData) => {
-  return apiRequest.post("/auth/resend-otp", signupData);
+  return apiRequest.post("/auth/resend-otp", signupData, { timeout: 15_000 });
 };
 
 const getOtpDeliveryStatus = async (signupData) => {
-  return apiRequest.post("/auth/otp-status", signupData);
+  return apiRequest.post("/auth/otp-status", signupData, { timeout: 8_000 });
 };
 
 export {

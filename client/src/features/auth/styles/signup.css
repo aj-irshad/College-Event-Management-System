@@ -153,6 +153,47 @@
   margin-bottom: 1rem;
 }
 
+.signup-form .signupStatus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+  color: #5353c8;
+  font-size: var(--ems-font-description);
+  line-height: 1.45;
+  text-align: center;
+}
+
+.signup-form .signupStatus--sent {
+  color: #247a4b;
+  font-weight: 600;
+}
+
+.signup-form .signupStatus--failed,
+.signup-form .signupStatus--unavailable,
+.signup-form .signupStatus--error {
+  color: #b42318;
+}
+
+.signupStatusAction {
+  align-self: center;
+  margin: -0.25rem 0 0.75rem;
+  padding: 0.45rem 0.7rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgb(101, 101, 246);
+  font-size: var(--ems-font-button);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.signupStatusAction:disabled {
+  color: #7b8190;
+  cursor: wait;
+}
+
 /* Submit Button */
 .signupBtn {
   font-size: var(--ems-font-button);

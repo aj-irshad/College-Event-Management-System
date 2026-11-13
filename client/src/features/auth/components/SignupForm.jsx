@@ -8,6 +8,14 @@ const SignupForm = ({
   handleChange,
   handleSubmit,
   isSubmitting,
+  submitDisabled = false,
+  submitLabel,
+  signupStatus,
+  signupStatusTone,
+  showStatusAction = false,
+  statusActionLabel,
+  statusActionDisabled = false,
+  onStatusAction,
   Eye,
   EyeOff,
 }) => {
@@ -164,9 +172,30 @@ const SignupForm = ({
 
       {warning && <p className="warning">{warning}</p>}
 
-      <button type="submit" className="signupBtn" disabled={isSubmitting}>
+      {signupStatus && (
+        <p
+          className={`signupStatus signupStatus--${signupStatusTone || "info"}`}
+          role="status"
+          aria-live="polite"
+        >
+          {signupStatus}
+        </p>
+      )}
+
+      {showStatusAction && (
+        <button
+          type="button"
+          className="signupStatusAction"
+          onClick={onStatusAction}
+          disabled={statusActionDisabled}
+        >
+          {statusActionLabel}
+        </button>
+      )}
+
+      <button type="submit" className="signupBtn" disabled={isSubmitting || submitDisabled}>
         {isSubmitting && <LoaderCircle className="signup-spinner" size={16} aria-hidden="true" />}
-        {isSubmitting ? "Signing up..." : "Sign Up"}
+        {submitLabel || (isSubmitting ? "Signing up..." : "Sign Up")}
       </button>
 
       <p className="loginLink">
