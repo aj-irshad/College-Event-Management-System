@@ -1,30 +1,6 @@
 import mongoose from "mongoose";
 import { EVENT_SEMESTERS } from "../utils/eventTargeting.js";
 
-const otpEmailDeliverySchema = new mongoose.Schema(
-  {
-    jobId: { type: String, required: true },
-    status: {
-      type: String,
-      enum: ["queued", "processing", "sent", "failed"],
-      required: true,
-    },
-    encryptedOtp: String,
-    otpIv: String,
-    otpAuthTag: String,
-    attempts: { type: Number, default: 0 },
-    maxAttempts: { type: Number, default: 5 },
-    nextAttemptAt: Date,
-    lockedUntil: Date,
-    workerId: String,
-    queuedAt: Date,
-    sentAt: Date,
-    failedAt: Date,
-    lastErrorCode: String,
-  },
-  { _id: false },
-);
-
 const pendingUserSchema = new mongoose.Schema(
   {
     name: {
@@ -89,8 +65,6 @@ const pendingUserSchema = new mongoose.Schema(
     emailSendClaimExpiresAt: Date,
     verificationClaimId: String,
     verificationClaimExpiresAt: Date,
-    // Retained to read existing queue-backed pending records during transition.
-    emailDelivery: otpEmailDeliverySchema,
   },
   {
     timestamps: true,

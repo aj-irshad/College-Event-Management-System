@@ -219,10 +219,17 @@ const userLogin = async (req, res) => {
 };
 
 const pendingDeliveryStatus = (pendingUser) => {
-  if (pendingUser.emailStatus) return pendingUser.emailStatus;
-  // Legacy queue-backed records remain readable; new requests use emailStatus.
-  if (pendingUser.emailDelivery?.status) return pendingUser.emailDelivery.status;
-  return pendingUser.otp ? "sent" : "queued";
+  if (["sending", "sent", "failed"].includes(pendingUser.emailStatus)) {
+    return pendingUser.emailStatus;
+  }
+  if (
+    (pendingUser.otp || pendingUser.otpHash) &&
+    pendingUser.otpExpires &&
+    new Date(pendingUser.otpExpires) > new Date()
+  ) {
+    return "sent";
+  }
+  return "failed";
 };
 
 const registrationExpiry = (pendingUser) =>
@@ -293,7 +300,6 @@ const sendOtpForPendingUser = async ({
     },
     $unset: {
       otp: 1,
-      emailDelivery: 1,
       emailLastErrorCode: 1,
       verificationClaimId: 1,
       verificationClaimExpiresAt: 1,
@@ -304,7 +310,9 @@ const sendOtpForPendingUser = async ({
   const claimed = await PendingUser.findOneAndUpdate(
     claimFilter,
     update,
-    { returnDocument: "after", runValidators: true },
+    // Remove the obsolete embedded queue payload from a record when it is
+    // retried, without retaining the queue schema in the live model.
+    { returnDocument: "after", runValidators: true, strict: false },
   ).lean();
 
   if (!claimed) {
@@ -591,7 +599,7 @@ const userSignUp = async (req, res) => {
       return res.status(status).json({
         message: sendResult.type === "failed"
           ? "The registration is saved, but the verification email could not be sent. Please retry after the cooldown."
-          : "The registration is saved and the verification email is being processed. Please retry shortly.",
+          : "The registration is saved and another email request is in progress. Please retry shortly.",
         email,
         signupToken,
         deliveryStatus: sendResult.type === "failed" ? "failed" : "sending",
@@ -790,7 +798,7 @@ const verifyOTP = async (req, res) => {
       return res.status(429).json({ message: "Too many incorrect codes. Request a new code to continue." });
     }
     const deliveryStatus = pendingDeliveryStatus(pendingUser);
-    if (deliveryStatus === "sending" || deliveryStatus === "queued" || deliveryStatus === "processing") {
+    if (deliveryStatus === "sending") {
       return res.status(409).json({ message: "Your verification email is still being sent. Please wait." });
     }
     if (deliveryStatus === "failed") {

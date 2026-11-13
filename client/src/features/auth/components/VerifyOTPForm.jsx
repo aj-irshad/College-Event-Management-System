@@ -14,8 +14,6 @@ function VerifyOTPForm({
 }) {
   const deliveryMessage = {
     checking: "Email status is unavailable. Request a new verification code.",
-    queued: "This signup used the previous email flow. Request a new verification code to continue.",
-    processing: "This signup used the previous email flow. Request a new verification code to continue.",
     sending: "Email delivery was interrupted. Request a new verification code to continue.",
     sent: "Verification email sent. Check your inbox and spam folder.",
     failed: "Email delivery failed. You can request another verification email.",

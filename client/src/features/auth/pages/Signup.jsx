@@ -66,16 +66,19 @@ function Signup() {
     try {
       const stored = JSON.parse(sessionStorage.getItem(SIGNUP_SESSION_KEY) || "null");
       if (stored?.email && /^[A-Za-z0-9_-]{43}$/.test(stored.signupToken || "")) {
+        if (stored.deliveryStatus === "sent") {
+          navigate("/verify-otp", { replace: true, state: stored });
+          return;
+        }
         activeSignupTokenRef.current = stored.signupToken;
         setPendingVerification(stored);
-        setSignupPhase(stored.deliveryStatus === "sent" ? "timeout" : "failed");
+        setSignupPhase("resume");
         setResendSeconds(Math.max(0, Math.ceil(((stored.resendAvailableAt || 0) - Date.now()) / 1000)));
-        setWarning("Your signup session is saved. Retry email delivery to continue verification.");
       }
     } catch {
       // A fresh signup can still proceed if browser storage is unavailable.
     }
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     if (resendSeconds <= 0) return undefined;
@@ -279,12 +282,13 @@ function Signup() {
 
   const phaseMessages = {
     signing: "Signing up...",
-    validating: "Validating information...",
-    creating: "Creating your account...",
-    sending: "Sending verification code to your email...",
+    validating: "Validating your information...",
+    creating: "Creating your registration...",
+    sending: "Sending your verification code...",
     sent: "OTP sent successfully!",
     failed: "Verification email delivery failed.",
     timeout: "The signup request needs to be retried.",
+    resume: "Your signup session is saved. You can safely retry email delivery.",
     unavailable: "Verification session unavailable.",
     error: "Signup could not be confirmed.",
   };
@@ -316,7 +320,7 @@ function Signup() {
           statusActionLabel={statusActionLabel}
           statusActionDisabled={isSubmitting || resendSeconds > 0}
           onStatusAction={handleVerificationAction}
-          showStatusAction={Boolean(pendingVerification) && ["failed", "timeout"].includes(signupPhase)}
+          showStatusAction={Boolean(pendingVerification) && ["failed", "timeout", "resume"].includes(signupPhase)}
           Eye={Eye}
           EyeOff={EyeOff}
         />

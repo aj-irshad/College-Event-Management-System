@@ -36,7 +36,7 @@ function VerifyOTP() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [deliveryStatus, setDeliveryStatus] = useState(() =>
-    ["queued", "processing", "sending", "checking", "unknown"].includes(session?.deliveryStatus)
+    ["sending", "checking", "unknown"].includes(session?.deliveryStatus)
       ? "failed"
       : (session?.deliveryStatus || "sent"),
   );
