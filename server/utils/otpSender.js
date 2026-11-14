@@ -17,28 +17,39 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendOTP(email, otp) {
-  try {
-    const info = await transporter.sendMail({
-      from: `"EMS" <${process.env.NODEMAILER_EMAIL}>`,
-      to: email,
+  if (!process.env.BREVO_API_KEY || !process.env.BREVO_FROM_EMAIL) {
+    throw new Error("Brevo OTP email configuration is missing");
+  }
+
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": process.env.BREVO_API_KEY,
+      "Content-Type": "application/json",
+    },
+    signal: AbortSignal.timeout(15_000),
+    body: JSON.stringify({
+      sender: {
+        name: "MyCampusEvents",
+        email: process.env.BREVO_FROM_EMAIL,
+      },
+      to: [{ email }],
       subject: "Verification Code - EMS",
-      html: `
+      htmlContent: `
         <div style="font-family: Arial, sans-serif; padding: 20px;">
           <h2>Your Verification Code</h2>
           <p style="font-size: 24px; font-weight: bold; color: #6565fa;">${otp}</p>
           <p>Please enter this OTP to proceed with your verification.</p>
         </div>
       `,
-    });
-    return info;
-  } catch (err) {
-    console.error("OTP email delivery failed:", {
-      code: err.code || "UNKNOWN",
-      timeoutType: err.timeoutType || null,
-      responseCode: err.responseCode || null,
-    });
-    throw err;
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Brevo rejected the OTP email request (HTTP ${response.status})`);
   }
+
+  return response;
 }
 
 async function sendPasswordResetEmail(email, resetUrl, expiresMinutes = 20) {
