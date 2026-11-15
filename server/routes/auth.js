@@ -2,6 +2,7 @@ import {
   testAPI,
   userLogin,
   userSignUp,
+  resendOTP,
   verifyOTP,
   logout,
   resetPassword,
@@ -18,12 +19,19 @@ import {
   limitPasswordResetCompletions,
   limitPasswordResetRequests,
 } from "../middleware/passwordResetRateLimit.js";
+import {
+  limitResendOtp,
+  limitSignupByAccount,
+  limitSignupByIp,
+  limitVerifyOtp,
+} from "../middleware/signupOtpRateLimit.js";
 const authRouter = express.Router();
 
 authRouter.get("/alluser", testAPI);
 authRouter.get("/me", authMiddleware, getCurrentUser);
-authRouter.post("/signup", uploadProfileImage("profile-img"), userSignUp);
-authRouter.post("/verify-otp", verifyOTP);
+authRouter.post("/signup", limitSignupByIp, uploadProfileImage("profile-img"), limitSignupByAccount, userSignUp);
+authRouter.post("/verify-otp", limitVerifyOtp, verifyOTP);
+authRouter.post("/resend-otp", limitResendOtp, resendOTP);
 authRouter.post("/login", userLogin);
 authRouter.post("/logout", logout);
 authRouter.post("/forgot-password", limitPasswordResetRequests, requestPasswordReset);

@@ -26,6 +26,8 @@ import paymentRouter from "./routes/payments.js";
 import { getUploadDirectory } from "./utils/uploadPaths.js";
 
 const app = express();
+// Trust Render's single reverse proxy so req.ip-based signup limits use client IPs.
+if (process.env.NODE_ENV === "production") app.set("trust proxy", 1);
 const PORT = process.env.PORT || 5000;
 const BASE_URL = process.env.BASE_URL;
 const VITE_URL = process.env.VITE_BASE_URL;

@@ -35,8 +35,8 @@ const EventsPage = ({ events = [], title, subtitle, participations = [], loading
         />
       ) : <section className="upcomingEventsCards">
         {events.map((event) => {
-          const hasParticipated = participations.some(
-            (participation) => participation.event?._id === event._id,
+          const participation = participations.find(
+            (record) => String(record.event?._id || record.event) === String(event._id),
           );
 
           return (
@@ -44,7 +44,8 @@ const EventsPage = ({ events = [], title, subtitle, participations = [], loading
               key={event._id}
               event={event}
               isAdmin={isAdmin}
-              hasParticipated={hasParticipated}
+              participationStatus={participation?.approvalStatus || (participation ? "Pending" : null)}
+              participationId={participation?._id || null}
             />
           );
         })}

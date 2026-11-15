@@ -14,62 +14,96 @@ const debugLog = (...args) => {
 
 const sortEvents = (events) =>
   [...events].sort(
-    (a, b) => new Date(b.start_at) - new Date(a.start_at),
+    (a, b) => new Date(a.start_at) - new Date(b.start_at),
   );
 
 export const EventProvider = ({ children }) => {
   const [events, setEvents] = useState([]);
   const [eventLoading, setEventLoading] = useState(true);
   const [eventError, setEventError] = useState("");
-  const { user } = useContext(authContext);
+  const { user, loading: authLoading } = useContext(authContext);
   const initialEventsLoadRef = useRef(null);
   const hasConnectedRef = useRef(false);
   const eventRevisionRef = useRef(0);
+  const eventRequestRef = useRef(0);
   const accessProfileRef = useRef(null);
   accessProfileRef.current = user;
   const userId = user?._id ?? user?.id ?? "";
+  const accessProfileKey = `${userId}:${user?.role || ""}:${user?.department || ""}:${user?.semester || ""}`;
 
   useEffect(() => {
+    if (authLoading) return undefined;
+
+    if (!accessProfileRef.current) {
+      // Event APIs require authentication; do not issue an initial request before
+      // auth restoration or let its expected 401 clear the next user's events.
+      eventRequestRef.current += 1;
+      initialEventsLoadRef.current = Promise.resolve();
+      setEvents([]);
+      setEventError("");
+      setEventLoading(false);
+      return undefined;
+    }
+
+    let active = true;
+    const requestId = ++eventRequestRef.current;
+    const revisionAtRequest = eventRevisionRef.current;
+    setEventLoading(true);
+
     const loadInitialEvents = async () => {
       try {
         const response = await getEvents();
-        setEvents(sortEvents(response.data.filter((event) =>
+        if (
+          !active ||
+          requestId !== eventRequestRef.current ||
+          revisionAtRequest !== eventRevisionRef.current
+        ) return;
+        const availableEvents = response.data.filter((event) =>
           isEventAvailableToProfile(event, accessProfileRef.current),
-        )));
+        );
+        setEvents(sortEvents(availableEvents));
         setEventError("");
-        debugLog("initial REST event state loaded", {
-          count: response.data.length,
-        });
+        debugLog("initial REST event state loaded", { count: response.data.length });
       } catch (err) {
-        console.error(err.message);
-        setEvents([]);
-        setEventError("Failed to load events. Please try again later.");
+        if (active && requestId === eventRequestRef.current) {
+          console.error(err.message);
+          // A failed refresh is not an empty event list; keep the last good data.
+          setEventError("Failed to load events. Please try again later.");
+        }
       } finally {
-        setEventLoading(false);
+        if (active && requestId === eventRequestRef.current) setEventLoading(false);
       }
     };
 
     initialEventsLoadRef.current = loadInitialEvents();
-  }, [userId]);
+    return () => {
+      active = false;
+    };
+  }, [authLoading, accessProfileKey]);
 
   useEffect(() => {
     const refreshEvents = async () => {
+      const requestId = ++eventRequestRef.current;
       const revisionAtRequest = eventRevisionRef.current;
       try {
         const response = await getEvents();
-        // Do not let an older REST snapshot overwrite newer socket changes.
-        if (eventRevisionRef.current === revisionAtRequest) {
-          setEvents(sortEvents(response.data.filter((event) =>
-            isEventAvailableToProfile(event, accessProfileRef.current),
-          )));
-          setEventError("");
-          debugLog("REST event state synchronized", {
-            count: response.data.length,
-          });
-        }
+        // Ignore stale requests and snapshots predating a socket/local update.
+        if (
+          requestId !== eventRequestRef.current ||
+          eventRevisionRef.current !== revisionAtRequest
+        ) return;
+        setEvents(sortEvents(response.data.filter((event) =>
+          isEventAvailableToProfile(event, accessProfileRef.current),
+        )));
+        setEventError("");
+        debugLog("REST event state synchronized", { count: response.data.length });
       } catch (err) {
-        console.error("Failed to synchronize events:", err.message);
-        setEventError("Failed to refresh events.");
+        if (requestId === eventRequestRef.current) {
+          console.error("Failed to synchronize events:", err.message);
+          setEventError("Failed to refresh events.");
+        }
+      } finally {
+        if (requestId === eventRequestRef.current) setEventLoading(false);
       }
     };
 
@@ -168,14 +202,14 @@ export const EventProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (user) {
+    if (accessProfileRef.current) {
       socket.connect();
     } else {
       socket.disconnect();
     }
 
     return () => socket.disconnect();
-  }, [user?._id ?? user?.id]);
+  }, [accessProfileKey]);
 
   const createEventContext = async (eventData) => {
     try {

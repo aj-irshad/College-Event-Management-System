@@ -146,14 +146,7 @@ const paymentProofTypes = {
   ".jpg": { mime: "image/jpeg", signature: (buffer) => buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff },
   ".jpeg": { mime: "image/jpeg", signature: (buffer) => buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff },
   ".png": { mime: "image/png", signature: (buffer) => buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) },
-  ".pdf": {
-    mime: "application/pdf",
-    signature: (buffer) => {
-      if (buffer.subarray(0, 5).toString("ascii") !== "%PDF-") return false;
-      const content = buffer.toString("latin1");
-      return !/\/(?:JavaScript|JS|Launch|EmbeddedFile|OpenAction|AA|RichMedia|XFA|GoToE)\b/i.test(content);
-    },
-  },
+  ".webp": { mime: "image/webp", signature: (buffer) => buffer.length >= 12 && buffer.subarray(0, 4).toString("ascii") === "RIFF" && buffer.subarray(8, 12).toString("ascii") === "WEBP" },
 };
 
 const paymentProofUpload = multer({
@@ -162,7 +155,7 @@ const paymentProofUpload = multer({
   fileFilter: (_req, file, cb) => {
     const type = paymentProofTypes[path.extname(file.originalname).toLowerCase()];
     if (!type || type.mime !== file.mimetype) {
-      return cb(new Error("Upload a JPG, JPEG, PNG, or PDF payment proof"));
+      return cb(new Error("Upload a JPG, JPEG, PNG, or WEBP payment proof image"));
     }
     return cb(null, true);
   },
@@ -194,7 +187,7 @@ const uploadPaymentProof = (req, res, next) => {
         return res.status(400).json({ message: "Could not validate payment proof file" });
       }
       req.paymentProofMimeType = type.mime;
-      req.paymentProofResourceType = type.mime === "application/pdf" ? "raw" : "image";
+      req.paymentProofResourceType = "image";
       return next();
     };
     void validateStoredProof();

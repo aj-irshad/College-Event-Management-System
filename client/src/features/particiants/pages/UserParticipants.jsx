@@ -6,6 +6,12 @@ import { formatDate, formatTime } from "../../../hooks/dateFormatter.js";
 import socket from "../../../api/socket.js";
 import "../styles/userParticipants.css";
 
+const paymentStatusLabels = {
+  Approved: "Payment Approved",
+  Pending: "Payment Pending",
+  Rejected: "Payment Rejected",
+};
+
 const UserParticipants = () => {
   const [participations, setParticipations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -73,14 +79,24 @@ const UserParticipants = () => {
             <tbody>{participations.map((item) => {
               const event = item.event || {};
               const isPaid = Number(event.price) > 0;
+              const approvalStatus = item.approvalStatus || "Pending";
+              const approvalLabel = approvalStatus === "Not Approved" ? "Rejected" : approvalStatus;
+              const approvalClass = approvalStatus === "Not Approved" ? "rejected" : approvalStatus.toLowerCase();
+              const paymentAmount = item.paymentAmount ?? event.price;
+              const paymentText = !isPaid
+                ? "Free event"
+                : item.paymentStatus
+                  ? `${paymentStatusLabels[item.paymentStatus] || "Payment status unavailable"} · NPR ${Number(paymentAmount).toFixed(2)}`
+                  : `Payment status unavailable · Expected NPR ${Number(event.price).toFixed(2)}`;
+              const paymentClass = isPaid ? (item.paymentStatus || "unavailable").toLowerCase() : "free";
               return <tr key={item._id}>
                 <td><div className="event-info-cell"><strong>{event.title || "Untitled Event"}</strong><span className="event-dept-badge">{event.event_type || "General"}</span></div></td>
                 <td><div className="event-time-cell"><span>{event.start_at ? formatDate(event.start_at) : "TBD"}</span><small>{event.start_at && event.end_at ? `${formatTime(event.start_at)} – ${formatTime(event.end_at)}` : ""}</small></div></td>
                 <td>{event.department || "—"}</td>
                 <td><span className={`event-status-badge ${String(event.status || "").toLowerCase()}`}>{event.status || "—"}</span></td>
                 <td><span className="participation-role-badge">{item.participationType}</span></td>
-                <td><span className={`payment-badge ${isPaid ? "paid" : "free"}`}>{isPaid ? `Paid event · Rs ${Number(event.price).toFixed(2)} (verification status unavailable)` : "Free event"}</span></td>
-                <td><span className={`approval-status-badge ${(item.approvalStatus || "Pending").toLowerCase().replace(/\s+/g, "-")}`}>{item.approvalStatus || "Pending"}</span></td>
+                <td><span className={`payment-badge ${paymentClass}`}>{paymentText}</span></td>
+                <td><span className={`approval-status-badge ${approvalClass}`}>{approvalLabel}</span></td>
               </tr>;
             })}</tbody>
           </table>

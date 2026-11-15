@@ -16,7 +16,8 @@ const paymentSchema = new mongoose.Schema(
     proofUrl: { type: String, default: "" },
     proofPublicId: { type: String, default: "" },
     proofResourceType: { type: String, enum: ["image", "raw"], default: "image" },
-    proofMimeType: { type: String, enum: ["image/jpeg", "image/png", "application/pdf"], required: true },
+    // application/pdf remains accepted in the schema for historical records; new uploads are image-only.
+    proofMimeType: { type: String, enum: ["image/jpeg", "image/png", "image/webp", "application/pdf"], required: true },
     transactionReference: { type: String, trim: true, maxlength: 100, default: "" },
     status: { type: String, enum: ["Pending", "Approved", "Rejected"], default: "Pending", required: true },
     isActive: { type: Boolean, default: true, required: true },

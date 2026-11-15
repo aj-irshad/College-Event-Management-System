@@ -1,10 +1,50 @@
 import Participant from "../model/participants.js";
 import Event from "../model/events.js";
+import Payment from "../model/payment.js";
 import Users from "../model/user.js";
 import { getIO } from "../socket.js";
 import { isEventAvailableToUser } from "../utils/eventTargeting.js";
 
 const APPROVAL_STATUSES = ["Pending", "Approved", "Not Approved"];
+const referenceId = (value) => value?._id || value;
+
+const addPaymentSummary = async (participations) => {
+  const paidPairs = participations
+    .map((participation) => ({
+      event: referenceId(participation.event),
+      user: referenceId(participation.user),
+      isPaid: Number(participation.event?.price) > 0,
+    }))
+    .filter((pair) => pair.isPaid && pair.event && pair.user)
+    .map(({ event, user }) => ({ event, user, key: `${event}:${user}` }));
+  const uniquePairs = [...new Map(paidPairs.map((pair) => [pair.key, pair])).values()];
+  const paymentByPair = new Map();
+
+  if (uniquePairs.length) {
+    const payments = await Payment.find({
+      $or: uniquePairs.map(({ event, user }) => ({ event, user })),
+    })
+      .select("event user status amount createdAt")
+      .sort({ createdAt: -1, _id: -1 })
+      .lean();
+
+    for (const payment of payments) {
+      const key = `${payment.event}:${payment.user}`;
+      if (!paymentByPair.has(key)) paymentByPair.set(key, payment);
+    }
+  }
+
+  return participations.map((participation) => {
+    const key = `${referenceId(participation.event)}:${referenceId(participation.user)}`;
+    const payment = paymentByPair.get(key);
+    return {
+      ...participation.toObject(),
+      approvalStatus: participation.approvalStatus || "Pending",
+      paymentStatus: payment?.status || null,
+      paymentAmount: Number.isFinite(payment?.amount) ? payment.amount : null,
+    };
+  });
+};
 
 // PARTICIPATE IN EVENT
 const participateInEvent = async (req, res) => {
@@ -56,6 +96,15 @@ const participateInEvent = async (req, res) => {
       participationType,
     });
 
+    try {
+      getIO().to("admins").emit("participation:registered", {
+        participationId: String(participant._id),
+        eventId: String(event._id),
+      });
+    } catch (socketError) {
+      console.error("Failed to emit new participation notification:", socketError.message);
+    }
+
     return res.status(201).json({
       message: "Successfully participated in event",
       participant,
@@ -80,12 +129,13 @@ const getMyParticipation = async (req, res) => {
       .populate("event", "title event_type department start_at end_at status venue price")
       .sort({ createdAt: -1 });
 
-    return res.status(200).json(
-      participations.map((participation) => ({
-        ...participation.toObject(),
-        approvalStatus: participation.approvalStatus || "Pending",
-      })),
-    );
+    participations.sort((first, second) => {
+      const firstStart = first.event?.start_at ? new Date(first.event.start_at).getTime() : Number.MAX_SAFE_INTEGER;
+      const secondStart = second.event?.start_at ? new Date(second.event.start_at).getTime() : Number.MAX_SAFE_INTEGER;
+      return firstStart - secondStart || new Date(second.createdAt) - new Date(first.createdAt);
+    });
+
+    return res.status(200).json(await addPaymentSummary(participations));
   } catch (err) {
     console.error(err.message);
 
@@ -160,12 +210,7 @@ const getAllParticipantsAdmin = async (req, res) => {
       );
     });
 
-    return res.status(200).json(
-      filteredParticipants.map((participation) => ({
-        ...participation.toObject(),
-        approvalStatus: participation.approvalStatus || "Pending",
-      })),
-    );
+    return res.status(200).json(await addPaymentSummary(filteredParticipants));
   } catch (err) {
     console.error(err.message);
     return res.status(500).json({
@@ -196,12 +241,13 @@ const updateParticipationApproval = async (req, res) => {
     await participation.save();
 
     try {
-      getIO()
-        .to(`user:${participation.user}`)
-        .emit("participation:status-updated", {
-          participationId: String(participation._id),
-          approvalStatus: participation.approvalStatus,
-        });
+      const io = getIO();
+      const update = {
+        participationId: String(participation._id),
+        approvalStatus: participation.approvalStatus,
+      };
+      io.to(`user:${participation.user}`).emit("participation:status-updated", update);
+      io.to("admins").emit("participation:approval-updated", update);
     } catch (socketError) {
       // The persisted REST update remains successful if sockets are unavailable.
       console.error("Failed to emit participation status update:", socketError.message);

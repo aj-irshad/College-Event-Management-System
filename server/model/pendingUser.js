@@ -47,15 +47,18 @@ const pendingUserSchema = new mongoose.Schema(
       default: "",
     },
 
-    otp: {
-      type: String,
-      required: true,
-    },
-
-    otpExpires: {
-      type: Date,
-      required: true,
-    },
+    // `otp` is select:false only to safely unset plaintext values from legacy records.
+    otp: { type: String, select: false },
+    otpHash: { type: String, default: null, select: false },
+    pendingOtpHash: { type: String, default: null, select: false },
+    otpExpires: { type: Date, default: null },
+    otpAttempts: { type: Number, default: 0 },
+    otpResendCount: { type: Number, default: 0 },
+    otpSendCount: { type: Number, default: 0 },
+    resendAvailableAt: { type: Date, default: null },
+    otpSendLockUntil: { type: Date, default: null, select: false },
+    verificationLockUntil: { type: Date, default: null, select: false },
+    registrationExpiresAt: { type: Date, default: null },
   },
   {
     timestamps: true,

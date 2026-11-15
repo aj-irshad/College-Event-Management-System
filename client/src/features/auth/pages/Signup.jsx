@@ -78,13 +78,16 @@ function Signup() {
     }
 
     try {
-      await signUp(signupData);
+      const response = await signUp(signupData);
       alert("OTP has been sent to your email.");
+      const cooldownSeconds = Math.max(0, Number(response.data?.resendCooldownSeconds) || 0);
       navigate("/verify-otp", {
-        state: { email: formData.email },
+        state: {
+          email: formData.email.trim().toLowerCase(),
+          resendAvailableAt: Date.now() + cooldownSeconds * 1000,
+        },
       });
     } catch (error) {
-      console.error(error);
       setWarning(error.response?.data?.message || "Something went wrong.");
     } finally {
       submittingRef.current = false;

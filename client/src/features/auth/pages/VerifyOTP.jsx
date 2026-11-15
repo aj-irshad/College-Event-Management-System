@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { verifyOTP } from "../../../services/authService";
+import { resendOTP, verifyOTP } from "../../../services/authService";
 import VerifyOTPForm from "../components/VerifyOTPForm";
 import { MailCheck } from "lucide-react";
 import "../styles/VerifyOTP.css";
@@ -13,8 +13,15 @@ function VerifyOTP() {
 
   const [otp, setOtp] = useState("");
   const [warning, setWarning] = useState("");
+  const [info, setInfo] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendAvailableAt, setResendAvailableAt] = useState(() =>
+    Number(location.state?.resendAvailableAt) || null,
+  );
+  const [resendSecondsLeft, setResendSecondsLeft] = useState(0);
   const submittingRef = useRef(false);
+  const resendingRef = useRef(false);
 
   // Redirect if accessed directly without an email in state
   useEffect(() => {
@@ -23,11 +30,24 @@ function VerifyOTP() {
     }
   }, [email, navigate]);
 
+  useEffect(() => {
+    if (!resendAvailableAt) {
+      setResendSecondsLeft(0);
+      return undefined;
+    }
+    const updateCountdown = () => {
+      setResendSecondsLeft(Math.max(0, Math.ceil((resendAvailableAt - Date.now()) / 1000)));
+    };
+    updateCountdown();
+    const timer = window.setInterval(updateCountdown, 1000);
+    return () => window.clearInterval(timer);
+  }, [resendAvailableAt]);
+
   if (!email) return null;
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (submittingRef.current) return;
+    if (submittingRef.current || resendingRef.current) return;
 
     if (otp.length !== 4) {
       setWarning("OTP must be exactly 4 digits");
@@ -48,6 +68,26 @@ function VerifyOTP() {
     }
   }
 
+  async function handleResend() {
+    if (submittingRef.current || resendingRef.current || resendSecondsLeft > 0) return;
+    resendingRef.current = true;
+    setIsResending(true);
+    setWarning("");
+    setInfo("");
+    try {
+      const response = await resendOTP({ email });
+      const cooldownSeconds = Math.max(0, Number(response.data?.resendCooldownSeconds) || 60);
+      setResendAvailableAt(Date.now() + cooldownSeconds * 1000);
+      setOtp("");
+      setInfo(response.data?.message || "A new verification code was sent.");
+    } catch (error) {
+      setWarning(error.response?.data?.message || "Could not resend the verification email. Please try again.");
+    } finally {
+      resendingRef.current = false;
+      setIsResending(false);
+    }
+  }
+
   return (
     <main className="VerifyMain">
       <section className="verifyBanner">
@@ -61,8 +101,12 @@ function VerifyOTP() {
         otp={otp}
         setOtp={setOtp}
         warning={warning}
+        info={info}
         handleSubmit={handleSubmit}
         isSubmitting={isSubmitting}
+        isResending={isResending}
+        resendSecondsLeft={resendSecondsLeft}
+        handleResend={handleResend}
       />
     </main>
   );

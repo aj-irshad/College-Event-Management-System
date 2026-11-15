@@ -1,5 +1,5 @@
 import { useContext, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import eventContext from "../../context/EventContext";
 import blogContext from "../../context/blogContext";
@@ -9,6 +9,7 @@ import "../searchPage.css";
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const query = searchParams.get("q")?.toLowerCase() || "";
   const [filter, setFilter] = useState("All");
@@ -34,6 +35,14 @@ const SearchPage = () => {
     ...(filter !== "Blogs" ? eventResults.map((event) => ({ ...event, kind: "event" })) : []),
     ...(filter !== "Events" ? blogResults.map((blog) => ({ ...blog, kind: "blog" })) : []),
   ];
+
+  const openResult = (item) => {
+    if (item.kind === "event") {
+      navigate(`/events/${item._id}`, { state: { from: `${location.pathname}${location.search}` } });
+      return;
+    }
+    navigate(`/blogs/${item._id}`);
+  };
 
   return (
     <section className="searchPage">
@@ -62,11 +71,11 @@ const SearchPage = () => {
               className="searchResultCard"
               role="link"
               tabIndex={0}
-              onClick={() => navigate(item.kind === "event" ? `/participate/${item._id}` : `/blogs/${item._id}`)}
+              onClick={() => openResult(item)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
-                  navigate(item.kind === "event" ? `/participate/${item._id}` : `/blogs/${item._id}`);
+                  openResult(item);
                 }
               }}
             >

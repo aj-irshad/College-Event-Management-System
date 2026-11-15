@@ -8,7 +8,10 @@ import {
   markNotificationsAsRead,
   markNotificationAsRead,
 } from "../services/notification.js";
-import { isBrowserPushSupported, subscribeBrowserPush } from "../services/pushNotifications";
+import {
+  isBrowserPushSupported,
+  subscribeBrowserPush,
+} from "../services/pushNotifications";
 
 import "../styles/header.css";
 
@@ -32,6 +35,10 @@ const getNotificationPath = (item, user) => {
 
 const Header = ({ user, onToggleMenu, isMobileMenuOpen }) => {
   const navigate = useNavigate();
+  const profileName =
+    typeof user?.name === "string" && user.name.trim()
+      ? user.name.trim()
+      : "there";
   const [search, setSearch] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -58,9 +65,16 @@ const Header = ({ user, onToggleMenu, isMobileMenuOpen }) => {
   }, []);
 
   useEffect(() => {
-    const onNew = (item) => setNotifications((prev) => [item, ...prev.filter((n) => n._id !== item._id)].slice(0, 100));
-    const onRead = ({ _id }) => setNotifications((prev) => prev.map((n) => n._id === _id ? { ...n, read: true } : n));
-    const onReadAll = () => setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    const onNew = (item) =>
+      setNotifications((prev) =>
+        [item, ...prev.filter((n) => n._id !== item._id)].slice(0, 100),
+      );
+    const onRead = ({ _id }) =>
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === _id ? { ...n, read: true } : n)),
+      );
+    const onReadAll = () =>
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     socket.on("notification:new", onNew);
     socket.on("notification:read", onRead);
     socket.on("notification:read-all", onReadAll);
@@ -98,22 +112,33 @@ const Header = ({ user, onToggleMenu, isMobileMenuOpen }) => {
     setPushError(false);
     try {
       if (!isBrowserPushSupported()) {
-        throw new Error("Browser notifications are unsupported here; in-app notifications remain available.");
+        throw new Error(
+          "Browser notifications are unsupported here; in-app notifications remain available.",
+        );
       }
       if (Notification.permission === "denied") {
-        throw new Error("Notifications are blocked in browser settings; in-app notifications remain available.");
+        throw new Error(
+          "Notifications are blocked in browser settings; in-app notifications remain available.",
+        );
       }
-      const permission = Notification.permission === "granted"
-        ? "granted"
-        : await Notification.requestPermission();
+      const permission =
+        Notification.permission === "granted"
+          ? "granted"
+          : await Notification.requestPermission();
       if (permission !== "granted") {
-        throw new Error("Notification permission was not granted; in-app notifications remain available.");
+        throw new Error(
+          "Notification permission was not granted; in-app notifications remain available.",
+        );
       }
       await subscribeBrowserPush();
       setPushMessage("Browser notifications are enabled for this device.");
     } catch (error) {
       setPushError(true);
-      setPushMessage(error.response?.data?.message || error.message || "Could not enable browser notifications.");
+      setPushMessage(
+        error.response?.data?.message ||
+          error.message ||
+          "Could not enable browser notifications.",
+      );
     } finally {
       setPushBusy(false);
     }
@@ -216,7 +241,11 @@ const Header = ({ user, onToggleMenu, isMobileMenuOpen }) => {
           </button>
 
           {showNotifications && (
-            <div className="notificationDropdown" role="region" aria-label="Notification list">
+            <div
+              className="notificationDropdown"
+              role="region"
+              aria-label="Notification list"
+            >
               <div className="notificationHeader">
                 <div className="notificationTitleArea">
                   <h3>Notifications</h3>
@@ -283,7 +312,18 @@ const Header = ({ user, onToggleMenu, isMobileMenuOpen }) => {
                   >
                     {pushBusy ? "Enabling…" : "Enable browser notifications"}
                   </button>
-                  {pushMessage && <p className={pushError ? "browserPushMessage error" : "browserPushMessage"} role={pushError ? "alert" : "status"}>{pushMessage}</p>}
+                  {pushMessage && (
+                    <p
+                      className={
+                        pushError
+                          ? "browserPushMessage error"
+                          : "browserPushMessage"
+                      }
+                      role={pushError ? "alert" : "status"}
+                    >
+                      {pushMessage}
+                    </p>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -300,11 +340,11 @@ const Header = ({ user, onToggleMenu, isMobileMenuOpen }) => {
         <section className="userProfile">
           <img
             src={resolveImageUrl(user.profileImage, "profiles")}
-            alt={`${user.name}'s profile`}
+            alt={`${profileName === "there" ? "User" : profileName}'s profile`}
             className="userImage"
           />
           <article className="profileInfo">
-            <p className="userName">Hi, {user.name}</p>
+            <p className="userName">{profileName}</p>
             <p className="department">{user.department}</p>
           </article>
         </section>

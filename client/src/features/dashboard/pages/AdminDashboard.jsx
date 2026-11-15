@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   CalendarClock, Flame, CheckCircle2, Newspaper, BarChart3,
@@ -12,6 +12,8 @@ import blogContext from "../../../context/blogContext.jsx";
 import feedbackContext from "../../../context/feedbackContext.jsx";
 import pollContext from "../../../context/pollContext.jsx";
 import { fetchAdminFeedbackForms } from "../../../services/feedbackService.js";
+import { getAllParticipants } from "../../../services/participantService.js";
+import { getAdminPayments } from "../../../services/payment.js";
 import apiRequest from "../../../api/apiRequest.js";
 import socket from "../../../api/socket.js";
 import "../styles/adminDashboard.css";
@@ -24,31 +26,48 @@ const AdminDashboard = () => {
   const { totalPolls, pollResults } = useContext(pollContext);
   const [studentCount, setStudentCount] = useState(null);
   const [feedbackForms, setFeedbackForms] = useState([]);
+  const [pendingParticipationCount, setPendingParticipationCount] = useState(null);
+  const [pendingPaymentCount, setPendingPaymentCount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const overviewRequest = useRef(0);
 
   const loadOverview = useCallback(async () => {
+    const requestId = ++overviewRequest.current;
     try {
-      const [users, forms] = await Promise.all([
+      const [users, forms, pendingParticipations, pendingPayments] = await Promise.all([
         apiRequest.get("/user/admin/student-count"),
         fetchAdminFeedbackForms(),
+        getAllParticipants({ approvalStatus: "Pending" }),
+        getAdminPayments("Pending"),
       ]);
+      if (requestId !== overviewRequest.current) return;
       setStudentCount(users.data.totalStudents);
       setFeedbackForms(forms.data.feedback || []);
+      setPendingParticipationCount(Array.isArray(pendingParticipations.data) ? pendingParticipations.data.length : 0);
+      setPendingPaymentCount(Array.isArray(pendingPayments.data) ? pendingPayments.data.length : 0);
       setError("");
     } catch (requestError) {
-      setError(requestError.response?.data?.message || "Some dashboard data could not be loaded.");
+      if (requestId === overviewRequest.current) {
+        setError(requestError.response?.data?.message || "Some dashboard data could not be loaded.");
+      }
     } finally {
-      setLoading(false);
+      if (requestId === overviewRequest.current) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     void loadOverview();
     socket.on("feedback:admin-changed", loadOverview);
+    socket.on("participation:registered", loadOverview);
+    socket.on("participation:approval-updated", loadOverview);
+    socket.on("payments:updated", loadOverview);
     socket.on("connect", loadOverview);
     return () => {
       socket.off("feedback:admin-changed", loadOverview);
+      socket.off("participation:registered", loadOverview);
+      socket.off("participation:approval-updated", loadOverview);
+      socket.off("payments:updated", loadOverview);
       socket.off("connect", loadOverview);
     };
   }, [loadOverview]);
@@ -82,6 +101,14 @@ const AdminDashboard = () => {
       </header>
 
       {error && <p role="alert">{error}</p>}
+      {(pendingParticipationCount > 0 || pendingPaymentCount > 0) && <section className="dashboard-pending-work" aria-label="Pending administrative work">
+        {pendingParticipationCount > 0 && <Link to="/participations" className="dashboard-pending-link participation-pending-link">
+          <Users size={19} /><span><strong>{pendingParticipationCount}</strong> participation {pendingParticipationCount === 1 ? "request" : "requests"} awaiting approval</span>
+        </Link>}
+        {pendingPaymentCount > 0 && <Link to="/admin/payments" className="dashboard-pending-link payment-pending-link">
+          <CreditCard size={19} /><span><strong>{pendingPaymentCount}</strong> payment {pendingPaymentCount === 1 ? "submission" : "submissions"} awaiting verification</span>
+        </Link>}
+      </section>}
       <section className="stats-grid" aria-label="EMS summary">
         {stats.map(({ id, label, count, Icon, colorClass }) => (
           <article key={id} className={`stat-card ${colorClass}`}>

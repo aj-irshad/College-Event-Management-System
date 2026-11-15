@@ -145,6 +145,10 @@
   background: #fef3c7;
   color: #b45309;
 }
+.payment-badge.pending { color: #92400e; background: #fef3c7; }
+.payment-badge.approved { color: #047857; background: #d1fae5; }
+.payment-badge.rejected { color: #b91c1c; background: #fee2e2; }
+.payment-badge.unavailable { color: #475569; background: #f1f5f9; white-space: normal; }
 
 .approval-status-badge {
   display: inline-flex;
@@ -158,6 +162,7 @@
 .approval-status-badge.pending { color: #92400e; background: #fef3c7; }
 .approval-status-badge.approved { color: #047857; background: #d1fae5; }
 .approval-status-badge.not-approved { color: #b91c1c; background: #fee2e2; }
+.approval-status-badge.rejected { color: #b91c1c; background: #fee2e2; }
 
 /* Action Pass Button */
 .view-ticket-btn {

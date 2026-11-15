@@ -22,12 +22,15 @@ import "../styles/userDashboard.css";
 
 const UserDashboard = ({ user = { name: "User" } }) => {
   const navigate = useNavigate();
+  const firstName = typeof user?.name === "string"
+    ? user.name.trim().split(/\s+/)[0]
+    : "";
   const { events, upcomingEvents, ongoingEvents } = useContext(eventContext);
   const { blogs, totalBlogs } = useContext(blogContext);
   const { pollForm } = useContext(pollContext);
   const activePolls = pollForm.filter((poll) => poll.status === "Active");
   const recentItems = useMemo(() => [
-    ...events.map((item) => ({ id: item._id, type: "Event", title: item.title, date: item.createdAt || item.start_at, to: `/participate/${item._id}` })),
+    ...events.map((item) => ({ id: item._id, type: "Event", title: item.title, date: item.createdAt || item.start_at, to: `/events/${item._id}` })),
     ...blogs.map((item) => ({ id: item._id, type: "Blog", title: item.title, date: item.createdAt, to: `/blogs/${item._id}` })),
     ...pollForm.map((item) => ({ id: item._id, type: "Poll", title: item.question, date: item.createdAt, to: `/polls?poll=${item._id}` })),
   ].filter((item) => Number.isFinite(new Date(item.date).getTime()))
@@ -39,7 +42,7 @@ const UserDashboard = ({ user = { name: "User" } }) => {
       {/* Section 1: User Header */}
       <header className="dashboard-header" style={{ padding: "1rem" }}>
         <div className="header-text">
-          <h1 className="dashboard-title">Welcome back, {user.name}!</h1>
+          <h1 className="dashboard-title">Welcome back, {firstName || "there"}!</h1>
 
           <p className="dashboard-subtitle">
             Stay updated on your upcoming schedules, community polls, and latest

@@ -5,6 +5,7 @@ import "../styles/payments.css";
 
 const AdminPayments = () => {
   const [status, setStatus] = useState("Pending");
+  const [eventFilter, setEventFilter] = useState("");
   const [payments, setPayments] = useState([]);
   const [revenue, setRevenue] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +17,7 @@ const AdminPayments = () => {
 
   const load = useCallback(async () => {
     try {
-      const [paymentResponse, revenueResponse] = await Promise.all([getAdminPayments(status), getAdminRevenue()]);
+      const [paymentResponse, revenueResponse] = await Promise.all([getAdminPayments(status, eventFilter), getAdminRevenue()]);
       setPayments(Array.isArray(paymentResponse.data) ? paymentResponse.data : []);
       setRevenue(Array.isArray(revenueResponse.data) ? revenueResponse.data : []);
       setError("");
@@ -25,7 +26,7 @@ const AdminPayments = () => {
     } finally {
       setLoading(false);
     }
-  }, [status]);
+  }, [status, eventFilter]);
 
   useEffect(() => {
     setLoading(true);
@@ -53,6 +54,12 @@ const AdminPayments = () => {
     }
   };
 
+  const reviewEventPayments = (eventId) => {
+    setEventFilter(eventId);
+    setStatus("All");
+    document.getElementById("payment-submissions")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const decide = async (payment, decision) => {
     const rejectionReason = decision === "Rejected"
       ? window.prompt("Enter a reason for rejecting this payment:")?.trim()
@@ -76,17 +83,30 @@ const AdminPayments = () => {
     <main className="payment-page">
       <header className="payment-page-header"><div><h1>Payment Review</h1><p>Verify eSewa QR receipts manually before confirming registration.</p></div></header>
       <section className="payment-revenue-section">
-        <h2>Approved event revenue</h2>
-        {revenue.length ? <div className="payment-revenue-grid">{revenue.map((row) => <article className="payment-revenue-card" key={row.event._id}><strong>{row.event.title}</strong><span>NPR {Number(row.revenue).toFixed(2)}</span><small>{row.approvedPaymentCount} approved payment{row.approvedPaymentCount === 1 ? "" : "s"}</small></article>)}</div> : <p>No approved payments have been recorded.</p>}
+        <h2>Paid events</h2>
+        {revenue.length ? <div className="payment-table-wrap"><table className="payment-table paid-event-table">
+          <thead><tr><th>Event title</th><th>Start</th><th>End</th><th>No. of participation</th><th>Amount collected</th></tr></thead>
+          <tbody>{revenue.map((row) => <tr key={row.event._id}>
+            <td><button type="button" className="payment-event-review-link" onClick={() => reviewEventPayments(row.event._id)} aria-label={`Review payments for ${row.event.title}`}>{row.event.title}</button></td>
+            <td>{row.event.start_at ? new Date(row.event.start_at).toLocaleString() : "—"}</td>
+            <td>{row.event.end_at ? new Date(row.event.end_at).toLocaleString() : "—"}</td>
+            <td>{row.approvedParticipationCount}</td>
+            <td className="payment-collected-amount">NPR {Number(row.revenue).toFixed(2)}</td>
+          </tr>)}</tbody>
+        </table></div> : <section className="payment-empty">No paid events are available.</section>}
       </section>
-      <label className="payment-filter-label">Payment status
-        <select value={status} onChange={(event) => setStatus(event.target.value)}>
-          {["Pending", "Approved", "Rejected", "All"].map((item) => <option key={item}>{item}</option>)}
-        </select>
-      </label>
+      <section id="payment-submissions" className="payment-submission-section">
+        <div className="payment-submissions-heading"><div><h2>Payment submissions</h2><p>Open a proof to inspect it, then approve or reject pending submissions.</p></div>
+          {eventFilter && <button type="button" className="payment-secondary-btn" onClick={() => setEventFilter("")}>Show all events</button>}
+        </div>
+        <label className="payment-filter-label">Payment status
+          <select value={status} onChange={(event) => setStatus(event.target.value)}>
+            {["Pending", "Approved", "Rejected", "All"].map((item) => <option key={item}>{item}</option>)}
+          </select>
+        </label>
       {error && <p className="payment-error" role="alert">{error}</p>}
       {message && <p className="payment-success" role="status">{message}</p>}
-      {loading ? <p role="status">Loading payment submissions…</p> : payments.length === 0 ? <section className="payment-empty">No {status.toLowerCase()} payment submissions.</section> : (
+      {loading ? <p role="status">Loading payment submissions…</p> : payments.length === 0 ? <section className="payment-empty">No {status.toLowerCase()} payment submissions{eventFilter ? " for this event" : ""}.</section> : (
         <div className="payment-table-wrap"><table className="payment-table">
           <thead><tr><th>Participant</th><th>Event</th><th>Amount</th><th>Reference</th><th>Submitted</th><th>Status</th><th>Proof</th><th>Review</th></tr></thead>
           <tbody>{payments.map((payment) => <tr key={payment._id}>
@@ -101,6 +121,7 @@ const AdminPayments = () => {
           </tr>)}</tbody>
         </table></div>
       )}
+      </section>
       {proofUrl && <div className="payment-modal-backdrop" role="presentation" onClick={() => setProofUrl("")}>
         <section className="payment-proof-modal" role="dialog" aria-modal="true" aria-label="Payment proof" onClick={(event) => event.stopPropagation()}>
           <button type="button" className="payment-close-btn" onClick={() => setProofUrl("")}>Close</button>

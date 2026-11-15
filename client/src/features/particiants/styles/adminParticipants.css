@@ -39,18 +39,32 @@
   border-radius: 10px;
 }
 
-.pending-payment-review {
-  margin: 0 0 1.5rem;
-  padding: 1rem;
-  background: #fffbeb;
-  border: 1px solid #fcd34d;
-  border-radius: 14px;
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
-.pending-payment-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 0.8rem; }
-.pending-payment-heading h2 { margin: 0 0 0.3rem; color: #78350f; font-size: var(--ems-font-section-heading); }
-.pending-payment-heading p { margin: 0; color: #92400e; font-size: var(--ems-font-description); }
-.pending-payment-review-link { display: inline-flex; align-items: center; justify-content: center; padding: 0.45rem 0.7rem; border-radius: 7px; background: #4f46e5; color: white; font-size: var(--ems-font-button); font-weight: 700; text-decoration: none; white-space: nowrap; }
-.pending-payment-empty { margin: 0; color: #64748b; font-size: var(--ems-font-description); }
+
+.review-payments-btn {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid #4f46e5;
+  border-radius: 9px;
+  background: #4f46e5;
+  color: #ffffff;
+  font-size: var(--ems-font-button);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.review-payments-btn:hover { background: #4338ca; border-color: #4338ca; }
+
 .payment-badge.pending { color: #92400e; background: #fef3c7; }
 
 .participant-filters {
@@ -98,17 +112,19 @@
   border-radius: 16px;
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  min-width: 800px;
+  min-width: 1240px;
 }
 
 .admin-table th {
-  padding: 1.15rem 1.5rem;
+  padding: 0.85rem 1rem;
   background: #f8fafc;
   color: #475569;
   font-size: var(--ems-font-table-heading);
@@ -116,14 +132,29 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
 }
 
 .admin-table td {
-  padding: 1rem 1.5rem;
+  padding: 0.9rem 1rem;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
   font-size: var(--ems-font-table-content);
+  line-height: 1.45;
 }
+
+.admin-table tbody tr:hover { background: #fafbff; }
+.admin-table td:nth-child(1) { min-width: 205px; }
+.admin-table td:nth-child(2),
+.admin-table td:nth-child(6),
+.admin-table td:nth-child(7),
+.admin-table td:nth-child(8),
+.admin-table td:nth-child(9),
+.admin-table td:nth-child(10),
+.admin-table td:nth-child(11) { white-space: nowrap; }
+.admin-table td:nth-child(3),
+.admin-table td:nth-child(4),
+.admin-table td:nth-child(5) { min-width: 150px; }
 
 .admin-table tr:last-child td {
   border-bottom: none;
@@ -133,6 +164,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  min-width: 185px;
 }
 
 .user-identity strong {
@@ -143,6 +175,7 @@
 .user-identity small {
   color: #64748b;
   font-size: var(--ems-font-meta);
+  white-space: nowrap;
 }
 
 .contact-info,
@@ -206,7 +239,10 @@
 .approval-status-badge.approved { color: #047857; background: #d1fae5; }
 .approval-status-badge.not-approved { color: #b91c1c; background: #fee2e2; }
 .payment-badge.free { color: #047857; background: #ecfdf5; }
-.payment-badge.paid { color: #92400e; background: #fef3c7; max-width: 230px; white-space: normal; }
+.payment-badge.pending { color: #92400e; background: #fef3c7; }
+.payment-badge.approved { color: #047857; background: #d1fae5; }
+.payment-badge.rejected { color: #b91c1c; background: #fee2e2; }
+.payment-badge.unavailable { color: #475569; background: #f1f5f9; white-space: normal; }
 .approval-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .approval-action-btn { padding: 0.4rem 0.6rem; border: 0; border-radius: 7px; font: inherit; font-size: var(--ems-font-compact); font-weight: 700; cursor: pointer; }
 .approval-action-btn:disabled { cursor: wait; opacity: 0.6; }
@@ -220,5 +256,6 @@
 @media (max-width: 560px) {
   .participant-filters { grid-template-columns: 1fr; }
   .participant-roster-heading { align-items: flex-start; flex-direction: column; }
-  .pending-payment-heading { align-items: flex-start; flex-direction: column; }
+  .admin-header-actions { width: 100%; justify-content: space-between; }
+  .review-payments-btn { flex: 1; }
 }

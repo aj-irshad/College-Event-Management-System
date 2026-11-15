@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
-import { Users, Phone, Calendar, Shield, Search, RotateCcw } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Users, Phone, Calendar, Shield, Search, RotateCcw, CreditCard } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import socket from "../../../api/socket";
 import { getAllParticipants, updateParticipationApproval } from "../../../services/participantService";
 import { getEvents } from "../../../services/eventService";
-import { getAdminPayments } from "../../../services/payment";
 import "../styles/adminParticipants.css";
 
+const paymentStatusLabels = {
+  Approved: "Payment Approved",
+  Pending: "Payment Pending",
+  Rejected: "Payment Rejected",
+};
+
 const AdminParticipants = () => {
+  const navigate = useNavigate();
   const [participants, setParticipants] = useState([]);
-  const [pendingPayments, setPendingPayments] = useState([]);
-  const [pendingPaymentsLoading, setPendingPaymentsLoading] = useState(true);
-  const [pendingPaymentsError, setPendingPaymentsError] = useState("");
   const [events, setEvents] = useState([]);
   const [filters, setFilters] = useState({ status: "All", role: "All", approvalStatus: "All", search: "", eventId: "" });
   const [loading, setLoading] = useState(true);
@@ -47,33 +50,6 @@ const AdminParticipants = () => {
   }, [filters]);
 
   useEffect(() => {
-    let active = true;
-    let requestRevision = 0;
-    const refreshPendingPayments = () => {
-      const currentRevision = ++requestRevision;
-      setPendingPaymentsLoading(true);
-      getAdminPayments("Pending").then(({ data }) => {
-        if (active && currentRevision === requestRevision) {
-          setPendingPayments(Array.isArray(data) ? data : []);
-          setPendingPaymentsError("");
-        }
-      }).catch((requestError) => {
-        if (active && currentRevision === requestRevision) setPendingPaymentsError(requestError.response?.data?.message || "Could not load pending payment submissions.");
-      }).finally(() => {
-        if (active && currentRevision === requestRevision) setPendingPaymentsLoading(false);
-      });
-    };
-    refreshPendingPayments();
-    socket.on("payments:updated", refreshPendingPayments);
-    socket.on("connect", refreshPendingPayments);
-    return () => {
-      active = false;
-      socket.off("payments:updated", refreshPendingPayments);
-      socket.off("connect", refreshPendingPayments);
-    };
-  }, []);
-
-  useEffect(() => {
     const refreshParticipants = () => {
       getAllParticipants(filters).then(({ data }) => {
         setParticipants(Array.isArray(data) ? data : []);
@@ -82,14 +58,23 @@ const AdminParticipants = () => {
       });
     };
     socket.on("participation:registered", refreshParticipants);
+    socket.on("participation:approval-updated", refreshParticipants);
     socket.on("payments:updated", refreshParticipants);
     return () => {
       socket.off("participation:registered", refreshParticipants);
+      socket.off("participation:approval-updated", refreshParticipants);
       socket.off("payments:updated", refreshParticipants);
     };
   }, [filters]);
 
   const updateFilter = (key, value) => setFilters((current) => ({ ...current, [key]: value }));
+  const handleEventStatusChange = (status) => {
+    if (status === "Paid Events") {
+      navigate("/admin/payments");
+      return;
+    }
+    updateFilter("status", status);
+  };
   const selectedEvent = events.find((event) => event._id === filters.eventId);
 
   const changeApprovalStatus = async (participant, approvalStatus) => {
@@ -120,45 +105,17 @@ const AdminParticipants = () => {
           <h1>Event Participants</h1>
           <p>Review registrations, participant details, and event roles.</p>
         </div>
-        <div className="participant-count-pill"><Users size={16} /><span>{participants.length} Records</span></div>
-      </header>
-
-      <section className="pending-payment-review" aria-labelledby="pending-payment-title">
-        <div className="pending-payment-heading">
-          <div>
-            <h2 id="pending-payment-title">Paid event requests awaiting review</h2>
-            <p>These are payment submissions, not confirmed participation records.</p>
-          </div>
-          <Link className="pending-payment-review-link" to="/admin/payments">Review all payments</Link>
+        <div className="admin-header-actions">
+          <Link className="review-payments-btn" to="/admin/payments"><CreditCard size={17} />Review Payments</Link>
+          <div className="participant-count-pill"><Users size={16} /><span>{participants.length} Records</span></div>
         </div>
-        {pendingPaymentsError && <p className="participant-error" role="alert">{pendingPaymentsError}</p>}
-        {pendingPaymentsLoading ? (
-          <p className="pending-payment-empty" role="status">Loading pending payment submissions…</p>
-        ) : pendingPayments.length === 0 ? (
-          <p className="pending-payment-empty">No pending paid-event submissions.</p>
-        ) : (
-          <div className="admin-table-container">
-            <table className="admin-table pending-payment-table">
-              <thead><tr><th>Participant</th><th>Event</th><th>Amount</th><th>Transaction reference</th><th>Submitted</th><th>Payment status</th><th>Review</th></tr></thead>
-              <tbody>{pendingPayments.map((payment) => <tr key={payment._id}>
-                <td><div className="user-identity"><strong>{payment.user?.name || "Unknown User"}</strong><small>{payment.user?.email || "No email"}</small></div></td>
-                <td>{payment.event?.title || "Event unavailable"}</td>
-                <td>NPR {Number(payment.amount).toFixed(2)}</td>
-                <td>{payment.transactionReference || "—"}</td>
-                <td>{payment.createdAt ? new Date(payment.createdAt).toLocaleDateString() : "—"}</td>
-                <td><span className="payment-badge pending">Payment Pending</span></td>
-                <td><Link className="pending-payment-review-link" to="/admin/payments">Inspect proof &amp; decide</Link></td>
-              </tr>)}</tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      </header>
 
       <section className="participant-filters" aria-label="Filter participation records">
         <label>
           <span>Event status</span>
-          <select value={filters.status} onChange={(event) => updateFilter("status", event.target.value)}>
-            {["All", "Upcoming", "Ongoing", "Completed"].map((value) => <option key={value}>{value}</option>)}
+          <select value={filters.status} onChange={(event) => handleEventStatusChange(event.target.value)}>
+            {["All", "Upcoming", "Ongoing", "Completed", "Paid Events"].map((value) => <option key={value}>{value}</option>)}
           </select>
         </label>
         <label>
@@ -210,6 +167,13 @@ const AdminParticipants = () => {
               const event = item.event || {};
               const approvalStatus = item.approvalStatus || "Pending";
               const isPaid = Number(event.price) > 0;
+              const paymentAmount = item.paymentAmount ?? event.price;
+              const paymentText = !isPaid
+                ? "Free event"
+                : item.paymentStatus
+                  ? `${paymentStatusLabels[item.paymentStatus] || "Payment status unavailable"} · NPR ${Number(paymentAmount).toFixed(2)}`
+                  : `Payment status unavailable · Expected NPR ${Number(event.price).toFixed(2)}`;
+              const paymentClass = isPaid ? (item.paymentStatus || "unavailable").toLowerCase() : "free";
               return <tr key={item._id}>
                 <td><div className="user-identity"><strong>{user.name || "Unknown User"}</strong><small>{user.email || "No email"}</small></div></td>
                 <td><span className="contact-info"><Phone size={14} />{user.contact || "N/A"}</span></td>
@@ -218,7 +182,7 @@ const AdminParticipants = () => {
                 <td>{event.department || "—"}</td>
                 <td><span className={`event-status-badge ${String(event.status || "").toLowerCase()}`}>{event.status || "—"}</span></td>
                 <td><span className={`role-badge ${item.participationType.toLowerCase().replace(/\s+/g, "-")}`}><Shield size={13} />{item.participationType}</span></td>
-                <td><span className={`payment-badge ${isPaid ? "paid" : "free"}`}>{isPaid ? `Paid event · Rs ${Number(event.price).toFixed(2)} (verification status unavailable)` : "Free event"}</span></td>
+                <td><span className={`payment-badge ${paymentClass}`}>{paymentText}</span></td>
                 <td><span className={`approval-status-badge ${approvalStatus.toLowerCase().replace(/\s+/g, "-")}`}>{approvalStatus}</span></td>
                 <td className="date-cell">{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "—"}</td>
                 <td><div className="approval-actions">

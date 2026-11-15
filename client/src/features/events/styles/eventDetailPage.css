@@ -1,0 +1,239 @@
+/* Event Page Styles */
+
+.event-page {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  min-height: auto;
+  padding: 2rem clamp(1rem, 4vw, 3rem);
+  box-sizing: border-box;
+}
+
+/* Back Link */
+.back-to-events {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary-color, #6366f1);
+  text-decoration: none;
+  margin-bottom: 2rem;
+  transition: opacity 0.2s ease;
+}
+
+.back-to-events:hover {
+  opacity: 0.8;
+}
+
+/* Header */
+.event-page-header {
+  margin-bottom: 2rem;
+}
+
+.event-page-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.event-page-header h1 {
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-weight: 800;
+  color: var(--text-primary, #111827);
+  margin: 0 0 1rem 0;
+  line-height: 1.2;
+}
+
+.event-page-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.95rem;
+  color: var(--text-secondary, #4b5563);
+}
+
+.event-page-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Info Grid Card */
+.event-page-info-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 1.5rem;
+  background: var(--card-bg, #f9fafb);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.event-info-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  color: var(--text-primary, #111827);
+}
+
+.event-info-item svg {
+  color: var(--primary-color, #6366f1);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.event-info-item strong {
+  display: block;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary, #6b7280);
+  margin-bottom: 0.2rem;
+}
+
+.event-info-item p {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Content */
+.event-page-content {
+  margin-bottom: 3rem;
+}
+
+.event-page-content h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  margin-bottom: 0.75rem;
+}
+
+.event-page-content p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--text-secondary, #4b5563);
+  white-space: pre-line;
+}
+
+/* Actions Section */
+.event-page-actions {
+  display: flex;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+
+.event-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 9px;
+  border: none;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.event-btn-primary {
+  background: var(--primary-color, #6366f1);
+  color: #ffffff;
+}
+
+.event-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.25);
+}
+
+.event-btn-success {
+  background: #10b981;
+  color: #ffffff;
+  cursor: not-allowed;
+}
+
+.event-btn-pending {
+  background: #fef3c7;
+  color: #92400e;
+  cursor: not-allowed;
+}
+
+.event-btn-rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+  cursor: not-allowed;
+}
+
+.event-btn-secondary {
+  background: #e5e7eb;
+  color: #374151;
+  cursor: not-allowed;
+}
+
+/* Not Found View */
+.event-not-found {
+  text-align: center;
+  padding: 4rem 1rem;
+}
+
+.event-not-found h2 {
+  font-size: 1.8rem;
+  color: var(--text-primary, #111827);
+  margin-bottom: 0.5rem;
+}
+
+.event-not-found p {
+  color: var(--text-secondary, #6b7280);
+  margin-bottom: 1.5rem;
+}
+
+.back-to-events {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary-color, #6366f1);
+  background: none; /* <-- add this */
+  border: none; /* <-- add this */
+  padding: 0; /* <-- add this */
+  cursor: pointer; /* <-- add this */
+  margin-bottom: 2rem;
+  transition: opacity 0.2s ease;
+}
+
+@media (max-width: 600px) {
+  .event-page {
+    padding-top: 1.25rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .event-page-info-card {
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .event-page-content {
+    margin-bottom: 1.75rem;
+  }
+
+  .event-page-content p {
+    font-size: 0.95rem;
+    overflow-wrap: anywhere;
+  }
+
+  .event-page-actions {
+    flex-direction: column;
+  }
+
+  .event-page-btn {
+    width: 100%;
+  }
+}

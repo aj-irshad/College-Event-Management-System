@@ -9,7 +9,7 @@ const submitManualPayment = (formData) =>
   });
 
 const getMyPayments = () => apiRequest.get("/payments/my");
-const getAdminPayments = (status = "All") => apiRequest.get("/payments/admin", { params: { status } });
+const getAdminPayments = (status = "All", eventId = "") => apiRequest.get("/payments/admin", { params: { status, eventId } });
 const getAdminRevenue = () => apiRequest.get("/payments/admin/revenue");
 const reviewPayment = (paymentId, decision, rejectionReason = "") =>
   apiRequest.patch(`/payments/admin/${encodeURIComponent(paymentId)}/review`, { decision, rejectionReason });

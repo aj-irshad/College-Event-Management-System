@@ -32,6 +32,10 @@ const verifyOTP = async (otpData) => {
   return await apiRequest.post("/auth/verify-otp", otpData);
 };
 
+const resendOTP = async (signupData) => {
+  return await apiRequest.post("/auth/resend-otp", signupData);
+};
+
 export {
   login,
   signUp,
@@ -41,4 +45,5 @@ export {
   logout,
   getUserProfile,
   verifyOTP,
+  resendOTP,
 };

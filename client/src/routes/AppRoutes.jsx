@@ -49,6 +49,7 @@ import UserParticipants from "../features/particiants/pages/UserParticipants";
 import AdminParticipants from "../features/particiants/pages/AdminParticipants";
 import MyPayments from "../features/payments/pages/MyPayments";
 import AdminPayments from "../features/payments/pages/AdminPayments";
+import EventDetailPage from "../features/events/pages/EventDetailPage";
 
 const AppRoutes = () => {
   const { user, isAdmin } = useContext(authContext);
@@ -57,7 +58,10 @@ const AppRoutes = () => {
     <Routes>
       {/* Password recovery links remain usable even if an old session exists. */}
       <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password/:token" element={<CompletePasswordReset />} />
+      <Route
+        path="/reset-password/:token"
+        element={<CompletePasswordReset />}
+      />
 
       {/*  PUBLIC ROUTES  */}
 
@@ -85,10 +89,14 @@ const AppRoutes = () => {
           />
 
           {/*  USER / COMMON ROUTES  */}
+          {/* EVENT */}
           <Route path="/search" element={<SearchPage />} />
           <Route path="upcoming-events" element={<UpcomingEvents />} />
           <Route path="ongoing-events" element={<OngoingEvents />} />
           <Route path="completed-events" element={<CompletedEvent />} />
+          <Route path="events/:id" element={<EventDetailPage />} />
+
+          {/* BLOGS */}
           <Route path="blogs" element={<Blogs />} />
           <Route path="blogs/:id" element={<BlogPage />} />
           <Route path="feedback" element={<Feedback />} />
@@ -110,10 +118,16 @@ const AppRoutes = () => {
             <Route path="/post-blog" element={<PostBlog />} />
             <Route path="/edit-blog/:id" element={<EditBlog />} />
             <Route path="/feedback/create" element={<CreateFeedback />} />
-            <Route path="/feedback/forms/:formId/edit" element={<CreateFeedback />} />
+            <Route
+              path="/feedback/forms/:formId/edit"
+              element={<CreateFeedback />}
+            />
             <Route path="/feedback/:eventId" element={<CreateFeedback />} />
             <Route path="/feedback-forms" element={<FeedbackForms />} />
-            <Route path="/feedback-forms/:formId" element={<AdminFeedbackResponses />} />
+            <Route
+              path="/feedback-forms/:formId"
+              element={<AdminFeedbackResponses />}
+            />
             <Route path="/create-poll" element={<CreatePoll />} />
             <Route path="/edit-poll/:pollId" element={<EditPoll />} />
           </Route>

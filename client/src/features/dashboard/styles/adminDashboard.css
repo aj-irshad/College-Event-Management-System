@@ -180,6 +180,51 @@
   flex-wrap: wrap;
 }
 
+.dashboard-pending-work {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.dashboard-pending-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 48px;
+  padding: 0.7rem 1rem;
+  border: 1px solid;
+  border-radius: 10px;
+  font-size: var(--ems-font-body);
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.dashboard-pending-link strong {
+  font-size: 1.05em;
+}
+.participation-pending-link {
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+.participation-pending-link:hover {
+  background: #fef3c7;
+}
+.payment-pending-link {
+  color: #4338ca;
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+.payment-pending-link:hover {
+  background: #e0e7ff;
+}
+
+/* Admin Overview Grid & Content Cards */
+
 .admin-overview-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -188,13 +233,65 @@
 }
 
 .admin-overview-grid .content-card {
+  background: var(--card-bg, #ffffff);
+  border: 1px solid #edf1f5;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 5px 20px rgba(15, 23, 42, 0.04);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
   min-width: 0;
   height: 100%;
 }
 
+/* Card Header (Title & Links) */
+
+.content-card .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.content-card .card-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+}
+
+.content-card .card-header a {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary-color, #4f46e5);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.content-card .card-header a:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Empty State Paragraphs */
+
+.content-card > p {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary, #64748b);
+  font-style: italic;
+}
+
+/* Record Lists (Ongoing Events & Feedback Forms) */
+
 .dashboard-record-list {
-  display: grid;
-  gap: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -205,28 +302,113 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.8rem 0;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.dashboard-record-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.dashboard-record-list li:first-child {
+  padding-top: 0;
 }
 
 .dashboard-record-list li > div {
-  display: grid;
-  gap: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
   min-width: 0;
 }
 
+.dashboard-record-list li strong {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
 .dashboard-record-list li span {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #64748b);
   overflow-wrap: anywhere;
 }
 
-.dashboard-poll-summary {
-  padding: 0.8rem 0;
-  border-bottom: 1px solid #e2e8f0;
+/* List Action Buttons (e.g. "Open", "Responses") */
+
+.dashboard-record-list li a {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary-color, #4f46e5);
+  background: var(--primary-light, #eef2ff);
+  border-radius: 6px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
-.dashboard-poll-summary h3,
+.dashboard-record-list li a:hover {
+  background: var(--primary-color, #4f46e5);
+  color: #ffffff;
+}
+
+/* Active Poll Summary Cards */
+
+.dashboard-poll-summary {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.dashboard-poll-summary:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.dashboard-poll-summary h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+}
+
 .dashboard-poll-summary p {
-  margin: 0.35rem 0;
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #64748b);
+}
+
+.dashboard-poll-summary p + p {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #334155;
+  background: #f8fafc;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 2px;
+}
+
+.dashboard-poll-summary a {
+  align-self: flex-start;
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary-color, #4f46e5);
+  text-decoration: none;
+}
+
+.dashboard-poll-summary a:hover {
+  text-decoration: underline;
 }
 
 .admin-feedback-overview {
@@ -307,5 +489,10 @@
 
   .stat-card {
     min-height: 140px;
+  }
+
+  .dashboard-pending-work,
+  .dashboard-pending-link {
+    width: 100%;
   }
 }

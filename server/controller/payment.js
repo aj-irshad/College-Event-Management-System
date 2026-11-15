@@ -234,11 +234,17 @@ const getMyPayments = async (req, res) => {
 
 const getAdminPayments = async (req, res) => {
   const status = req.query.status || "All";
+  const eventId = req.query.eventId || "";
   if (!["All", "Pending", "Approved", "Rejected"].includes(status)) {
     return res.status(400).json({ message: "Invalid payment status filter" });
   }
+  if (eventId && !validId(eventId)) {
+    return res.status(400).json({ message: "Invalid event ID filter" });
+  }
   try {
-    const payments = await Payment.find(status === "All" ? {} : { status })
+    const query = status === "All" ? {} : { status };
+    if (eventId) query.event = eventId;
+    const payments = await Payment.find(query)
       .populate("user", "name email contact department")
       .populate("event", "title department start_at price")
       .sort({ createdAt: -1 });
@@ -261,7 +267,7 @@ const sendProof = async (payment, res) => {
     const disposition = payment.proofMimeType === "application/pdf" ? "attachment" : "inline";
     res.set({
       "Content-Type": payment.proofMimeType,
-      "Content-Disposition": `${disposition}; filename="payment-proof${payment.proofMimeType === "application/pdf" ? ".pdf" : payment.proofMimeType === "image/png" ? ".png" : ".jpg"}"`,
+      "Content-Disposition": `${disposition}; filename="payment-proof${payment.proofMimeType === "application/pdf" ? ".pdf" : payment.proofMimeType === "image/png" ? ".png" : payment.proofMimeType === "image/webp" ? ".webp" : ".jpg"}"`,
       "Cache-Control": "private, no-store",
       "X-Content-Type-Options": "nosniff",
     });
@@ -359,12 +365,22 @@ const reviewPayment = async (req, res) => {
 
 const getEventRevenue = async (_req, res) => {
   try {
-    const revenue = await Payment.aggregate([
-      { $match: { status: "Approved" } },
-      { $group: { _id: "$event", amount: { $sum: "$amount" }, paymentCount: { $sum: 1 } } },
+    const [revenue, participationCounts, events] = await Promise.all([
+      Payment.aggregate([
+        { $match: { status: "Approved" } },
+        { $group: { _id: "$event", amount: { $sum: "$amount" }, paymentCount: { $sum: 1 } } },
+      ]),
+      Participant.aggregate([
+        { $match: { approvalStatus: "Approved" } },
+        { $group: { _id: "$event", count: { $sum: 1 } } },
+      ]),
+      Event.find({ price: { $gt: 0 } })
+        .select("title department start_at end_at price")
+        .sort({ start_at: 1, _id: 1 })
+        .lean(),
     ]);
-    const events = await Event.find({ price: { $gt: 0 } }).select("title department price").sort({ title: 1 }).lean();
     const revenueByEvent = new Map(revenue.map((row) => [String(row._id), row]));
+    const participationByEvent = new Map(participationCounts.map((row) => [String(row._id), row.count]));
     return res.status(200).json(events.map((event) => {
       const row = revenueByEvent.get(String(event._id));
       return {
@@ -372,6 +388,7 @@ const getEventRevenue = async (_req, res) => {
         revenue: row?.amount || 0,
         currency: "NPR",
         approvedPaymentCount: row?.paymentCount || 0,
+        approvedParticipationCount: participationByEvent.get(String(event._id)) || 0,
       };
     }));
   } catch (error) {

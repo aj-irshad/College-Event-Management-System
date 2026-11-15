@@ -147,7 +147,7 @@ const validateEventData = (data, { partial = false, existing = {} } = {}) => {
 const getAllEvent = async (req, res) => {
   try {
     const [events, user] = await Promise.all([
-      Event.find().sort({ start_at: -1, _id: -1 }),
+      Event.find().sort({ start_at: 1, _id: 1 }),
       Users.findById(req.userId).select("role department semester"),
     ]);
     if (!user) return res.status(401).json({ success: false, message: "Please login" });

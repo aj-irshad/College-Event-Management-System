@@ -5,19 +5,20 @@ import {
   Trash,
   Edit,
   MessageSquarePlus,
-  Check,
+  ArrowRight,
 } from "lucide-react";
 
 import { useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import eventContext from "../../../context/EventContext";
 import { formatDate, formatTime } from "../../../hooks/dateFormatter.js";
 
 import "../styles/eventcard.css";
 
-const EventCards = ({ event, isAdmin, hasParticipated }) => {
+const EventCards = ({ event, isAdmin, participationStatus = null, participationId = null }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { deleteEventContext } = useContext(eventContext);
 
   const handleDeleteEvent = async (eventId) => {
@@ -32,7 +33,7 @@ const EventCards = ({ event, isAdmin, hasParticipated }) => {
 
   return (
     <article className="eventCard">
-      {/* Top Header / Badges Row (Replaces the image banner) */}
+      {/* Top Header / Badges Row */}
       <div className="eventCard-header-badges">
         <span
           className={`eventStatus-badge eventStatus-${(
@@ -73,7 +74,7 @@ const EventCards = ({ event, isAdmin, hasParticipated }) => {
           <div className="eventCard-meta-item">
             <CalendarDays size={16} aria-hidden="true" />
             <span>
-              {formatDate(event.start_at)} • {formatTime(event.start_at)} -{" "}
+              {formatDate(event.start_at)} {formatTime(event.start_at)} -{" "}
               {formatTime(event.end_at)}
             </span>
           </div>
@@ -89,33 +90,15 @@ const EventCards = ({ event, isAdmin, hasParticipated }) => {
       <div className="eventCard-footer">
         {!isAdmin ? (
           <div className="eventCard-actions">
-            {hasParticipated ? (
-              <button
-                type="button"
-                className="eventCard-btn eventCard-btn-success"
-                disabled
-              >
-                <Check size={16} /> Registered
-              </button>
-            ) : event.status === "Upcoming" ? (
-              <button
-                type="button"
-                className="eventCard-btn eventCard-btn-primary"
-                onClick={() => navigate(`/participate/${event._id}`)}
-              >
-                {event.price && event.price > 0
-                  ? `Pay Rs ${event.price}`
-                  : "Participate"}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="eventCard-btn eventCard-btn-secondary"
-                disabled
-              >
-                {event.status}
-              </button>
-            )}
+            <button
+              type="button"
+              className="eventCard-btn eventCard-btn-primary"
+              onClick={() => navigate(`/events/${event._id}`, {
+                state: { from: location.pathname, participationStatus, participationId },
+              })}
+            >
+              View more <ArrowRight size={16} />
+            </button>
           </div>
         ) : (
           <div className="eventCard-actions admin-actions">
