@@ -1,27 +1,48 @@
 .blog-page {
   width: 100%;
+  min-width: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   padding: 2rem clamp(1rem, 5vw, 5rem);
   box-sizing: border-box;
   color: var(--text-primary, #111827);
+  overflow-wrap: anywhere;
 }
 
-/* Enhanced Back Button */
+.blog-page *,
+.blog-page *::before,
+.blog-page *::after {
+  box-sizing: border-box;
+}
+
+.blog-page > p[role="status"] {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-secondary, #6b7280);
+  font-size: var(--ems-font-description);
+}
+
+/* Back Button */
 .back-to-blogs {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  min-height: 42px;
   margin-bottom: 2rem;
-  padding: 0.6rem 1rem;
+  padding: 0.55rem 1rem;
   border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: 50px; /* Modern pill style */
+  border-radius: 50px;
   color: var(--text-primary, #374151);
   background: var(--card-bg, #ffffff);
   text-decoration: none;
-  font-size: 0.88rem;
+  font-size: var(--ems-font-button);
   font-weight: 600;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
   transition: all 0.25s ease;
+}
+
+.back-to-blogs svg {
+  flex-shrink: 0;
 }
 
 .back-to-blogs:hover {
@@ -32,13 +53,22 @@
   background: var(--secondary-bg, #f9fafb);
 }
 
-/* Header - Stacked by default, can be flex on wider screens if preferred */
+/* Header */
 .blog-page-header {
   max-width: 900px;
+  min-width: 0;
   margin: 0 auto 2rem;
   display: flex;
-  flex-direction: column; /* Ensures date is always stacked above title */
+  flex-direction: column;
   gap: 0.5rem;
+}
+
+.blog-page-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  min-width: 0;
 }
 
 .blog-page-date {
@@ -50,11 +80,8 @@
   font-weight: 600;
 }
 
-.blog-page-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.4rem 1rem;
+.blog-page-date svg {
+  flex-shrink: 0;
 }
 
 .blog-page-author,
@@ -70,8 +97,9 @@
 .blog-page-header h1 {
   margin: 0;
   font-size: var(--ems-font-page-title);
-  line-height: 1.2;
+  line-height: 1.25;
   font-weight: 800;
+  overflow-wrap: anywhere;
 }
 
 /* Image with Shadow Separation */
@@ -84,7 +112,7 @@
   background: var(--secondary-bg, #f3f4f6);
   box-shadow:
     0 10px 25px -5px rgba(0, 0, 0, 0.1),
-    0 8px 10px -6px rgba(0, 0, 0, 0.1); /* Adds depth shadow */
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
 .blog-page-image {
@@ -99,15 +127,17 @@
 /* Content */
 .blog-page-content {
   max-width: 800px;
+  min-width: 0;
   margin: 2.5rem auto;
   font-size: var(--ems-font-body);
-  line-height: var(--ems-line-body);
+  line-height: var(--ems-line-body, 1.75);
   color: var(--text-secondary, #4b5563);
 }
 
 .blog-page-content p {
   margin: 0;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 /* Not Found */
@@ -117,6 +147,7 @@
   justify-content: center;
   flex-direction: column;
   min-height: 60vh;
+  padding: 2rem 1rem;
   text-align: center;
 }
 
@@ -128,16 +159,25 @@
 .blog-not-found p {
   margin: 0 0 1.5rem;
   color: var(--text-secondary, #6b7280);
+  font-size: var(--ems-font-description);
 }
 
-/* Responsive tweaks for smaller screens */
+.blog-not-found .back-to-blogs {
+  margin-bottom: 0;
+}
+
+/* Mobile */
 @media (max-width: 600px) {
   .blog-page {
     padding: 1.25rem 1rem;
   }
 
-  .blog-page-header h1 {
-    font-size: var(--ems-font-page-title);
+  .back-to-blogs {
+    margin-bottom: 1.35rem;
+  }
+
+  .blog-page-header {
+    margin-bottom: 1.35rem;
   }
 
   .blog-page-image-wrapper {
@@ -145,8 +185,26 @@
     box-shadow: 0 6px 15px -3px rgba(0, 0, 0, 0.08);
   }
 
+  .blog-page-image {
+    max-height: 400px;
+  }
+
   .blog-page-content {
-    margin-top: 1.5rem;
-    font-size: var(--ems-font-body);
+    margin: 1.5rem auto;
+  }
+}
+
+/* Extra-Small Phones */
+@media (max-width: 360px) {
+  .blog-page {
+    padding: 1rem 0.75rem;
+  }
+
+  .back-to-blogs {
+    padding: 0.5rem 0.85rem;
+  }
+
+  .blog-page-image-wrapper {
+    border-radius: 10px;
   }
 }

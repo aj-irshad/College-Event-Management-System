@@ -1,16 +1,27 @@
 .LoginMain {
   background: #ffffff;
   border-radius: 12px;
-  width: clamp(320px, 90vw, 850px);
+  width: min(92vw, 850px);
+  max-width: 100%;
+  min-width: 0;
+  margin: 1.5rem auto;
   display: flex;
   flex-direction: row;
   box-shadow: 0 10px 25px rgba(101, 101, 250, 0.15);
   overflow: hidden;
+  box-sizing: border-box;
   transition: all 0.3s ease;
+}
+
+.LoginMain *,
+.LoginMain *::before,
+.LoginMain *::after {
+  box-sizing: border-box;
 }
 
 .welcome {
   flex: 1;
+  min-width: 0;
   background: linear-gradient(
     135deg,
     rgb(123, 123, 229),
@@ -22,21 +33,32 @@
   justify-content: center;
   align-items: center;
   padding: 40px;
-  color: white;
+  color: #ffffff;
+  text-align: center;
+}
+
+.welcome h1 {
+  margin: 16px 0 8px;
+}
+.welcome p {
+  margin: 0;
+  opacity: 0.92;
 }
 
 .graduationCap {
-  width: clamp(80px, 12vw, 120px);
+  width: clamp(72px, 12vw, 120px);
   height: auto;
+  flex-shrink: 0;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
 }
 
 .loginForm {
   flex: 1.2;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(30px, 5vw, 50px);
+  padding: clamp(28px, 5vw, 50px);
   background: #ffffff;
 }
 
@@ -50,19 +72,21 @@
   font-size: var(--ems-font-page-title);
   line-height: var(--ems-line-title);
   font-weight: 700;
-  margin-bottom: 8px;
+  margin: 0 0 8px;
 }
 
 .heading p {
   color: #6c757d;
   font-size: var(--ems-font-label);
   line-height: var(--ems-line-body);
+  margin: 0;
 }
 
 .formGrp {
   display: flex;
   flex-direction: column;
   margin-bottom: 1.5rem;
+  min-width: 0;
 }
 
 .formGrp label {
@@ -73,8 +97,11 @@
 }
 
 .formGrp input {
+  width: 100%;
+  min-width: 0;
   font-size: var(--ems-font-body);
   height: 3rem;
+  min-height: 46px;
   border-radius: 8px;
   padding: 0 15px;
   border: 2px solid #e2e8f0;
@@ -93,8 +120,10 @@
 }
 
 .loginBtn {
+  width: 100%;
+  min-height: 46px;
   font-size: var(--ems-font-button);
-  padding: 14px 0;
+  padding: 14px 16px;
   border: none;
   border-radius: 8px;
   background: linear-gradient(
@@ -104,7 +133,7 @@
     rgb(101, 101, 250)
   );
   font-weight: 600;
-  color: white;
+  color: #ffffff;
   cursor: pointer;
   margin-top: 10px;
   margin-bottom: 20px;
@@ -138,22 +167,24 @@
   text-decoration: underline;
 }
 
-/* Add these styles to your login.css */
-
 .passwordInputWrapper {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
+  min-width: 0;
 }
 
 .passwordInputWrapper input {
   width: 100%;
-  padding-right: 45px; /* Make space for the absolute toggle button */
+  padding-right: 48px;
 }
 
 .passwordToggleBtn {
   position: absolute;
-  right: 12px;
+  right: 4px;
+  width: 40px;
+  height: 40px;
   background: none;
   border: none;
   cursor: pointer;
@@ -162,6 +193,7 @@
   align-items: center;
   justify-content: center;
   padding: 0;
+  border-radius: 8px;
   transition: color 0.2s ease;
 }
 
@@ -182,18 +214,64 @@
   text-decoration: underline;
 }
 
+/* Tablet & Mobile Stack */
 @media (max-width: 768px) {
   .LoginMain {
     flex-direction: column;
-    width: 100%;
-    max-width: 450px;
+    width: min(calc(100% - 2rem), 460px);
+    margin: 1rem auto;
   }
 
   .welcome {
-    padding: 30px 20px;
+    padding: 28px 20px;
   }
 
   .loginForm {
-    padding: 30px 20px;
+    padding: clamp(22px, 5vw, 32px) 22px;
+  }
+
+  .heading {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 420px) {
+  .LoginMain {
+    width: calc(100% - 1.25rem);
+    margin: 0.75rem auto;
+    border-radius: 10px;
+  }
+
+  .welcome {
+    padding: 22px 16px;
+  }
+
+  .graduationCap {
+    width: 64px;
+  }
+
+  .loginForm {
+    padding: 22px 16px;
+  }
+
+  .heading {
+    margin-bottom: 1.25rem;
+  }
+
+  .formGrp {
+    margin-bottom: 1.15rem;
+  }
+}
+
+/* Extra-small phones */
+@media (max-width: 320px) {
+  .LoginMain {
+    width: calc(100% - 0.75rem);
+  }
+
+  .welcome,
+  .loginForm {
+    padding: 18px 12px;
   }
 }

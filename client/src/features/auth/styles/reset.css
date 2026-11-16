@@ -46,7 +46,8 @@
 
 .resetForm {
   flex: 1.2;
-  padding: 0 15px;
+  min-width: 0;
+  padding: 0 clamp(12px, 2vw, 20px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -162,17 +163,50 @@
 @media screen and (max-width: 750px) {
   .Resetmain {
     flex-direction: column;
-    width: 100%;
-    max-width: 360px;
+    width: min(calc(100% - 2rem), 520px);
+    margin: 1rem auto;
+    border-radius: 10px;
   }
 
   .createPassword {
     flex-basis: auto;
-    padding: 0;
-    padding-bottom: 10px;
+    padding: 22px 16px;
+  }
+
+  .createPassword .resetPasswordIcon {
+    width: 66px;
+    margin-bottom: 12px;
+  }
+
+  .resetForm {
+    padding: 0 16px;
+  }
+
+  .formGrp input {
+    min-height: 46px;
+    height: auto;
   }
 
   .btnSection button {
-    width: 300px;
+    width: 100%;
+    min-height: 46px;
+  }
+}
+
+@media screen and (max-width: 420px) {
+  .Resetmain {
+    width: calc(100% - 1.25rem);
+  }
+
+  .createPassword {
+    padding: 20px 14px;
+  }
+
+  .resetForm {
+    padding: 0 12px;
+  }
+
+  .btnSection {
+    margin: 14px 0;
   }
 }

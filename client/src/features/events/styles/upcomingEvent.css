@@ -1,49 +1,14 @@
-/* Event Design Variables */
-
-:root {
-  --event-bg: #ffffff;
-  --event-border: #e2e8f0;
-  --event-border-hover: #cbd5e1;
-  --event-radius: 14px;
-  --event-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
-
-  --event-text-title: #1e293b;
-  --event-text-body: #64748b;
-  --event-text-label: #94a3b8;
-
-  --event-primary: #4f46e5;
-  --event-primary-hover: #4338ca;
-
-  --event-success: #10b981;
-  --event-success-bg: #ecfdf5;
-
-  --event-danger: #ef4444;
-  --event-danger-hover: #dc2626;
-  --event-danger-bg: #fef2f2;
-
-  --event-icon-date-bg: #eef2ff;
-  --event-icon-date: #6366f1;
-
-  --event-icon-time-bg: #ecfdf5;
-  --event-icon-time: #10b981;
-
-  --event-icon-venue-bg: #fffbeb;
-  --event-icon-venue: #f59e0b;
-
-  --event-icon-status-bg: #fef3c7;
-  --event-icon-status: #d97706;
-}
-
 /* Events Page Header */
-
 .eventsPageHeader {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1.25rem;
   margin-bottom: 1.75rem;
   padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--event-border);
+  border-bottom: 1px solid #e2e8f0;
+  min-width: 0;
 }
 
 .eventsPageHeading {
@@ -52,7 +17,7 @@
 
 .eventsPageHeading h1 {
   margin: 0 0 0.35rem;
-  color: var(--event-text-title);
+  color: #1e293b;
   font-size: var(--ems-font-page-title);
   font-weight: 700;
   line-height: 1.2;
@@ -61,18 +26,19 @@
 
 .eventsPageHeading p {
   margin: 0;
-  color: var(--event-text-body);
+  color: #64748b;
   font-size: var(--ems-font-description);
   line-height: 1.5;
 }
 
 /* Events Grid */
-
 .upcomingEventsCards {
   width: 100%;
+  min-width: 0;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
+  align-items: stretch;
   box-sizing: border-box;
 }
 
@@ -81,50 +47,29 @@
   padding: 0.75rem 0.9rem;
   border-radius: 8px;
   background: #fef2f2;
+  border: 1px solid #fecaca;
   color: #b91c1c;
+  font-size: var(--ems-font-description);
+  overflow-wrap: anywhere;
 }
 
 .events-page-state {
-  padding: 1rem;
-  color: var(--event-text-body);
+  padding: 1.25rem;
+  color: #64748b;
+  font-size: var(--ems-font-description);
   text-align: center;
-}
-
-/* Event Card */
-
-.eventCard {
-  width: 100%;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  background: var(--event-bg);
-  border: 1px solid var(--event-border);
-  border-radius: var(--event-radius);
-  overflow: hidden;
-  box-shadow: var(--event-shadow);
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.eventCard:hover {
-  transform: translateY(-3px);
-  border-color: var(--event-border-hover);
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  overflow-wrap: anywhere;
 }
 
 /* Main Event Section */
-
 .eventMain {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 /* Event Header */
-
 .eventHeader {
   padding: 1rem 1.2rem 0;
 }
@@ -134,8 +79,8 @@
   align-items: center;
   gap: 0.45rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--event-border);
-  color: var(--event-primary);
+  border-bottom: 1px solid #e2e8f0;
+  color: #4f46e5;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -147,19 +92,18 @@
 }
 
 /* Event Content */
-
 .eventContent {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
   padding: 1rem 1.2rem 1.2rem;
+  min-width: 0;
 }
 
 /* Event Title */
-
 .eventTitle {
   margin: 0;
-  color: var(--event-text-title);
+  color: #1e293b;
   font-size: var(--ems-font-card-title);
   font-weight: 700;
   line-height: 1.3;
@@ -168,13 +112,11 @@
 }
 
 /* Event Description */
-
 .eventDescription {
   margin: 0;
-  color: var(--event-text-body);
+  color: #64748b;
   font-size: var(--ems-font-description);
   line-height: 1.55;
-
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -182,7 +124,6 @@
 }
 
 /* Event Details */
-
 .eventDetails {
   display: flex;
   flex-direction: column;
@@ -210,7 +151,7 @@
   grid-column: 2;
   min-width: 0;
   margin: -1.2rem 0 0;
-  color: var(--event-text-title);
+  color: #1e293b;
   font-size: 0.8rem;
   font-weight: 600;
   line-height: 1.35;
@@ -218,7 +159,6 @@
 }
 
 /* Detail Icon */
-
 .eventDetailIcon {
   width: 38px;
   height: 38px;
@@ -230,38 +170,32 @@
 }
 
 .eventDetailLabel {
-  color: var(--event-text-label);
+  color: #94a3b8;
   font-size: 0.68rem;
   font-weight: 500;
 }
 
-/* Date */
-
+/* Date, Time, Venue Icon Accents */
 .eventDate .eventDetailIcon {
-  background: var(--event-icon-date-bg);
-  color: var(--event-icon-date);
+  background: #eef2ff;
+  color: #6366f1;
 }
-
-/* Time */
 
 .eventTime .eventDetailIcon {
-  background: var(--event-icon-time-bg);
-  color: var(--event-icon-time);
+  background: #ecfdf5;
+  color: #10b981;
 }
 
-/* Venue */
-
 .eventVenue .eventDetailIcon {
-  background: var(--event-icon-venue-bg);
-  color: var(--event-icon-venue);
+  background: #fffbeb;
+  color: #f59e0b;
 }
 
 /* Event Footer */
-
 .eventFooter {
   padding: 0.85rem 1.15rem;
   background: #fafbfc;
-  border-top: 1px solid var(--event-border);
+  border-top: 1px solid #e2e8f0;
 }
 
 .eventStats {
@@ -269,10 +203,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+  min-width: 0;
 }
 
 /* Event Status */
-
 .eventStatus {
   min-width: 0;
   display: flex;
@@ -288,8 +222,8 @@
   justify-content: center;
   flex-shrink: 0;
   border-radius: 9px;
-  background: var(--event-icon-status-bg);
-  color: var(--event-icon-status);
+  background: #fef3c7;
+  color: #d97706;
 }
 
 .eventStatusText {
@@ -300,18 +234,17 @@
 }
 
 .eventStatusText strong {
-  color: var(--event-text-title);
+  color: #1e293b;
   font-size: 0.72rem;
   font-weight: 700;
 }
 
 .eventStatusText span {
-  color: var(--event-text-label);
+  color: #94a3b8;
   font-size: 0.68rem;
 }
 
 /* Event Actions */
-
 .eventActions {
   display: flex;
   align-items: center;
@@ -321,7 +254,6 @@
 }
 
 /* Shared Event Button */
-
 .eventActions button,
 .eventsPageHeader button,
 .eventStats > button {
@@ -350,34 +282,21 @@
   transform: translateY(-1px);
 }
 
-/* Create Event */
-
-.eventBtnCreate {
-  border: none;
-  background: var(--event-primary);
-  color: #ffffff;
-}
-
-.eventBtnCreate:hover {
-  background: var(--event-primary-hover);
-  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
-}
-
-/* Participate */
-
+/* Create & Primary Buttons */
+.eventBtnCreate,
 .eventBtnPrimary {
   border: none;
-  background: var(--event-primary);
+  background: #4f46e5;
   color: #ffffff;
 }
 
+.eventBtnCreate:hover,
 .eventBtnPrimary:hover {
-  background: var(--event-primary-hover);
+  background: #4338ca;
   box-shadow: 0 4px 10px rgba(79, 70, 229, 0.2);
 }
 
 /* Participated */
-
 .eventBtnDisabled {
   border: 1px solid #d1d5db;
   background: #e5e7eb;
@@ -387,12 +306,11 @@
 }
 
 .eventBtnDisabled:hover {
-  transform: none !important;
+  transform: none;
   box-shadow: none;
 }
 
 /* Edit */
-
 .eventBtnSecondary {
   border: 1px solid #cbd5e1;
   background: #ffffff;
@@ -406,7 +324,6 @@
 }
 
 /* Delete */
-
 .eventBtnDanger {
   border: 1px solid #fecaca;
   background: #fef2f2;
@@ -420,7 +337,6 @@
 }
 
 /* Feedback */
-
 .eventFeedbackBtn {
   border: 1px solid #c7d2fe;
   background: #eef2ff;
@@ -433,34 +349,34 @@
   color: #4338ca;
 }
 
-/* Tablet */
-
-@media (min-width: 650px) {
+/* Responsive Grid Breakpoints */
+@media (min-width: 640px) {
   .upcomingEventsCards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.25rem;
   }
 }
 
-/* Desktop */
-
-@media (min-width: 1100px) {
+@media (min-width: 1120px) {
   .upcomingEventsCards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.4rem;
   }
 }
 
-/* Large Desktop */
-
-@media (min-width: 1350px) {
+@media (min-width: 1440px) {
   .upcomingEventsCards {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1.35rem;
   }
 }
 
-/* Mobile Header */
+/* Mobile Layout */
+@media (max-width: 639px) {
+  .upcomingEventsCards {
+    gap: 1rem;
+  }
+}
 
 @media (max-width: 540px) {
   .eventsPageHeader {
@@ -472,14 +388,7 @@
 
   .eventsPageHeader > button {
     width: 100%;
-  }
-
-  .eventsPageHeading h1 {
-    font-size: var(--ems-font-page-title);
-  }
-
-  .eventsPageHeading p {
-    font-size: var(--ems-font-description);
+    min-height: 44px;
   }
 
   .eventStats {
@@ -501,12 +410,7 @@
 }
 
 /* Small Mobile */
-
 @media (max-width: 480px) {
-  .upcomingEventsCards {
-    gap: 1rem;
-  }
-
   .eventHeader {
     padding: 0.9rem 1rem 0;
   }
@@ -519,14 +423,6 @@
     padding: 0.75rem 1rem;
   }
 
-  .eventTitle {
-    font-size: var(--ems-font-card-title);
-  }
-
-  .eventDescription {
-    font-size: var(--ems-font-description);
-  }
-
   .eventActions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -534,20 +430,17 @@
 
   .eventActions button {
     width: 100%;
+    min-height: 44px;
   }
 }
 
-/* Extra Small Mobile */
-
+/* Extra-Small Mobile */
 @media (max-width: 350px) {
   .eventActions {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .eventDetail {
-    gap: 0.55rem;
-  }
-
+  .eventDetail,
   .eventDetail dt {
     gap: 0.55rem;
   }

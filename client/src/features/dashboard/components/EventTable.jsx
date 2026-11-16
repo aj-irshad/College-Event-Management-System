@@ -13,7 +13,7 @@ const EventTable = ({ events }) => {
       </thead>
 
       <tbody>
-        {events.splice(0, 3).map((event) => (
+        {events.slice(0, 3).map((event) => (
           <tr key={event._id}>
             <td className="font-semibold">{event.title}</td>
 

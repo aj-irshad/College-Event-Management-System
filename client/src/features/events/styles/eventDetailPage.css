@@ -1,56 +1,83 @@
 /* Event Page Styles */
-
 .event-page {
   width: 100%;
   max-width: 900px;
+  min-width: 0;
   margin: 0 auto;
-  min-height: auto;
   padding: 2rem clamp(1rem, 4vw, 3rem);
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+.event-page *,
+.event-page *::before,
+.event-page *::after {
   box-sizing: border-box;
 }
 
-/* Back Link */
+.event-page > p[role="status"] {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-secondary, #4b5563);
+  font-size: var(--ems-font-description);
+}
+
+/* Back Button */
 .back-to-events {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.9rem;
+  min-height: 40px;
+  padding: 0.25rem 0;
+  margin-bottom: 1.75rem;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: var(--ems-font-button);
   font-weight: 600;
   color: var(--primary-color, #6366f1);
   text-decoration: none;
-  margin-bottom: 2rem;
-  transition: opacity 0.2s ease;
+  cursor: pointer;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .back-to-events:hover {
-  opacity: 0.8;
+  opacity: 0.85;
+  transform: translateX(-2px);
 }
 
 /* Header */
 .event-page-header {
+  min-width: 0;
   margin-bottom: 2rem;
 }
 
 .event-page-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.65rem;
   margin-bottom: 1rem;
 }
 
 .event-page-header h1 {
-  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  margin: 0 0 0.85rem;
+  font-size: clamp(1.6rem, 3.2vw, 2.4rem);
   font-weight: 800;
-  color: var(--text-primary, #111827);
-  margin: 0 0 1rem 0;
   line-height: 1.2;
+  color: var(--text-primary, #111827);
+  overflow-wrap: anywhere;
 }
 
 .event-page-meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  font-size: 0.95rem;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  min-width: 0;
+  font-size: var(--ems-font-description);
   color: var(--text-secondary, #4b5563);
 }
 
@@ -58,6 +85,24 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  font-weight: 600;
+}
+
+.event-page-type svg {
+  flex-shrink: 0;
+}
+
+.event-page-department {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: #eef2ff;
+  color: #4f46e5;
+  font-size: var(--ems-font-meta);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 /* Info Grid Card */
@@ -74,8 +119,9 @@
 
 .event-info-item {
   display: flex;
-  gap: 1rem;
   align-items: flex-start;
+  gap: 0.9rem;
+  min-width: 0;
   color: var(--text-primary, #111827);
 }
 
@@ -85,43 +131,54 @@
   flex-shrink: 0;
 }
 
+.event-info-item > div {
+  min-width: 0;
+}
+
 .event-info-item strong {
   display: block;
-  font-size: 0.85rem;
+  margin-bottom: 0.2rem;
+  font-size: var(--ems-font-meta);
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-secondary, #6b7280);
-  margin-bottom: 0.2rem;
 }
 
 .event-info-item p {
   margin: 0;
-  font-size: 1rem;
+  font-size: var(--ems-font-body);
   font-weight: 500;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 /* Content */
 .event-page-content {
-  margin-bottom: 3rem;
+  margin-bottom: 2.5rem;
+  min-width: 0;
 }
 
 .event-page-content h3 {
-  font-size: 1.25rem;
+  margin: 0 0 0.75rem;
+  font-size: var(--ems-font-section-heading);
   font-weight: 700;
   color: var(--text-primary, #111827);
-  margin-bottom: 0.75rem;
 }
 
 .event-page-content p {
-  font-size: 1.05rem;
+  margin: 0;
+  font-size: var(--ems-font-body);
   line-height: 1.7;
   color: var(--text-secondary, #4b5563);
   white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 /* Actions Section */
 .event-page-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border-color, #e5e7eb);
@@ -132,15 +189,22 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  min-height: 46px;
   padding: 0.8rem 1.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 9px;
   border: none;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: var(--ems-font-button);
+  font-weight: 600;
   cursor: pointer;
   transition:
     transform 0.2s ease,
-    box-shadow 0.2s ease;
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.event-page-btn svg {
+  flex-shrink: 0;
 }
 
 .event-btn-primary {
@@ -180,60 +244,83 @@
 /* Not Found View */
 .event-not-found {
   text-align: center;
-  padding: 4rem 1rem;
+  padding: 3.5rem 1rem;
 }
 
 .event-not-found h2 {
-  font-size: 1.8rem;
+  margin: 0 0 0.5rem;
+  font-size: var(--ems-font-page-title);
   color: var(--text-primary, #111827);
-  margin-bottom: 0.5rem;
 }
 
 .event-not-found p {
+  margin: 0 0 1.5rem;
   color: var(--text-secondary, #6b7280);
-  margin-bottom: 1.5rem;
+  font-size: var(--ems-font-description);
+  line-height: 1.5;
 }
 
-.back-to-events {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--primary-color, #6366f1);
-  background: none; /* <-- add this */
-  border: none; /* <-- add this */
-  padding: 0; /* <-- add this */
-  cursor: pointer; /* <-- add this */
-  margin-bottom: 2rem;
-  transition: opacity 0.2s ease;
+.event-not-found .back-to-events {
+  margin-bottom: 0;
 }
 
+/* Mobile */
 @media (max-width: 600px) {
   .event-page {
     padding-top: 1.25rem;
-    padding-bottom: 1.5rem;
+    padding-bottom: 1.75rem;
+  }
+
+  .back-to-events {
+    margin-bottom: 1.25rem;
+  }
+
+  .event-page-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .event-page-header h1 {
+    font-size: clamp(1.5rem, 6.5vw, 1.95rem);
   }
 
   .event-page-info-card {
+    grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
-    padding: 1rem;
+    padding: 1.1rem;
+    margin-bottom: 1.5rem;
   }
 
   .event-page-content {
     margin-bottom: 1.75rem;
   }
 
-  .event-page-content p {
-    font-size: 0.95rem;
-    overflow-wrap: anywhere;
-  }
-
   .event-page-actions {
     flex-direction: column;
+    padding-top: 1.25rem;
   }
 
   .event-page-btn {
     width: 100%;
+  }
+}
+
+/* Extra-Small Phones */
+@media (max-width: 360px) {
+  .event-page {
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+  }
+
+  .event-page-badges {
+    gap: 0.5rem;
+  }
+
+  .event-page-info-card {
+    padding: 0.9rem;
+  }
+
+  .event-page-btn {
+    padding-right: 0.9rem;
+    padding-left: 0.9rem;
   }
 }

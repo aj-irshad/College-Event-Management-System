@@ -1,21 +1,25 @@
 .logoutButton {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-
   padding: 10px 16px;
   border: none;
   border-radius: 8px;
-
   background: rgb(101, 101, 250);
-  color: white;
-
+  color: #ffffff;
+  font-family: inherit;
   font-size: var(--ems-font-button);
   font-weight: 600;
-
+  line-height: 1.2;
+  white-space: nowrap;
+  box-sizing: border-box;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition:
+    background-color 0.25s ease,
+    transform 0.2s ease,
+    padding 0.25s ease;
 }
 
 .logoutButton:hover {
@@ -30,4 +34,41 @@
 .logoutButton svg {
   width: 18px;
   height: 18px;
+  flex-shrink: 0;
+}
+
+/* Tablet Icon-Rail Mode (769px - 1024px) */
+@media (max-width: 1024px) {
+  .sidebarFooter .logoutButton {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    margin: 0 auto;
+    gap: 0;
+  }
+
+  .sidebarFooter .logoutButton span {
+    display: none;
+  }
+}
+
+/* Mobile Drawer Mode (<= 768px) */
+@media (max-width: 768px) {
+  .sidebarFooter .logoutButton {
+    width: 100%;
+    height: auto;
+    padding: 11px 16px;
+    gap: 8px;
+  }
+
+  .sidebarFooter .logoutButton span {
+    display: inline;
+  }
+}
+
+/* Extra-small phones */
+@media (max-width: 480px) {
+  .logoutButton {
+    padding: 10px 14px;
+  }
 }

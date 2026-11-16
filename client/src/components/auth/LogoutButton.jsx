@@ -14,7 +14,9 @@ const LogoutButton = () => {
     try {
       await unsubscribeBrowserPushDevice();
     } catch {
-      console.warn("This device's browser push subscription could not be removed from EMS.");
+      console.warn(
+        "This device's browser push subscription could not be removed from EMS.",
+      );
     }
     try {
       await logout();
@@ -27,9 +29,14 @@ const LogoutButton = () => {
   };
 
   return (
-    <button className="logoutButton" onClick={handleLogout}>
+    <button
+      type="button"
+      className="logoutButton"
+      onClick={handleLogout}
+      title="Logout"
+    >
       <LogOut size={18} />
-      Logout
+      <span>Logout</span>
     </button>
   );
 };

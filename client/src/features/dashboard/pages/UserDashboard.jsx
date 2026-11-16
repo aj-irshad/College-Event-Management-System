@@ -25,7 +25,7 @@ const UserDashboard = ({ user = { name: "User" } }) => {
   const firstName = typeof user?.name === "string"
     ? user.name.trim().split(/\s+/)[0]
     : "";
-  const { events, upcomingEvents, ongoingEvents } = useContext(eventContext);
+  const { events, upcomingEvents, ongoingEvents, eventLoading, eventError } = useContext(eventContext);
   const { blogs, totalBlogs } = useContext(blogContext);
   const { pollForm } = useContext(pollContext);
   const activePolls = pollForm.filter((poll) => poll.status === "Active");
@@ -38,9 +38,9 @@ const UserDashboard = ({ user = { name: "User" } }) => {
   [events, blogs, pollForm]);
 
   return (
-    <div className="dashboard-wrapper">
+    <div className="dashboard-wrapper user-dashboard">
       {/* Section 1: User Header */}
-      <header className="dashboard-header" style={{ padding: "1rem" }}>
+      <header className="dashboard-header">
         <div className="header-text">
           <h1 className="dashboard-title">Welcome back, {firstName || "there"}!</h1>
 
@@ -56,7 +56,7 @@ const UserDashboard = ({ user = { name: "User" } }) => {
         {/* Upcoming Events */}
         <StaticCard
           icon={<Calendar size={22} />}
-          count={upcomingEvents.length}
+          count={eventLoading ? "…" : eventError && events.length === 0 ? "—" : upcomingEvents.length}
           cardName="Upcoming Events"
         />
 
@@ -96,7 +96,16 @@ const UserDashboard = ({ user = { name: "User" } }) => {
             </button>
           </div>
 
-          <EventTable events={upcomingEvents} />
+          {eventError && <p className="dashboard-event-error" role="alert">{eventError}</p>}
+          {eventLoading ? (
+            <p className="dashboard-event-state" role="status">Loading upcoming events…</p>
+          ) : upcomingEvents.length ? (
+            <div className="dashboard-table-wrap">
+              <EventTable events={upcomingEvents} />
+            </div>
+          ) : eventError ? null : (
+            <p className="dashboard-event-state">No upcoming events right now.</p>
+          )}
         </section>
         <section className="content-card">
           <div className="card-header">

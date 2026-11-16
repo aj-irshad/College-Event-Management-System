@@ -2,6 +2,7 @@
   grid-area: header;
   width: 100%;
   height: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -15,11 +16,18 @@
   z-index: 1100;
 }
 
+.header *,
+.header *::before,
+.header *::after {
+  box-sizing: border-box;
+}
+
 .headerLeft {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   flex: 1;
+  min-width: 0;
   max-width: 520px;
 }
 
@@ -36,7 +44,9 @@
   color: #475569;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background-color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .menuToggleBtn:hover {
@@ -48,12 +58,14 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-shrink: 0;
   position: relative;
 }
 
 .searchBar {
   position: relative;
   width: 100%;
+  min-width: 0;
   display: flex;
   align-items: center;
   background: #f8fafc;
@@ -74,12 +86,12 @@
   width: 100%;
   min-width: 0;
   padding: 9px 40px 9px 12px;
-  box-sizing: border-box;
   border: none;
   outline: none;
   background: transparent;
   color: #1e293b;
   font-size: var(--ems-font-body);
+  text-overflow: ellipsis;
 }
 
 .searchInput::placeholder {
@@ -126,6 +138,11 @@
   height: 38px;
   border-radius: 10px;
   color: #475569;
+  flex-shrink: 0;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .bellBtn:hover {
@@ -150,7 +167,6 @@
   justify-content: center;
   border-radius: 999px;
   border: 2px solid #ffffff;
-  box-sizing: border-box;
   line-height: 1;
 }
 
@@ -190,6 +206,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #f1f5f9;
   background: #fafbfc;
@@ -199,6 +216,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  min-width: 0;
 }
 
 .notificationHeader h3 {
@@ -215,6 +233,7 @@
   font-weight: 600;
   padding: 1px 6px;
   border-radius: 10px;
+  white-space: nowrap;
 }
 
 .markAsReadBtn {
@@ -224,6 +243,8 @@
   font-size: var(--ems-font-button);
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .markAsReadBtn:disabled {
@@ -232,8 +253,9 @@
 }
 
 .notificationList {
-  max-height: 280px;
+  max-height: min(280px, 50dvh);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .notificationItem {
@@ -293,6 +315,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 0.5rem;
   margin-bottom: 0.15rem;
 }
 
@@ -301,11 +324,16 @@
   font-size: var(--ems-font-label);
   font-weight: 600;
   color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .notificationItemTop span {
   font-size: var(--ems-font-compact);
   color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .notificationItemContent p {
@@ -317,11 +345,12 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
+  word-break: break-word;
 }
 
 .noNotifications {
   text-align: center;
-  padding: 1.5rem;
+  padding: 1.5rem 1rem;
   color: #94a3b8;
   font-size: var(--ems-font-label);
   margin: 0;
@@ -343,6 +372,7 @@
 }
 
 .browserPushButton {
+  width: 100%;
   border: 1px solid #c7d2fe;
   border-radius: 7px;
   padding: 0.4rem 0.7rem;
@@ -367,6 +397,7 @@
   margin: 0.35rem 0 0;
   color: #166534;
   font-size: var(--ems-font-compact);
+  line-height: 1.3;
 }
 
 .browserPushMessage.error {
@@ -380,12 +411,14 @@
   font-size: var(--ems-font-button);
   font-weight: 600;
   cursor: pointer;
+  padding: 0.25rem 0.5rem;
 }
 
 .userProfile {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .userImage {
@@ -402,6 +435,8 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  min-width: 0;
+  max-width: 150px;
 }
 
 .userName {
@@ -410,6 +445,9 @@
   font-size: var(--ems-font-label);
   font-weight: 600;
   line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .department {
@@ -418,18 +456,52 @@
   font-size: var(--ems-font-meta);
   font-weight: 500;
   text-transform: capitalize;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-@media (max-width: 768px) {
-  .menuToggleBtn {
-    display: flex; /* Show hamburger button on mobile */
+/* Tablet breakpoint */
+@media (max-width: 1024px) {
+  .header {
+    padding: 0 1.15rem;
+    gap: 0.75rem;
   }
+
+  .headerLeft {
+    max-width: 400px;
+  }
+
+  .profileInfo {
+    max-width: 115px;
+  }
+}
+
+/* Mobile & Small Tablet layout */
+@media (max-width: 768px) {
+  .header {
+    padding: 0 1rem;
+    gap: 0.65rem;
+  }
+
+  .headerLeft {
+    gap: 0.5rem;
+    max-width: none;
+  }
+
+  .menuToggleBtn {
+    display: flex;
+  }
+
+  .headerRight {
+    gap: 0.65rem;
+    position: relative;
+  }
+
   .profileInfo {
     display: none;
   }
-  .headerRight {
-    position: relative;
-  }
+
   .notificationDropdown {
     width: min(340px, calc(100vw - 1.25rem));
     max-width: calc(100vw - 1.25rem);
@@ -437,13 +509,53 @@
   }
 }
 
+/* Extra-small phones */
 @media (max-width: 480px) {
+  .header {
+    padding: 0 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .headerLeft {
+    gap: 0.45rem;
+  }
+
+  .headerRight {
+    gap: 0.5rem;
+  }
+
+  .menuToggleBtn,
+  .bellBtn,
+  .userImage {
+    width: 34px;
+    height: 34px;
+  }
+
+  .searchInput {
+    padding: 7px 34px 7px 10px;
+  }
+
+  .searchBtn {
+    width: 28px;
+    height: 28px;
+    right: 4px;
+  }
+
   .notificationWrapper {
     position: static;
   }
+
   .notificationDropdown {
     width: calc(100vw - 1rem);
     max-width: calc(100vw - 1rem);
+    left: 0.5rem;
     right: 0.5rem;
+  }
+
+  .notificationHeader,
+  .notificationItem,
+  .notificationFooter {
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
   }
 }

@@ -1,8 +1,9 @@
 #home {
-  height: 100vh; /* Changed from min-height to fixed 100vh viewport height */
-  width: 100vw;
+  height: 100vh; /* Fallback for older browsers */
+  height: 100dvh; /* Dynamic viewport height for mobile browser toolbars */
+  width: 100%;
   display: grid;
-  grid-template-rows: clamp(70px, 8vh, 90px) 1fr;
+  grid-template-rows: clamp(64px, 8vh, 90px) 1fr;
   grid-template-columns: 280px 1fr;
   grid-template-areas:
     "aside header"
@@ -11,64 +12,119 @@
   color: #0f172a;
   font-family: var(--ems-font-family);
   position: relative;
-  overflow: hidden; /* CRITICAL: Stops the entire window from scrolling */
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+#home *,
+#home *::before,
+#home *::after {
+  box-sizing: border-box;
 }
 
 #home header {
   grid-area: header;
+  min-width: 0;
+  width: 100%;
 }
 
 #home aside {
   grid-area: aside;
-  height: 100%; /* Fills the grid column height completely */
+  height: 100%;
+  min-width: 0;
 }
 
 #home main {
   grid-area: main;
   height: 100%;
+  min-width: 0; /* Prevents wide children/tables from breaking grid width */
   padding: 1.5rem;
-  overflow-y: auto; /* CRITICAL: Only the main content area scrolls vertically */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   background-color: #f8fafc;
-  box-sizing: border-box;
 }
 
-/* Mobile responsive drawer handling */
+/* Mobile responsive drawer backdrop */
 .sidebar-backdrop {
   display: none;
 }
 
+/* Tablet breakpoint */
+@media (max-width: 1024px) {
+  #home {
+    grid-template-columns: 240px 1fr;
+  }
+
+  #home main {
+    padding: 1.25rem;
+  }
+}
+
+/* Mobile & Small Tablet drawer layout */
 @media (max-width: 768px) {
   #home {
     grid-template-columns: 1fr;
     grid-template-areas:
       "header"
       "main";
-    overflow-y: auto; /* Allow window scrolling on mobile for the drawer layout */
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
   }
 
+  /* Lock background scrolling when mobile drawer is open */
+  #home.sidebar-open main {
+    overflow: hidden;
+  }
+
+  #home aside,
   #home aside.appSidebar {
     position: fixed;
     top: 0;
-    left: -280px;
+    left: 0;
     width: 280px;
+    max-width: 82vw;
     height: 100vh;
+    height: 100dvh;
     z-index: 1001;
-    transition: left 0.3s ease-in-out;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    will-change: transform;
   }
 
-  #home aside.appSidebar.open {
-    left: 0;
+  #home aside.open,
+  #home aside.appSidebar.open,
+  #home.sidebar-open aside {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(15, 23, 42, 0.15);
+  }
+
+  #home main {
+    padding: 1rem;
   }
 
   .sidebar-backdrop {
     display: block;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
+    inset: 0;
+    width: 100%;
     height: 100vh;
+    height: 100dvh;
     background-color: rgba(15, 23, 42, 0.5);
     z-index: 1000;
     backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+}
+
+/* Extra-small phones */
+@media (max-width: 480px) {
+  #home {
+    grid-template-rows: 60px 1fr;
+  }
+
+  #home main {
+    padding: 0.75rem;
   }
 }

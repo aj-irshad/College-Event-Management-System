@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: function () { return this.role !== "admin"; },
       trim: true,
     },
 
@@ -24,13 +24,13 @@ const userSchema = new mongoose.Schema(
 
     contact: {
       type: String,
-      required: true,
+      required: function () { return this.role !== "admin"; },
       trim: true,
     },
 
     department: {
       type: String,
-      required: true,
+      required: function () { return this.role !== "admin"; },
       trim: true,
     },
 

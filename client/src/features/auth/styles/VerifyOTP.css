@@ -1,16 +1,27 @@
 .VerifyMain {
   background: #ffffff;
   border-radius: 12px;
-  width: clamp(320px, 90vw, 850px);
+  width: min(92vw, 850px);
+  max-width: 100%;
+  min-width: 0;
+  margin: 1.5rem auto;
   display: flex;
   flex-direction: row;
   box-shadow: 0 10px 25px rgba(101, 101, 250, 0.15);
   overflow: hidden;
+  box-sizing: border-box;
   transition: all 0.3s ease;
+}
+
+.VerifyMain *,
+.VerifyMain *::before,
+.VerifyMain *::after {
+  box-sizing: border-box;
 }
 
 .verifyBanner {
   flex: 1;
+  min-width: 0;
   background: linear-gradient(
     135deg,
     rgb(123, 123, 229),
@@ -21,36 +32,42 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 40px 20px;
-  color: white;
+  padding: 40px 24px;
+  color: #ffffff;
   text-align: center;
 }
 
 .verifyBanner .verifyIcon {
-  width: clamp(80px, 12vw, 100px);
+  width: clamp(72px, 12vw, 100px);
   height: auto;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
+  flex-shrink: 0;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
 }
 
 .verifyBanner h1 {
+  margin: 0 0 10px;
   font-size: var(--ems-font-page-title);
   line-height: var(--ems-line-title);
   font-weight: 700;
-  margin-bottom: 12px;
 }
 
 .verifyBanner p {
+  margin: 0;
   font-size: var(--ems-font-description);
   opacity: 0.9;
+  line-height: 1.5;
+  max-width: 28ch;
 }
 
 .verifyForm {
   flex: 1.2;
+  min-width: 0;
   padding: clamp(25px, 4vw, 45px);
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background: #ffffff;
 }
 
 .verifyForm .heading {
@@ -60,40 +77,46 @@
 }
 
 .verifyForm .heading h2 {
+  margin: 0 0 6px;
   color: rgb(101, 101, 250);
   font-size: var(--ems-font-section-heading);
   line-height: var(--ems-line-heading);
   font-weight: 700;
-  margin-bottom: 5px;
 }
 
 .verifyForm .heading p {
+  margin: 0;
   font-size: var(--ems-font-description);
   color: #6c757d;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .verifyForm .heading p strong {
   color: #495057;
 }
 
-.formGrp {
+.verifyForm .formGrp {
   display: flex;
   flex-direction: column;
   margin-bottom: 1.2rem;
+  min-width: 0;
 }
 
-.formGrp label {
+.verifyForm .formGrp label {
   color: #495057;
   font-weight: 600;
   font-size: var(--ems-font-label);
   margin-bottom: 0.4rem;
 }
 
-.formGrp input {
+.verifyForm .formGrp input {
+  width: 100%;
+  min-width: 0;
   font-size: var(--ems-font-body);
-  height: 2.8rem;
+  height: 3rem;
+  min-height: 46px;
   border-radius: 8px;
   padding: 0 15px;
   border: 2px solid #e2e8f0;
@@ -101,40 +124,52 @@
   transition: all 0.2s ease-in-out;
 }
 
-/* Specific styling for the OTP input to look like a code block */
-.otpGroup input {
+/* Specific styling for the OTP input */
+.verifyForm .otpGroup input {
   font-size: clamp(20px, 4vw, 24px);
-  letter-spacing: 8px; /* Spreads out the digits */
+  letter-spacing: 8px;
   font-weight: 600;
   text-align: center;
-  padding: 0;
+  padding: 0 8px;
 }
 
-.formGrp input::placeholder {
+.verifyForm .formGrp input::placeholder {
   color: #a0aec0;
   letter-spacing: 4px;
   font-size: var(--ems-font-body);
   font-weight: 400;
 }
 
-.formGrp input:focus {
+.verifyForm .formGrp input:focus {
   border-color: rgb(101, 101, 246);
   box-shadow: 0 0 0 3px rgba(101, 101, 246, 0.15);
 }
 
-.warning {
-  color: red;
+.verifyForm .warning {
+  margin: 0 0 15px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
   font-size: var(--ems-font-description);
-  margin-bottom: 15px;
   font-weight: 600;
   text-align: left;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
-.otpInfo {
-  color: #256b43;
+.verifyForm .otpInfo {
+  margin: 0 0 15px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
   font-size: var(--ems-font-description);
-  margin-bottom: 15px;
   font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .btnSection {
@@ -144,19 +179,20 @@
 }
 
 .verifyBtn {
+  width: 100%;
+  min-height: 46px;
+  padding: 13px 16px;
+  border-radius: 8px;
+  border: none;
   background: linear-gradient(
     to right,
     rgb(123, 123, 229),
     rgb(101, 101, 246),
     rgb(101, 101, 250)
   );
-  padding: 14px 0;
-  border-radius: 8px;
-  border: none;
   font-size: var(--ems-font-button);
   font-weight: 600;
-  color: white;
-  width: 100%;
+  color: #ffffff;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(101, 101, 250, 0.3);
   transition:
@@ -164,11 +200,11 @@
     opacity 0.2s ease;
 }
 
-.verifyBtn:hover {
+.verifyBtn:hover:not(:disabled) {
   opacity: 0.95;
 }
 
-.verifyBtn:active {
+.verifyBtn:active:not(:disabled) {
   transform: scale(0.98);
 }
 
@@ -178,8 +214,10 @@
 }
 
 .resendOtpBtn {
+  width: 100%;
+  min-height: 46px;
   margin-top: 0.75rem;
-  padding: 12px 0;
+  padding: 12px 16px;
   border: 1px solid rgb(101, 101, 246);
   border-radius: 8px;
   background: #ffffff;
@@ -187,10 +225,17 @@
   font-size: var(--ems-font-button);
   font-weight: 600;
   cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.resendOtpBtn:hover:not(:disabled) {
+  background: #eef2ff;
 }
 
 .resendOtpBtn:disabled {
-  cursor: wait;
+  cursor: not-allowed;
   opacity: 0.65;
 }
 
@@ -202,21 +247,70 @@
 }
 
 @keyframes verify-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
+/* Tablet & Mobile Stack */
 @media screen and (max-width: 768px) {
   .VerifyMain {
     flex-direction: column;
-    width: 100%;
-    max-width: 450px;
+    width: min(calc(100% - 2rem), 460px);
+    margin: 1rem auto;
   }
 
   .verifyBanner {
-    padding: 30px 20px;
+    padding: 28px 20px;
   }
 
   .verifyForm {
-    padding: 30px 20px;
+    padding: clamp(22px, 5vw, 30px) 20px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 420px) {
+  .VerifyMain {
+    width: calc(100% - 1.25rem);
+    margin: 0.75rem auto;
+    border-radius: 10px;
+  }
+
+  .verifyBanner {
+    padding: 22px 16px;
+  }
+
+  .verifyBanner .verifyIcon {
+    width: 62px;
+    margin-bottom: 12px;
+  }
+
+  .verifyForm {
+    padding: 22px 16px;
+  }
+
+  .verifyForm .heading {
+    margin-bottom: 1.2rem;
+  }
+
+  .verifyForm .otpGroup input {
+    letter-spacing: clamp(4px, 2vw, 7px);
+  }
+
+  .verifyForm .formGrp input::placeholder {
+    letter-spacing: 2px;
+  }
+}
+
+/* Extra-small phones */
+@media (max-width: 320px) {
+  .VerifyMain {
+    width: calc(100% - 0.75rem);
+  }
+
+  .verifyBanner,
+  .verifyForm {
+    padding: 18px 12px;
   }
 }
