@@ -8,6 +8,7 @@ import {
   updateFeedback,
 } from "../../../services/feedbackService";
 import socket from "../../../api/socket";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 import "../styles/createFeedback.css";
 
 const newId = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -28,6 +29,7 @@ const toLocalDateTime = (value) => {
 
 const CreateFeedback = () => {
   const navigate = useNavigate();
+  const { confirm } = useNotifications();
   const { eventId, formId } = useParams();
   const editing = Boolean(formId);
   const [events, setEvents] = useState([]);
@@ -104,9 +106,17 @@ const CreateFeedback = () => {
     questions: current.questions.map((question) => question.questionId === questionId ? { ...question, ...patch } : question),
   }));
 
-  const changeQuestionType = (question, type) => {
+  const changeQuestionType = async (question, type) => {
     if (question.type === type) return;
-    if (type === "textarea" && question.options.length && !window.confirm("Changing to paragraph removes this question’s choices. Continue?")) return;
+    if (type === "textarea" && question.options.length) {
+      const accepted = await confirm({
+        title: "Remove answer choices?",
+        message: "Changing this question to paragraph format removes its current choices.",
+        confirmText: "Change question type",
+        destructive: true,
+      });
+      if (!accepted) return;
+    }
     updateQuestion(question.questionId, {
       type,
       options: type === "textarea" ? [] : question.options.length >= 2 ? question.options : [newOption("Option 1"), newOption("Option 2")],
@@ -195,7 +205,7 @@ const CreateFeedback = () => {
             </div></div>
             <input className="feedback-question-text" maxLength={500} value={question.text} onChange={(event) => updateQuestion(question.questionId, { text: event.target.value })} placeholder="Question text" disabled={responseCount > 0} />
             <div className="feedback-question-settings">
-              <label>Question type<select value={question.type} onChange={(event) => changeQuestionType(question, event.target.value)} disabled={responseCount > 0}><option value="radio">Multiple choice</option><option value="textarea">Paragraph</option><option value="dropdown">Dropdown</option></select></label>
+              <label>Question type<select value={question.type} onChange={(event) => void changeQuestionType(question, event.target.value)} disabled={responseCount > 0}><option value="radio">Multiple choice</option><option value="textarea">Paragraph</option><option value="dropdown">Dropdown</option></select></label>
               <label className="feedback-required-toggle"><input type="checkbox" checked={question.required} onChange={(event) => updateQuestion(question.questionId, { required: event.target.checked })} disabled={responseCount > 0} /> Required</label>
             </div>
             {question.type === "textarea" ? <div className="feedback-question-placeholder">Users will enter a paragraph response.</div> : <div className="feedback-option-editor">

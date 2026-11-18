@@ -4,6 +4,7 @@ import { LoaderCircle, RotateCw } from "lucide-react";
 import { getEventById } from "../../../services/eventService";
 import { participateInEvent } from "../../../services/participantService";
 import { getEventPaymentQr, submitManualPayment } from "../../../services/payment";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 import "../styles/participateEvent.css";
 
 const proofMimeByExtension = {
@@ -28,6 +29,7 @@ const getQrErrorMessage = async (requestError) => {
 const ParticipateEvent = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const { notify } = useNotifications();
   const [participationType, setParticipationType] = useState("Participant");
   const [event, setEvent] = useState(null);
   const [qrUrl, setQrUrl] = useState("");
@@ -171,7 +173,7 @@ const ParticipateEvent = () => {
       }
 
       await participateInEvent({ eventId, participationType });
-      alert("Successfully participated in the event");
+      notify("success", "Successfully participated in the event.");
       navigate("/upcoming-events");
     } catch (requestError) {
       setError(requestError.response?.data?.message || requestError.message || "Could not submit registration.");

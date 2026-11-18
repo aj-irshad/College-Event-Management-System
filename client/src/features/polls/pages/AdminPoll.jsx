@@ -11,6 +11,7 @@ import pollContext from "../../../context/pollContext.jsx";
 import { EmptyState } from "../../../components/ModulePageUI";
 import { fetchPollVotesAdmin } from "../../../services/pollService.js";
 import { useState } from "react";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 
 const AdminPoll = () => {
   const { pollResults: polls, pollResultsLoading: resultsLoading, pollLoading, pollError, pollResultsError, removePoll } =
@@ -19,6 +20,8 @@ const AdminPoll = () => {
   const navigate = useNavigate();
   const [voteDetails, setVoteDetails] = useState(null);
   const [voteError, setVoteError] = useState("");
+  const [deletingPollId, setDeletingPollId] = useState("");
+  const { confirm, notify } = useNotifications();
 
   const showVotes = async (pollId) => {
     try {
@@ -32,21 +35,28 @@ const AdminPoll = () => {
 
   // Delete poll
   const handleDelete = async (pollId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this poll?",
-    );
-
+    if (deletingPollId) return;
+    const confirmDelete = await confirm({
+      title: "Delete poll?",
+      message: "This will permanently delete the poll and its results.",
+      confirmText: "Delete poll",
+      destructive: true,
+    });
     if (!confirmDelete) return;
 
+    setDeletingPollId(pollId);
     try {
       await deletePoll(pollId);
       // The socket event updates all sessions; this also updates the admin if
       // its socket is disconnected after the REST deletion succeeds.
       removePoll(pollId);
+      notify("success", "The poll was deleted.");
     } catch (error) {
       console.error("Error deleting poll:", error);
 
-      alert(error.response?.data?.message || "Failed to delete poll");
+      notify("error", error.response?.data?.message || "Failed to delete poll.");
+    } finally {
+      setDeletingPollId("");
     }
   };
 
@@ -92,6 +102,7 @@ const AdminPoll = () => {
               onEdit={() => navigate(`/edit-poll/${poll._id}`)}
               onDelete={handleDelete}
               onViewVotes={() => void showVotes(poll._id)}
+              deleting={deletingPollId === poll._id}
             />
           ))}
         </div>

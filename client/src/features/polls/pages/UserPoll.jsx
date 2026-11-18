@@ -1,10 +1,11 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { BarChart3 } from "lucide-react";
 import { EmptyState } from "../../../components/ModulePageUI";
 import pollContext from "../../../context/pollContext";
 import { submitPollVote, getUserVotes } from "../../../services/pollService";
 import { useSearchParams } from "react-router-dom";
 import "../styles/userPoll.css";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 
 const UserPoll = () => {
   const { pollForm, pollLoading, pollError, pollResults, pollResultsLoading } =
@@ -15,6 +16,9 @@ const UserPoll = () => {
   const [votedPolls, setVotedPolls] = useState({});
   const [clockNow, setClockNow] = useState(Date.now());
   const [selectedPollId, setSelectedPollId] = useState(() => searchParams.get("poll") || "");
+  const [votingPollId, setVotingPollId] = useState("");
+  const votingPollsRef = useRef(new Set());
+  const { notify } = useNotifications();
 
   useEffect(() => {
     const expiries = pollForm
@@ -55,7 +59,7 @@ const UserPoll = () => {
 
   const handleOptionChange = (pollId, option) => {
     // Don't allow changing the answer after voting
-    if (votedPolls[pollId]) return;
+    if (votedPolls[pollId] || votingPollsRef.current.has(pollId)) return;
 
     setSelectedOptions((prev) => ({
       ...prev,
@@ -73,18 +77,20 @@ const UserPoll = () => {
       poll.status === "Completed" ||
       (poll.expiresAt && new Date(poll.expiresAt).getTime() <= Date.now())
     ) {
-      alert("This poll has expired");
+      notify("warning", "This poll has expired.");
       return;
     }
 
     const selectedOption = selectedOptions[pollId];
 
     if (!selectedOption) {
-      alert("Please select an option");
+      notify("warning", "Please select an option.");
       return;
     }
 
     try {
+      votingPollsRef.current.add(pollId);
+      setVotingPollId(pollId);
       await submitPollVote(pollId, selectedOption);
 
       // Lock this poll
@@ -93,11 +99,14 @@ const UserPoll = () => {
         [pollId]: true,
       }));
 
-      alert("Your vote has been submitted successfully");
+      notify("success", "Your vote has been submitted successfully.");
     } catch (err) {
       console.error("Error submitting vote:", err);
 
-      alert(err.response?.data?.message || "Failed to submit your vote");
+      notify("error", err.response?.data?.message || "Failed to submit your vote.");
+    } finally {
+      votingPollsRef.current.delete(pollId);
+      setVotingPollId("");
     }
   };
 
@@ -192,8 +201,8 @@ const UserPoll = () => {
               );
             })}
 
-            <button className="voteButton" type="submit" disabled={isVoted || isExpired}>
-              {isVoted ? "Voted ✓" : isExpired ? "Poll completed" : "Vote"}
+            <button className="voteButton" type="submit" disabled={isVoted || isExpired || votingPollId === form._id}>
+              {votingPollId === form._id ? "Submitting…" : isVoted ? "Voted ✓" : isExpired ? "Poll completed" : "Vote"}
             </button>
 
             {isVoted && (

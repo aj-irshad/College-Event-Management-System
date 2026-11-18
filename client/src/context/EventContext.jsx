@@ -243,6 +243,7 @@ export const EventProvider = ({ children }) => {
       debugLog("state updated from delete response", { eventId });
     } catch (err) {
       console.error(err.message);
+      throw err;
     }
   };
 

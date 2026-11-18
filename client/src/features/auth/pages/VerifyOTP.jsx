@@ -2,12 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { resendOTP, verifyOTP } from "../../../services/authService";
 import VerifyOTPForm from "../components/VerifyOTPForm";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 import { MailCheck } from "lucide-react";
 import "../styles/VerifyOTP.css";
 
 function VerifyOTP() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { notify } = useNotifications();
 
   const email = location.state?.email;
 
@@ -58,7 +60,7 @@ function VerifyOTP() {
     setIsSubmitting(true);
     try {
       const response = await verifyOTP({ email, otp });
-      alert(response.data.message);
+      notify("success", response.data.message || "Your account has been verified.");
       navigate("/login");
     } catch (error) {
       setWarning(error.response?.data?.message || error.response?.data?.msg || "Verification failed");

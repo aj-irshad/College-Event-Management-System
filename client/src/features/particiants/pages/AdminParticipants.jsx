@@ -5,6 +5,7 @@ import socket from "../../../api/socket";
 import { getAllParticipants, updateParticipationApproval } from "../../../services/participantService";
 import { getEvents } from "../../../services/eventService";
 import "../styles/adminParticipants.css";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 
 const paymentStatusLabels = {
   Approved: "Payment Approved",
@@ -22,6 +23,7 @@ const AdminParticipants = () => {
   const [error, setError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
   const [busyParticipantId, setBusyParticipantId] = useState("");
+  const { confirm } = useNotifications();
 
   useEffect(() => {
     let active = true;
@@ -78,7 +80,16 @@ const AdminParticipants = () => {
   const selectedEvent = events.find((event) => event._id === filters.eventId);
 
   const changeApprovalStatus = async (participant, approvalStatus) => {
-    if (approvalStatus === "Not Approved" && !window.confirm("Reject this participation request?")) return;
+    if (busyParticipantId) return;
+    if (approvalStatus === "Not Approved") {
+      const accepted = await confirm({
+        title: "Reject participation request?",
+        message: "The participant will see this request as not approved.",
+        confirmText: "Reject request",
+        destructive: true,
+      });
+      if (!accepted) return;
+    }
     setBusyParticipantId(participant._id);
     setActionMessage("");
     setError("");

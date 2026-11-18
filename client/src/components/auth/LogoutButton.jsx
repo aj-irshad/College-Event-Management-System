@@ -21,7 +21,6 @@ const LogoutButton = () => {
     try {
       await logout();
       setUser(null);
-      // alert("Logged out successfully");
       navigate("/login", { replace: true });
     } catch (err) {
       console.error(err.message);

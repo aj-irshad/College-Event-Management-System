@@ -11,10 +11,12 @@ import {
 
 import eventContext from "../../../context/EventContext.jsx";
 import EventAudienceTargets from "../components/EventAudienceTargets.jsx";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 import "../styles/createEvent.css";
 
 const CreateEvent = () => {
   const navigate = useNavigate();
+  const { notify } = useNotifications();
 
   const { createEventContext } = useContext(eventContext);
 
@@ -147,7 +149,7 @@ const CreateEvent = () => {
 
       await createEventContext(finalEventData);
 
-      alert("Successfully created event");
+      notify("success", "Successfully created event.");
       navigate("/upcoming-events");
     } catch (err) {
       setError(

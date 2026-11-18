@@ -2,7 +2,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import PollBtn from "./PollBtn.jsx";
 import PollResultOption from "./PollResultOption.jsx";
 
-const PollResultCard = ({ poll, onEdit, onDelete, onViewVotes }) => {
+const PollResultCard = ({ poll, onEdit, onDelete, onViewVotes, deleting = false }) => {
   // Find winner
   const winner =
     poll.highestVotes > 0
@@ -44,10 +44,11 @@ const PollResultCard = ({ poll, onEdit, onDelete, onViewVotes }) => {
           />
 
           <PollBtn
-            text="Delete"
+            text={deleting ? "Deleting…" : "Delete"}
             onClick={() => onDelete(poll._id)}
             icon={<Trash2 size={16} />}
             style={{ backgroundColor: "red" }}
+            disabled={deleting}
           />
         </div>
       </div>

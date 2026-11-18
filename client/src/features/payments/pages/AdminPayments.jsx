@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import socket from "../../../api/socket";
 import { getAdminPayments, getAdminRevenue, getPaymentProof, reviewPayment } from "../../../services/payment";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 import "../styles/payments.css";
 
 const AdminPayments = () => {
@@ -14,6 +15,7 @@ const AdminPayments = () => {
   const [message, setMessage] = useState("");
   const [proofUrl, setProofUrl] = useState("");
   const [proofType, setProofType] = useState("");
+  const { confirm, prompt } = useNotifications();
 
   const load = useCallback(async () => {
     try {
@@ -61,9 +63,28 @@ const AdminPayments = () => {
   };
 
   const decide = async (payment, decision) => {
-    const rejectionReason = decision === "Rejected"
-      ? window.prompt("Enter a reason for rejecting this payment:")?.trim()
-      : "";
+    if (busyId) return;
+    let rejectionReason = "";
+    if (decision === "Rejected") {
+      rejectionReason = await prompt({
+        title: "Reject payment submission?",
+        message: "Enter the reason the user will see. Submitting this form confirms the rejection.",
+        label: "Rejection reason",
+        placeholder: "Explain why the proof was rejected",
+        confirmText: "Reject payment",
+        destructive: true,
+        required: true,
+        maxLength: 1000,
+        multiline: true,
+      });
+    } else {
+      const accepted = await confirm({
+        title: "Approve payment?",
+        message: "This verifies the submitted payment and confirms the associated participation.",
+        confirmText: "Approve payment",
+      });
+      if (!accepted) return;
+    }
     if (decision === "Rejected" && !rejectionReason) return;
     setBusyId(payment._id);
     setError("");

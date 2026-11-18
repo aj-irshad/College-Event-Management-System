@@ -6,6 +6,7 @@ import "../styles/editEvent.css";
 
 import { getEventById, updateEvent } from "../../../services/eventService.js";
 import EventAudienceTargets from "../components/EventAudienceTargets.jsx";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 
 const EditEvent = () => {
   const formatDateTimeLocal = (date) => {
@@ -30,11 +31,13 @@ const EditEvent = () => {
   const [editPrice, setEditPrice] = useState(0);
   const [priceType, setPriceType] = useState("free");
   const [editAudienceTargets, setEditAudienceTargets] = useState([]);
+  const [saving, setSaving] = useState(false);
 
   const { events, setEvents, eventLoading } = useContext(eventContext);
 
   const { id } = useParams();
   const navigate = useNavigate();
+  const { notify } = useNotifications();
 
   const contextEvent = events.find((event) => event._id.toString() === id);
   const [fetchedEvent, setFetchedEvent] = useState(null);
@@ -88,22 +91,23 @@ const EditEvent = () => {
 
   const handleEdit = async (e, id) => {
     e.preventDefault();
+    if (saving) return;
 
     // Enforce end time is strictly greater than start time
     if (new Date(editEndAt) <= new Date(editStartAt)) {
-      alert(
+      notify("warning",
         "End date and time must be strictly after the start date and time.",
       );
       return;
     }
 
     if (priceType === "paid" && (!editPrice || Number(editPrice) <= 0)) {
-      alert("Please enter a valid ticket price amount.");
+      notify("warning", "Please enter a valid ticket price amount.");
       return;
     }
 
     if (editAudienceTargets.some((target) => !target.semesters?.length)) {
-      alert("Select at least one semester for every targeted department.");
+      notify("warning", "Select at least one semester for every targeted department.");
       return;
     }
 
@@ -120,6 +124,7 @@ const EditEvent = () => {
     };
 
     try {
+      setSaving(true);
       const response = await updateEvent(id, updatedEvent);
 
       setEvents((previous) =>
@@ -129,10 +134,12 @@ const EditEvent = () => {
         ].sort((a, b) => new Date(b.start_at) - new Date(a.start_at)),
       );
 
-      alert("Successfully updated event info.");
+      notify("success", "Successfully updated event info.");
       navigate("/upcoming-events");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to update event.");
+      notify("error", err.response?.data?.message || "Failed to update event.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -244,7 +251,7 @@ const EditEvent = () => {
               onChange={(e) => setEditVenue(e.target.value)}
             />
 
-            <button type="submit">Update Event</button>
+            <button type="submit" disabled={saving}>{saving ? "Updating…" : "Update Event"}</button>
           </form>
         </>
       ) : (

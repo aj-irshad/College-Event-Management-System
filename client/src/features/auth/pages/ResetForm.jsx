@@ -5,6 +5,7 @@ function ResetForm({
   checkMatchPassword,
   handleChange,
   handleSubmit,
+  isSubmitting = false,
 }) {
   return (
     <form className="resetForm" onSubmit={handleSubmit}>
@@ -52,8 +53,8 @@ function ResetForm({
       )}
 
       <section className="btnSection">
-        <button type="submit" className="resetBtn">
-          Reset Password
+        <button type="submit" className="resetBtn" disabled={isSubmitting}>
+          {isSubmitting ? "Resetting…" : "Reset Password"}
         </button>
         <Link to="/login" className="loginLink">
           Login

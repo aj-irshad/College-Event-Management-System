@@ -7,19 +7,22 @@ import { EventProvider } from "./context/EventContext.jsx";
 import { BlogProvider } from "./context/blogContext.jsx";
 import { FeedbackProvider } from "./context/feedbackContext.jsx";
 import { PollProvider } from "./context/pollContext.jsx";
+import { NotificationProvider } from "./context/NotificationContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <AuthProvider>
-      <EventProvider>
-        <BlogProvider>
-          <FeedbackProvider>
-            <PollProvider>
-              <App />
-            </PollProvider>
-          </FeedbackProvider>
-        </BlogProvider>
-      </EventProvider>
-    </AuthProvider>
+    <NotificationProvider>
+      <AuthProvider>
+        <EventProvider>
+          <BlogProvider>
+            <FeedbackProvider>
+              <PollProvider>
+                <App />
+              </PollProvider>
+            </FeedbackProvider>
+          </BlogProvider>
+        </EventProvider>
+      </AuthProvider>
+    </NotificationProvider>
   </BrowserRouter>,
 );

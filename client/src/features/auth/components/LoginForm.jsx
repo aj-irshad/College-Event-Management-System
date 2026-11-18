@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-const LoginForm = ({ formData, handleChange, handleSubmit, Eye, EyeOff }) => {
+const LoginForm = ({ formData, handleChange, handleSubmit, Eye, EyeOff, isSubmitting = false }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -53,7 +53,7 @@ const LoginForm = ({ formData, handleChange, handleSubmit, Eye, EyeOff }) => {
           Forgot password?
         </Link>
       </section>
-      <button className="loginBtn">Login</button>
+      <button className="loginBtn" type="submit" disabled={isSubmitting}>{isSubmitting ? "Signing in…" : "Login"}</button>
 
       <p className="linktoSignup">
         Don't have an account? <Link to="/signup">Signup</Link>

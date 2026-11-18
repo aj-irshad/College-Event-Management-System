@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { signUp } from "../../../services/authService";
 import { UsersRound, Eye, EyeOff } from "lucide-react";
 import SignupForm from "../components/SignupForm";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 import "../styles/signup.css";
 import "../auth.css";
 
 function Signup() {
   const navigate = useNavigate();
+  const { notify } = useNotifications();
   const [warning, setWarning] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
@@ -79,7 +81,7 @@ function Signup() {
 
     try {
       const response = await signUp(signupData);
-      alert("OTP has been sent to your email.");
+      notify("success", "OTP has been sent to your email.", "Verification email sent");
       const cooldownSeconds = Math.max(0, Number(response.data?.resendCooldownSeconds) || 0);
       navigate("/verify-otp", {
         state: {

@@ -8,10 +8,11 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import eventContext from "../../../context/EventContext";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 import { formatDate, formatTime } from "../../../hooks/dateFormatter.js";
 
 import "../styles/eventcard.css";
@@ -20,9 +21,27 @@ const EventCards = ({ event, isAdmin, participationStatus = null, participationI
   const navigate = useNavigate();
   const location = useLocation();
   const { deleteEventContext } = useContext(eventContext);
+  const { notify, confirm } = useNotifications();
+  const [deleting, setDeleting] = useState(false);
 
   const handleDeleteEvent = async (eventId) => {
-    await deleteEventContext(eventId);
+    if (deleting) return;
+    const accepted = await confirm({
+      title: "Delete event?",
+      message: "This will permanently remove the event and its registration availability.",
+      confirmText: "Delete event",
+      destructive: true,
+    });
+    if (!accepted) return;
+    setDeleting(true);
+    try {
+      await deleteEventContext(eventId);
+      notify("success", "The event was deleted.");
+    } catch (error) {
+      notify("error", error.response?.data?.message || "Could not delete the event.");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   // Determine pricing display text
@@ -114,8 +133,9 @@ const EventCards = ({ event, isAdmin, participationStatus = null, participationI
               type="button"
               className="eventCard-btn eventCard-btn-danger"
               onClick={() => handleDeleteEvent(event._id)}
+              disabled={deleting}
             >
-              <Trash size={16} /> Delete
+              <Trash size={16} /> {deleting ? "Deleting…" : "Delete"}
             </button>
 
             {event.status === "Completed" && (

@@ -5,6 +5,7 @@ import { Plus, Save, X } from "lucide-react";
 import { fetchPollResult, updatePoll } from "../../../services/pollService.js";
 import PollBtn from "../components/PollBtn.jsx";
 import EventAudienceTargets from "../../events/components/EventAudienceTargets.jsx";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 
 import "../styles/editPoll.css";
 
@@ -20,6 +21,7 @@ const toLocalDateTimeInput = (value) => {
 const EditPoll = () => {
   const { pollId } = useParams();
   const navigate = useNavigate();
+  const { notify } = useNotifications();
 
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
@@ -43,7 +45,7 @@ const EditPoll = () => {
       } catch (error) {
         console.error("Error fetching poll:", error);
 
-        alert(error.response?.data?.message || "Failed to fetch poll.");
+        notify("error", error.response?.data?.message || "Failed to fetch poll.");
 
         navigate("/polls");
       } finally {
@@ -70,7 +72,7 @@ const EditPoll = () => {
   // Remove option
   const handleRemoveOption = (index) => {
     if (options.length <= 2) {
-      alert("A poll must have at least 2 options.");
+      notify("warning", "A poll must have at least 2 options.");
       return;
     }
 
@@ -84,7 +86,7 @@ const EditPoll = () => {
     e.preventDefault();
 
     if (audienceTargets.some((target) => !target.semesters?.length)) {
-      alert("Select at least one semester for every targeted department.");
+      notify("warning", "Select at least one semester for every targeted department.");
       return;
     }
 
@@ -94,13 +96,13 @@ const EditPoll = () => {
     const trimmedOptions = options.map((option) => option.trim());
     // Validate question
     if (!trimmedQuestion) {
-      alert("Please enter a poll question.");
+      notify("warning", "Please enter a poll question.");
       return;
     }
 
     // Validate options
     if (trimmedOptions.some((option) => !option)) {
-      alert("Please fill in all poll options.");
+      notify("warning", "Please fill in all poll options.");
       return;
     }
 
@@ -108,12 +110,12 @@ const EditPoll = () => {
     const uniqueOptions = new Set(trimmedOptions);
 
     if (uniqueOptions.size !== trimmedOptions.length) {
-      alert("Poll options must be unique.");
+      notify("warning", "Poll options must be unique.");
       return;
     }
 
     if (!expiresAt || !Number.isFinite(new Date(expiresAt).getTime())) {
-      alert("Please enter a valid expiry date and time.");
+      notify("warning", "Please enter a valid expiry date and time.");
       return;
     }
 
@@ -128,13 +130,13 @@ const EditPoll = () => {
       });
 
       console.log("Update polls 3");
-      alert("Poll updated successfully.");
+      notify("success", "Poll updated successfully.");
 
       navigate("/polls");
     } catch (error) {
       console.error("Error updating poll:", error);
 
-      alert(error.response?.data?.message || "Failed to update poll.");
+      notify("error", error.response?.data?.message || "Failed to update poll.");
     } finally {
       setSaving(false);
     }

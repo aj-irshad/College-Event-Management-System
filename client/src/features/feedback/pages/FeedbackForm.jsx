@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { EmptyState, PageHeader } from "../../../components/ModulePageUI";
 import { deleteFeedbackForm, fetchAdminFeedbackForms } from "../../../services/feedbackService";
 import socket from "../../../api/socket";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 import "../styles/feedbackForm.css";
 
 const FeedbackForms = () => {
@@ -11,7 +12,9 @@ const FeedbackForms = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [archivingId, setArchivingId] = useState("");
   const navigate = useNavigate();
+  const { confirm } = useNotifications();
 
   const loadForms = useCallback(async () => {
     try {
@@ -41,7 +44,15 @@ const FeedbackForms = () => {
   }, [loadForms]);
 
   const handleDelete = async (feedbackFormId) => {
-    if (!window.confirm("Archive this feedback form? Existing responses will be kept.")) return;
+    if (archivingId) return;
+    const accepted = await confirm({
+      title: "Archive feedback form?",
+      message: "Existing responses will be kept, but the form will no longer be active.",
+      confirmText: "Archive form",
+      destructive: true,
+    });
+    if (!accepted) return;
+    setArchivingId(feedbackFormId);
     setError("");
     setNotice("");
     try {
@@ -50,6 +61,8 @@ const FeedbackForms = () => {
       setNotice("Form archived. Existing responses were preserved.");
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Failed to archive feedback form.");
+    } finally {
+      setArchivingId("");
     }
   };
 
@@ -100,7 +113,7 @@ const FeedbackForms = () => {
               <div className="feedback-form-footer">
                 <button type="button" className="edit-feedback-btn" onClick={() => navigate(`/feedback-forms/${form._id}`)}>View responses</button>
                 <button type="button" className="edit-feedback-btn" onClick={() => navigate(`/feedback/forms/${form._id}/edit`)}><Edit3 size={15} />Edit</button>
-                <button type="button" className="delete-feedback-btn" onClick={() => void handleDelete(form._id)}><Trash2 size={16} />Archive</button>
+                <button type="button" className="delete-feedback-btn" disabled={archivingId === form._id} onClick={() => void handleDelete(form._id)}><Trash2 size={16} />{archivingId === form._id ? "Archiving…" : "Archive"}</button>
               </div>
             </article>
           ))}

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { createPoll } from "../../../services/pollService";
 import "../styles/createPoll.css";
 import { useNavigate } from "react-router-dom";
 import EventAudienceTargets from "../../events/components/EventAudienceTargets.jsx";
+import { useNotifications } from "../../../context/NotificationContext.jsx";
 
 const toLocalDateTimeInput = (date) => {
   const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
@@ -16,8 +17,11 @@ const CreatePoll = () => {
   const [options, setOptions] = useState(["", ""]);
   const [expiresAt, setExpiresAt] = useState("");
   const [audienceTargets, setAudienceTargets] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   const navigate = useNavigate();
+  const { notify } = useNotifications();
 
   const handleOptionChange = (e, index) => {
     const newOptions = [...options];
@@ -33,31 +37,34 @@ const CreatePoll = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submittingRef.current) return;
 
     if (audienceTargets.some((target) => !target.semesters?.length)) {
-      alert("Select at least one semester for every targeted department.");
+      notify("warning", "Select at least one semester for every targeted department.");
       return;
     }
 
     const cleanOptions = options.map((option) => option.trim());
 
     if (!pollQuestion.trim()) {
-      alert("Please enter a poll question");
+      notify("warning", "Please enter a poll question.");
       return;
     }
 
     if (cleanOptions.some((option) => option === "")) {
-      alert("Please fill all options");
+      notify("warning", "Please fill all options.");
       return;
     }
 
     const expiryDate = new Date(expiresAt);
     if (!expiresAt || !Number.isFinite(expiryDate.getTime()) || expiryDate <= new Date()) {
-      alert("Please choose a valid future expiry date and time");
+      notify("warning", "Please choose a valid future expiry date and time.");
       return;
     }
 
     try {
+      submittingRef.current = true;
+      setIsSubmitting(true);
       const pollData = {
         question: pollQuestion.trim(),
         options: cleanOptions,
@@ -67,11 +74,13 @@ const CreatePoll = () => {
 
       const response = await createPoll(pollData);
 
-      alert(response.data.message);
+      notify("success", response.data.message || "Poll created successfully.");
       navigate("/polls");
     } catch (err) {
-      console.log(err.message);
-      alert("Failed to create poll");
+      notify("error", err.response?.data?.message || "Failed to create poll.");
+    } finally {
+      submittingRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -127,8 +136,8 @@ const CreatePoll = () => {
           + Add Option
         </button>
 
-        <button type="submit" className="createPollButton">
-          Create Poll
+        <button type="submit" className="createPollButton" disabled={isSubmitting}>
+          {isSubmitting ? "Creating…" : "Create Poll"}
         </button>
       </div>
     </form>
