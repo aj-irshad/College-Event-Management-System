@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -7,6 +7,8 @@ import {
   Tag,
   FileText,
   Clock,
+  Paperclip,
+  X,
 } from "lucide-react";
 
 import eventContext from "../../../context/EventContext.jsx";
@@ -37,6 +39,35 @@ const CreateEvent = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [attachments, setAttachments] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const submittingRef = useRef(false);
+
+  const addAttachments = (files) => {
+    const allowed = new Set([".pdf", ".doc", ".docx", ".ppt", ".pptx", ".jpg", ".jpeg", ".png", ".webp"]);
+    const current = [...attachments];
+    for (const file of files) {
+      const extension = `.${file.name.split(".").pop()?.toLowerCase()}`;
+      if (!allowed.has(extension)) {
+        setError("Choose PDF, DOC, DOCX, PPT, PPTX, JPG, JPEG, PNG, or WEBP files only.");
+        continue;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setError(`${file.name} is larger than the 5 MB per-file limit.`);
+        continue;
+      }
+      if (current.length >= 5) {
+        setError("An event can have at most 5 attachments.");
+        break;
+      }
+      current.push(file);
+    }
+    setAttachments(current);
+  };
+
+  const formatFileSize = (size) => size < 1024 * 1024
+    ? `${Math.max(1, Math.round(size / 1024))} KB`
+    : `${(size / (1024 * 1024)).toFixed(1)} MB`;
 
   const getCurrentDateTime = () => {
     const now = new Date();
@@ -92,9 +123,12 @@ const CreateEvent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submittingRef.current) return;
 
+    submittingRef.current = true;
     setLoading(true);
     setError("");
+    setUploadProgress(0);
 
     try {
       if (new Date(eventData.start_at) < new Date()) {
@@ -147,7 +181,9 @@ const CreateEvent = () => {
         price: priceType === "free" ? 0 : Number(eventData.price),
       };
 
-      await createEventContext(finalEventData);
+      await createEventContext(finalEventData, attachments, (event) => {
+        if (event.total) setUploadProgress(Math.round((event.loaded / event.total) * 100));
+      });
 
       notify("success", "Successfully created event.");
       navigate("/upcoming-events");
@@ -158,6 +194,7 @@ const CreateEvent = () => {
           "An unexpected error occurred.",
       );
     } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   };
@@ -373,6 +410,48 @@ const CreateEvent = () => {
               required
             />
           </div>
+
+          <section className="event-attachments-upload" aria-labelledby="event-attachments-heading">
+            <div className="event-attachments-upload-heading">
+              <div>
+                <h2 id="event-attachments-heading"><Paperclip size={18} /> Event attachments <span>(optional)</span></h2>
+                <p>Attach supporting documents or images. Up to 5 files, 5 MB each.</p>
+                <p className="event-attachment-formats">PDF, DOC, DOCX, PPT, PPTX, JPG, JPEG, PNG, WEBP</p>
+              </div>
+              <label className="event-attachment-select">
+                Add files
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.webp"
+                  multiple
+                  disabled={loading || attachments.length >= 5}
+                  onChange={(event) => {
+                    addAttachments(Array.from(event.target.files || []));
+                    event.target.value = "";
+                  }}
+                />
+              </label>
+            </div>
+            {attachments.length > 0 && (
+              <ul className="event-attachment-selected-list">
+                {attachments.map((file, index) => (
+                  <li key={`${file.name}-${file.size}-${index}`}>
+                    <span className="event-attachment-file-name">{file.name}</span>
+                    <span>{formatFileSize(file.size)}</span>
+                    <button type="button" aria-label={`Remove ${file.name}`} disabled={loading} onClick={() => setAttachments((current) => current.filter((_, itemIndex) => itemIndex !== index))}>
+                      <X size={16} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {loading && attachments.length > 0 && (
+              <div className="event-attachment-progress" role="status">
+                <div><span>Uploading attachments</span><span>{uploadProgress}%</span></div>
+                <progress max="100" value={uploadProgress} />
+              </div>
+            )}
+          </section>
 
           {/* Buttons */}
           <div className="form-actions">

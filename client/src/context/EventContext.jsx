@@ -211,9 +211,9 @@ export const EventProvider = ({ children }) => {
     return () => socket.disconnect();
   }, [accessProfileKey]);
 
-  const createEventContext = async (eventData) => {
+  const createEventContext = async (eventData, attachments = [], onUploadProgress) => {
     try {
-      const response = await createEvent(eventData);
+      const response = await createEvent(eventData, attachments, onUploadProgress);
       if (response.data?.event) {
         eventRevisionRef.current += 1;
         setEvents((prev) =>

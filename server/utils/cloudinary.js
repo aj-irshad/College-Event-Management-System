@@ -9,7 +9,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const allowedFolders = new Set(["profiles", "blogs", "payment-proofs"]);
+const allowedFolders = new Set(["profiles", "blogs", "payment-proofs", "event-attachments"]);
 const allowedResourceTypes = new Set(["image", "raw"]);
 
 const operationError = (operation, error) => {

@@ -2,6 +2,7 @@ import multer from "multer";
 import fs from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
+import os from "os";
 import { ensureUploadDirectory, getUploadDirectory } from "../utils/uploadPaths.js";
 
 const storage = multer.diskStorage({
@@ -194,5 +195,98 @@ const uploadPaymentProof = (req, res, next) => {
   });
 };
 
-export { uploadBlogImage, uploadPaymentProof };
+const eventAttachmentTypes = {
+  ".pdf": { mime: "application/pdf", signature: (buffer) => buffer.subarray(0, 5).toString("ascii") === "%PDF-", resourceType: "raw" },
+  ".doc": { mime: "application/msword", signature: (buffer) => buffer.subarray(0, 8).equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1])), resourceType: "raw" },
+  ".ppt": { mime: "application/vnd.ms-powerpoint", signature: (buffer) => buffer.subarray(0, 8).equals(Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1])), resourceType: "raw" },
+  ".docx": { mime: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", signature: (buffer) => buffer.subarray(0, 4).toString("ascii") === "PK\x03\x04" && buffer.includes(Buffer.from("[Content_Types].xml")) && buffer.includes(Buffer.from("word/document.xml")), resourceType: "raw" },
+  ".pptx": { mime: "application/vnd.openxmlformats-officedocument.presentationml.presentation", signature: (buffer) => buffer.subarray(0, 4).toString("ascii") === "PK\x03\x04" && buffer.includes(Buffer.from("[Content_Types].xml")) && buffer.includes(Buffer.from("ppt/presentation.xml")), resourceType: "raw" },
+  ".jpg": { mime: "image/jpeg", signature: (buffer) => buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff, resourceType: "image" },
+  ".jpeg": { mime: "image/jpeg", signature: (buffer) => buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff, resourceType: "image" },
+  ".png": { mime: "image/png", signature: (buffer) => buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])), resourceType: "image" },
+  ".webp": { mime: "image/webp", signature: (buffer) => buffer.length >= 12 && buffer.subarray(0, 4).toString("ascii") === "RIFF" && buffer.subarray(8, 12).toString("ascii") === "WEBP", resourceType: "image" },
+};
+
+const eventAttachmentStorage = multer.diskStorage({
+  destination: (req, _file, cb) => cb(null, req.eventAttachmentStagingDirectory),
+  filename: (_req, file, cb) => cb(null, `${randomUUID()}${path.extname(file.originalname).toLowerCase()}`),
+});
+
+const eventAttachmentUploads = multer({
+  storage: eventAttachmentStorage,
+  limits: { fileSize: 5 * 1024 * 1024, files: 5 },
+  fileFilter: (_req, file, cb) => {
+    const extension = path.extname(file.originalname).toLowerCase();
+    const type = eventAttachmentTypes[extension];
+    if (!type || type.mime !== file.mimetype) {
+      return cb(new Error("Upload PDF, DOC, DOCX, PPT, PPTX, JPG, JPEG, PNG, or WEBP files only"));
+    }
+    return cb(null, true);
+  },
+});
+
+const safeOriginalFilename = (filename) => {
+  const basename = path.posix.basename(String(filename || "").replace(/\\/g, "/"));
+  const cleaned = basename.replace(/[\u0000-\u001f\u007f]/g, "").trim().slice(0, 180);
+  return cleaned || "event-attachment";
+};
+
+const removeStagingDirectory = async (directory) => {
+  if (!directory) return;
+  try {
+    await fs.rm(directory, { recursive: true, force: true });
+  } catch {
+    console.error("Could not clean temporary event attachment files");
+  }
+};
+
+const uploadEventAttachments = (req, res, next) => {
+  fs.mkdtemp(path.join(os.tmpdir(), "ems-event-attachments-"))
+    .then((directory) => {
+      req.eventAttachmentStagingDirectory = directory;
+      eventAttachmentUploads.array("attachments", 5)(req, res, async (error) => {
+        if (error) {
+          await removeStagingDirectory(directory);
+          const status = error.code === "LIMIT_FILE_SIZE" ? 413 : 400;
+          return res.status(status).json({
+            success: false,
+            message: error.code === "LIMIT_FILE_SIZE"
+              ? "Each event attachment must be 5 MB or smaller"
+              : error.code === "LIMIT_UNEXPECTED_FILE"
+                ? "An event can have at most 5 attachments"
+                : error.message,
+          });
+        }
+
+        const files = req.files || [];
+        try {
+          for (const file of files) {
+            const extension = path.extname(file.originalname).toLowerCase();
+            const type = eventAttachmentTypes[extension];
+            const buffer = await fs.readFile(file.path);
+            if (!type?.signature(buffer)) {
+              await removeStagingDirectory(directory);
+              return res.status(400).json({ success: false, message: "An event attachment's content does not match its file type" });
+            }
+            await fs.chmod(file.path, 0o600);
+            file.originalname = safeOriginalFilename(file.originalname);
+            file.eventAttachmentMimeType = type.mime;
+            file.eventAttachmentResourceType = type.resourceType;
+            file.eventAttachmentFormat = extension.slice(1);
+          }
+        } catch {
+          await removeStagingDirectory(directory);
+          return res.status(400).json({ success: false, message: "Could not validate event attachment files" });
+        }
+
+        const cleanup = () => { void removeStagingDirectory(directory); };
+        res.once("finish", cleanup);
+        res.once("close", cleanup);
+        return next();
+      });
+    })
+    .catch(() => res.status(500).json({ success: false, message: "Could not prepare event attachment upload" }));
+};
+
+export { uploadBlogImage, uploadPaymentProof, uploadEventAttachments };
 export default uploadImage;

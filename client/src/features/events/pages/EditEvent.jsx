@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { Paperclip, X } from "lucide-react";
 
 import eventContext from "../../../context/EventContext.jsx";
 import "../styles/editEvent.css";
@@ -31,6 +32,10 @@ const EditEvent = () => {
   const [editPrice, setEditPrice] = useState(0);
   const [priceType, setPriceType] = useState("free");
   const [editAudienceTargets, setEditAudienceTargets] = useState([]);
+  const [existingAttachments, setExistingAttachments] = useState([]);
+  const [newAttachments, setNewAttachments] = useState([]);
+  const [initialAttachmentIds, setInitialAttachmentIds] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [saving, setSaving] = useState(false);
 
   const { events, setEvents, eventLoading } = useContext(eventContext);
@@ -71,6 +76,10 @@ const EditEvent = () => {
       setEditAudienceTargets(
         Array.isArray(event.audienceTargets) ? event.audienceTargets : [],
       );
+      const attachments = Array.isArray(event.attachments) ? event.attachments : [];
+      setExistingAttachments(attachments);
+      setInitialAttachmentIds(attachments.map((attachment) => String(attachment._id)));
+      setNewAttachments([]);
 
       const eventPrice = event.price !== undefined ? event.price : 0;
       setEditPrice(eventPrice);
@@ -125,7 +134,12 @@ const EditEvent = () => {
 
     try {
       setSaving(true);
-      const response = await updateEvent(id, updatedEvent);
+      setUploadProgress(0);
+      const keptIds = new Set(existingAttachments.map((attachment) => String(attachment._id)));
+      const removeAttachmentIds = initialAttachmentIds.filter((attachmentId) => !keptIds.has(attachmentId));
+      const response = await updateEvent(id, updatedEvent, newAttachments, removeAttachmentIds, (event) => {
+        if (event.total) setUploadProgress(Math.round((event.loaded / event.total) * 100));
+      });
 
       setEvents((previous) =>
         [
@@ -142,6 +156,34 @@ const EditEvent = () => {
       setSaving(false);
     }
   };
+
+  const addAttachments = (files) => {
+    const allowed = new Set([".pdf", ".doc", ".docx", ".ppt", ".pptx", ".jpg", ".jpeg", ".png", ".webp"]);
+    const next = [...newAttachments];
+    let warning = "";
+    for (const file of files) {
+      const extension = `.${file.name.split(".").pop()?.toLowerCase()}`;
+      if (!allowed.has(extension)) {
+        warning = "Choose PDF, DOC, DOCX, PPT, PPTX, JPG, JPEG, PNG, or WEBP files only.";
+        continue;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        warning = `${file.name} is larger than the 5 MB per-file limit.`;
+        continue;
+      }
+      if (existingAttachments.length + next.length >= 5) {
+        warning = "An event can have at most 5 attachments.";
+        break;
+      }
+      next.push(file);
+    }
+    setNewAttachments(next);
+    if (warning) notify("warning", warning);
+  };
+
+  const formatFileSize = (size) => size < 1024 * 1024
+    ? `${Math.max(1, Math.round(size / 1024))} KB`
+    : `${(size / (1024 * 1024)).toFixed(1)} MB`;
 
   return (
     <main className="editEvent">
@@ -250,6 +292,54 @@ const EditEvent = () => {
               value={editVenue}
               onChange={(e) => setEditVenue(e.target.value)}
             />
+
+            <section className="edit-event-attachments" aria-labelledby="edit-event-attachments-heading">
+              <div className="edit-event-attachments-heading">
+                <h3 id="edit-event-attachments-heading"><Paperclip size={18} /> Event attachments <span>(optional)</span></h3>
+                <p>PDF, DOC, DOCX, PPT, PPTX, JPG, JPEG, PNG, or WEBP · up to 5 MB each · maximum 5 files</p>
+                <label className="edit-event-attachment-select">
+                  Add files
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png,.webp"
+                    multiple
+                    disabled={saving || existingAttachments.length + newAttachments.length >= 5}
+                    onChange={(event) => {
+                      addAttachments(Array.from(event.target.files || []));
+                      event.target.value = "";
+                    }}
+                  />
+                </label>
+              </div>
+              {(existingAttachments.length > 0 || newAttachments.length > 0) ? (
+                <ul className="edit-event-attachment-list">
+                  {existingAttachments.map((attachment) => (
+                    <li key={attachment._id}>
+                      <span className="edit-event-attachment-name">{attachment.originalFilename}</span>
+                      <span>{attachment.format?.toUpperCase()} · {formatFileSize(attachment.size || 0)}</span>
+                      <button type="button" aria-label={`Remove ${attachment.originalFilename}`} disabled={saving} onClick={() => setExistingAttachments((current) => current.filter((item) => String(item._id) !== String(attachment._id)))}>
+                        <X size={16} /> Remove
+                      </button>
+                    </li>
+                  ))}
+                  {newAttachments.map((file, index) => (
+                    <li key={`${file.name}-${file.size}-${index}`}>
+                      <span className="edit-event-attachment-name">{file.name}</span>
+                      <span>{formatFileSize(file.size)}</span>
+                      <button type="button" aria-label={`Remove ${file.name}`} disabled={saving} onClick={() => setNewAttachments((current) => current.filter((_, itemIndex) => itemIndex !== index))}>
+                        <X size={16} /> Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="edit-event-attachments-empty">No attachments added.</p>}
+              {saving && newAttachments.length > 0 && (
+                <div className="event-attachment-progress" role="status">
+                  <div><span>Uploading attachments</span><span>{uploadProgress}%</span></div>
+                  <progress max="100" value={uploadProgress} />
+                </div>
+              )}
+            </section>
 
             <button type="submit" disabled={saving}>{saving ? "Updating…" : "Update Event"}</button>
           </form>

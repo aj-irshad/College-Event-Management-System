@@ -9,6 +9,19 @@ const audienceTargetSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const eventAttachmentSchema = new mongoose.Schema(
+  {
+    originalFilename: { type: String, required: true, trim: true, maxlength: 180 },
+    secureUrl: { type: String, required: true },
+    publicId: { type: String, required: true, trim: true },
+    resourceType: { type: String, enum: ["image", "raw"], required: true },
+    mimeType: { type: String, required: true, trim: true },
+    format: { type: String, required: true, trim: true },
+    size: { type: Number, required: true, min: 1, max: 5 * 1024 * 1024 },
+  },
+  { timestamps: true },
+);
+
 const eventSchema = new mongoose.Schema(
   {
     title: {
@@ -34,6 +47,14 @@ const eventSchema = new mongoose.Schema(
     audienceTargets: {
       type: [audienceTargetSchema],
       default: [],
+    },
+    attachments: {
+      type: [eventAttachmentSchema],
+      default: [],
+      validate: {
+        validator: (attachments) => attachments.length <= 5,
+        message: "An event can have at most 5 attachments",
+      },
     },
     start_at: {
       type: Date,

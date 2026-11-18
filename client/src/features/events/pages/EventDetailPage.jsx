@@ -8,6 +8,7 @@ import socket from "../../../api/socket";
 import { getEventById } from "../../../services/eventService";
 import { getMyParticipation } from "../../../services/participantService";
 import { formatDate, formatTime } from "../../../hooks/dateFormatter";
+import EventAttachments from "../components/EventAttachments.jsx";
 
 import "../styles/eventDetailPage.css";
 
@@ -229,6 +230,8 @@ const EventDetailPage = () => {
         <h3>About this event</h3>
         <p>{event.description}</p>
       </article>
+
+      <EventAttachments eventId={event._id} attachments={event.attachments || []} />
 
       {/* Action CTA Section */}
       {!isAdmin && (

@@ -119,6 +119,122 @@
   text-decoration: underline;
 }
 
+.edit-event-attachments {
+  display: grid;
+  gap: 0.85rem;
+  min-width: 0;
+  margin-top: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.edit-event-attachments-heading {
+  position: relative;
+  min-width: 0;
+  padding-right: 8rem;
+}
+
+.edit-event-attachments-heading h3 svg {
+  flex: 0 0 auto;
+}
+
+.edit-event-attachment-select {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--primary-color, #2563eb);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--primary-color, #2563eb);
+  font-size: var(--ems-font-button);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.edit-event-attachment-select input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.edit-event-attachment-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.edit-event-attachment-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--muted-text, #64748b);
+  font-size: var(--ems-font-meta);
+}
+
+.edit-event-attachment-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--text-color, #1f2937);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.edit-event-attachment-list li button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-height: 38px;
+  padding: 0.35rem 0.55rem;
+  border: 0;
+  border-radius: 7px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font: inherit;
+  cursor: pointer;
+}
+
+.edit-event-attachments-empty {
+  margin: 0;
+  color: var(--muted-text, #64748b);
+  font-size: var(--ems-font-description);
+}
+
+.editEvent .event-attachment-progress {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--muted-text, #64748b);
+  font-size: var(--ems-font-meta);
+}
+
+.editEvent .event-attachment-progress > div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.editEvent .event-attachment-progress progress {
+  width: 100%;
+  height: 8px;
+  accent-color: var(--primary-color, #2563eb);
+}
+
 /* Audience Targets */
 .editEvent .audience-targets {
   display: flex;
@@ -283,6 +399,21 @@
 
   .editEventForm textarea {
     min-height: 105px;
+  }
+
+  .edit-event-attachments-heading {
+    display: grid;
+    gap: 0.75rem;
+    padding-right: 0;
+  }
+
+  .edit-event-attachment-select {
+    position: relative;
+    width: 100%;
+  }
+
+  .edit-event-attachment-list li {
+    flex-wrap: wrap;
   }
 
   .editEventForm > button[type="submit"] {
